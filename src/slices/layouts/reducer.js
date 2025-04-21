@@ -15,7 +15,7 @@ import {
 } from "../../Components/constants/layout";
 
 export const initialState = {
-  layoutType: layoutTypes.TWOCOLUMN,
+  layoutType: layoutTypes.VERTICAL,
   leftSidebarType: leftSidebarTypes.DARK,
   layoutModeType: layoutModeTypes.LIGHTMODE,
   layoutWidthType: layoutWidthTypes.FLUID,
@@ -24,7 +24,7 @@ export const initialState = {
   leftsidbarSizeType: leftsidbarSizeTypes.DEFAULT,
   leftSidebarViewType: leftSidebarViewTypes.DEFAULT,
   leftSidebarImageType: leftSidebarImageTypes.NONE,
-  preloader: preloaderTypes.DISABLE,
+  preloader: preloaderTypes.ENABLE,
   sidebarVisibilitytype: sidebarVisibilitytypes.SHOW
 };
 

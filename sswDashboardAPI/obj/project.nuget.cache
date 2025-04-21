@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "QKex6d77a7kXTC2fqBAIpIUnaI9ERZeLqBueK3xs97Ytqn0V1/7LEpXaQRZ0luTdAN8UQOXb1rR/8+p66bpI9A==",
+  "dgSpecHash": "KuPQErN3oG+cbKt0pm4yEymA2vN/qgBff/khKTXH6q5115fYznuj/AHut7FZ5QSsCWtT3f1PbVKKXhFnqGN1aw==",
   "success": true,
-  "projectFilePath": "C:\\SSW Programs\\Chintan Development\\final-Dashboard_ssw\\sswDashboardAPI\\sswDashboardAPI.csproj",
+  "projectFilePath": "C:\\SSW Programs\\Chintan Development\\Dashboard Working mode\\sswDashboard-react\\sswDashboardAPI\\sswDashboardAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Chintan.SSWHITE\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.12\\microsoft.aspnetcore.openapi.7.0.12.nupkg.sha512",
     "C:\\Users\\Chintan.SSWHITE\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",

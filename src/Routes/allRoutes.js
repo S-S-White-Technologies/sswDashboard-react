@@ -9,7 +9,7 @@ import DashboardEcommerce from "../pages/DashboardEcommerce";
 import DashboardCrypto from "../pages/DashboardCrypto";
 import DashboardProject from "../pages/DashboardProject";
 import DashboardNFT from "../pages/DashboardNFT";
-import DashboardJobs from "../pages/DashboardJob";
+import DashboardJob from "../pages/DashboardJob/";
 
 //Calendar
 // Email box
@@ -186,11 +186,15 @@ import BasicPasswCreate from "../pages/AuthenticationInner/PasswordCreate/BasicP
 import CoverPasswCreate from "../pages/AuthenticationInner/PasswordCreate/CoverPasswCreate";
 import Offlinepage from "../pages/AuthenticationInner/Errors/Offlinepage";
 
+//APi Key
+import APIKey from "../pages/APIKey/index";
+
 //login
 import Login from "../pages/Authentication/Login";
 import ForgetPasswordPage from "../pages/Authentication/ForgetPassword";
 import Logout from "../pages/Authentication/Logout";
 import Register from "../pages/Authentication/Register";
+import AdminLogin from "../pages/Authentication/LoginAdmin";
 
 //Charts
 import LineCharts from "../pages/Charts/ApexCharts/LineCharts";
@@ -209,19 +213,10 @@ import PieCharts from "../pages/Charts/ApexCharts/PieCharts";
 import RadialbarCharts from "../pages/Charts/ApexCharts/RadialbarCharts";
 import RadarCharts from "../pages/Charts/ApexCharts/RadarCharts";
 import PolarCharts from "../pages/Charts/ApexCharts/PolarCharts";
-
 import ChartsJs from "../pages/Charts/ChartsJs/index";
 import Echarts from "../pages/Charts/ECharts/index";
 
-// Landing Index
-import OnePage from "../pages/Landing/OnePage";
-import NFTLanding from "../pages/Landing/NFTLanding";
-
-// User Profile
-import UserProfile from "../pages/Authentication/user-profile";
-
-import FileManager from "../pages/FileManager";
-import ToDoList from "../pages/ToDo";
+//Job pages
 import Statistics from "../pages/Jobs/Statistics";
 import JobList from "../pages/Jobs/JobList/List";
 import JobGrid from "../pages/Jobs/JobList/Grid";
@@ -232,10 +227,20 @@ import NewJobs from "../pages/Jobs/NewJob";
 import JobCategories from "../pages/Jobs/JobCategories";
 import Application from "../pages/Jobs/Application";
 import CompaniesList from "../pages/Jobs/CompaniesList";
-import APIKey from "../pages/APIKey";
-import PrivacyPolicy from "../pages/Pages/PrivacyPolicy";
-import TermsCondition from "../pages/Pages/TermsCondition";
+
+// Landing Index
+import OnePage from "../pages/Landing/OnePage";
+import NFTLanding from "../pages/Landing/NFTLanding";
+
+import PrivecyPolicy from '../pages/Pages/PrivacyPolicy';
+import TermsCondition from '../pages/Pages/TermsCondition';
 import JobLanding from "../pages/Landing/Job";
+
+// User Profile
+import UserProfile from "../pages/Authentication/user-profile";
+
+import FileManager from "../pages/FileManager";
+import ToDoList from "../pages/ToDo";
 
 const authProtectedRoutes = [
   { path: "/dashboard-analytics", component: <DashboardAnalytics /> },
@@ -245,9 +250,10 @@ const authProtectedRoutes = [
   { path: "/dashboard-crypto", component: <DashboardCrypto /> },
   { path: "/dashboard-projects", component: <DashboardProject /> },
   { path: "/dashboard-nft", component: <DashboardNFT /> },
+  { path: "/dashboard-job", component: <DashboardJob /> },
   { path: "/apps-calendar", component: <Calendar /> },
   { path: "/apps-ecommerce-products", component: <EcommerceProducts /> },
-  { path: "/dashboard-job", component: <DashboardJobs /> },
+  { path: "/apps-ecommerce-product-details/:_id", component: <EcommerceProductDetail /> },
   { path: "/apps-ecommerce-product-details", component: <EcommerceProductDetail /> },
   { path: "/apps-ecommerce-add-product", component: <EcommerceAddProduct /> },
   { path: "/apps-ecommerce-orders", component: <EcommerceOrders /> },
@@ -260,17 +266,6 @@ const authProtectedRoutes = [
 
   { path: "/apps-file-manager", component: <FileManager /> },
   { path: "/apps-todo", component: <ToDoList /> },
-  { path: "/apps-job-statistics", component: <Statistics /> },
-  { path: "/apps-job-lists", component: <JobList /> },
-  { path: "/apps-job-grid-lists", component: <JobGrid /> },
-  { path: "/apps-job-details", component: <JobOverview /> },
-  { path: "/apps-job-candidate-lists", component: <CandidateList /> },
-  { path: "/apps-job-candidate-grid", component: <CandidateGrid /> },
-  { path: "/apps-job-application", component: <Application /> },
-  { path: "/apps-job-new", component: <NewJobs /> },
-  { path: "/apps-job-companies-lists", component: <CompaniesList /> },
-  { path: "/apps-job-categories", component: <JobCategories /> },
-  { path: "/apps-api-key", component: <APIKey /> },
 
 
   //Chat
@@ -289,6 +284,9 @@ const authProtectedRoutes = [
   //Task
   { path: "/apps-tasks-list-view", component: <TaskList /> },
   { path: "/apps-tasks-details", component: <TaskDetails /> },
+
+  //Api Key
+  { path: "/apps-api-key", component: <APIKey /> },
 
   //Crm
   { path: "/apps-crm-contacts", component: <CrmContacts /> },
@@ -429,8 +427,22 @@ const authProtectedRoutes = [
   { path: "/pages-pricing", component: <Pricing /> },
   { path: "/pages-sitemap", component: <SiteMap /> },
   { path: "/pages-search-results", component: <SearchResults /> },
-  { path: "/pages-privacy-policy", component: <PrivacyPolicy /> },
-  { path: "/pages-term-conditions", component: <TermsCondition /> },
+
+  //Job pages
+  { path: "/apps-job-statistics", component: <Statistics /> },
+  { path: "/apps-job-lists", component: <JobList /> },
+  { path: "/apps-job-grid-lists", component: <JobGrid /> },
+  { path: "/apps-job-details", component: <JobOverview /> },
+  { path: "/apps-job-candidate-lists", component: <CandidateList /> },
+  { path: "/apps-job-candidate-grid", component: <CandidateGrid /> },
+  { path: "/apps-job-application", component: <Application /> },
+  { path: "/apps-job-new", component: <NewJobs /> },
+  { path: "/apps-job-companies-lists", component: <CompaniesList /> },
+  { path: "/apps-job-categories", component: <JobCategories /> },
+
+  { path: "/pages-privacy-policy", component: <PrivecyPolicy /> },
+  { path: "/pages-terms-condition", component: <TermsCondition /> },
+
 
   //User Profile
   { path: "/profile", component: <UserProfile /> },
@@ -451,6 +463,7 @@ const publicRoutes = [
   { path: "/login", component: <Login /> },
   { path: "/forgot-password", component: <ForgetPasswordPage /> },
   { path: "/register", component: <Register /> },
+  { path: "/loginAdmin", component: <AdminLogin /> },
 
   //AuthenticationInner pages
   { path: "/auth-signin-basic", component: <BasicSignIn /> },

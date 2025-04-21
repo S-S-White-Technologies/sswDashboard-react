@@ -12,7 +12,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 
 // actions
-import { loginUser, socialLogin, resetLoginFlag } from "../../slices/thunks";
+import { loginAdmin } from "../../slices/auth/login/adminThunks";
 
 import logoLight from "../../assets/images/logofinal.png";
 //import images
@@ -26,7 +26,7 @@ const Login = (props) => {
         errorMsg: state.Login.errorMsg,
     }));
 
-    const [userLogin, setUserLogin] = useState([]);
+    const [adminLogin, setAdminLogin] = useState([]);
     const [passwordShow, setPasswordShow] = useState(false);
 
 
@@ -49,11 +49,11 @@ const Login = (props) => {
             
         },
         validationSchema: Yup.object({
-            empcode: Yup.string().required("Please Enter Your Email"),
+            email: Yup.string().required("Please Enter Your Email"),
             password: Yup.string().required("Please Enter Your Password"),
         }),
         onSubmit: (values) => {
-            dispatch(loginUser(values, props.router.navigate));
+            dispatch(loginAdmin(values, props.router.navigate));
         }
     });
 
@@ -61,9 +61,7 @@ const Login = (props) => {
         dispatch(socialLogin(type, props.router.navigate));
     };
 
-    const socialResponse = type => {
-        signIn(type);
-    };
+   
 
 
     useEffect(() => {
@@ -99,7 +97,7 @@ const Login = (props) => {
                                 <Card className="mt-4">
                                     <CardBody className="p-4">
                                         <div className="text-center mt-2">
-                                            <h5 className="text-primary">Log in</h5>
+                                            <h5 className="text-primary">Admin Login</h5>
                                            
                                         </div>
                                         {error && error ? (<Alert color="danger"> {error} </Alert>) : null}
@@ -113,21 +111,21 @@ const Login = (props) => {
                                                 action="#">
 
                                                 <div className="mb-3">
-                                                    <Label htmlFor="empcode" className="form-label">Emp.Code</Label>
+                                                    <Label htmlFor="email" className="form-label">Email</Label>
                                                     <Input
-                                                        name="empcode"
+                                                        name="email"
                                                         className="form-control"
-                                                        placeholder="Enter Employee Code"
-                                                        type="text"
+                                                        placeholder="Enter email"
+                                                        type="email"
                                                         onChange={validation.handleChange}
                                                         onBlur={validation.handleBlur}
-                                                        value={validation.values.empcode || ""}
+                                                        value={validation.values.email || ""}
                                                         invalid={
-                                                            validation.touched.empcode && validation.errors.empcode ? true : false
+                                                            validation.touched.email && validation.errors.email ? true : false
                                                         }
                                                     />
-                                                    {validation.touched.empcode && validation.errors.empcode ? (
-                                                        <FormFeedback type="invalid">{validation.errors.empcode}</FormFeedback>
+                                                    {validation.touched.email && validation.errors.email ? (
+                                                        <FormFeedback type="invalid">{validation.errors.email}</FormFeedback>
                                                     ) : null}
                                                 </div>
 
@@ -202,9 +200,7 @@ const Login = (props) => {
                                     </CardBody>
                                 </Card>
 
-                                <div className="mt-4 text-center">
-                                    <p className="mb-0">For the Employee Registration (Only Admin access) <Link to="/loginAdmin" className="fw-semibold text-primary text-decoration-underline"> Signup </Link> </p>
-                                </div>
+                                
 
                             </Col>
                         </Row>

@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import Flatpickr from "react-flatpickr";
 import { Row, Col, CardBody, Card, Alert, Container, Input, Label, Form, FormFeedback } from "reactstrap";
 
 // Formik Validation
@@ -17,34 +18,37 @@ import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 
 //import images 
-import logoLight from "../../assets/images/logo-light.png";
+import logoLight from "../../assets/images/logofinal.png";
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 
 const Register = () => {
     const history = useNavigate();
     const dispatch = useDispatch();
 
+    const [previewImage, setPreviewImage] = React.useState(logoLight);
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewImage(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const validation = useFormik({
         // enableReinitialize : use this flag when initial values needs to be changed
         enableReinitialize: true,
 
         initialValues: {
-            email: '',
-            first_name: '',
-            password: '',
-            confirm_password: ''
+            email: ''
+
         },
         validationSchema: Yup.object({
             email: Yup.string().required("Please Enter Your Email"),
-            first_name: Yup.string().required("Please Enter Your Username"),
-            password: Yup.string().required("Please Enter Your Password"),
-            confirm_password: Yup.string().when("password", {
-                is: val => (val && val.length > 0 ? true : false),
-                then: Yup.string().oneOf(
-                    [Yup.ref("password")],
-                    "Confirm Password Isn't Match"
-                )
-            })
+
         }),
         onSubmit: (values) => {
             dispatch(registerUser(values));
@@ -71,7 +75,7 @@ const Register = () => {
 
     }, [dispatch, success, error, history]);
 
-    document.title = "Basic SignUp | Velzon - React Admin & Dashboard Template";
+    document.title = "SSW Dashboard Sign-up";
 
     return (
         <React.Fragment>
@@ -83,22 +87,303 @@ const Register = () => {
                                 <div className="text-center mt-sm-5 mb-4 text-white-50">
                                     <div>
                                         <Link to="/" className="d-inline-block auth-logo">
-                                            <img src={logoLight} alt="" height="20" />
+                                            <img src={logoLight} alt="" height="120" />
                                         </Link>
                                     </div>
-                                    <p className="mt-3 fs-15 fw-medium">Premium Admin & Dashboard Template</p>
+                                    <p className="mt-3 fs-35 fw-medium" style={{ fontSize: "25px", color: "#070161" }}>
+                                        SS White Technologies Inc.
+                                    </p>
+                                    
                                 </div>
                             </Col>
                         </Row>
 
                         <Row className="justify-content-center">
-                            <Col md={8} lg={6} xl={5}>
-                                <Card className="mt-4">
+
+                            <Card>
+                            <div className="text-center mt-2">
+                            <p className="mt-3 fs-35 fw-medium" style={{ fontSize: "15px", color: "#070161" }}>
+                                        Add New Employee
+                                    </p>
+                                        <hr className="mx-auto mb-3" style={{ width: "100", borderTop: "2px solidrgb(201, 203, 206)" }} />
+                                        <p className="text-muted"></p>
+                                    </div>
+                                
+                                <Form
+
+
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        validation.handleSubmit();
+                                        return false;
+                                    }}
+                                    className="needs-validation" action="#">
+
+                                    {success && success ? (
+                                        <>
+                                            {toast("Your Redirect To Login Page...", { position: "top-right", hideProgressBar: false, className: 'bg-success text-white', progress: undefined, toastId: "" })}
+                                            <ToastContainer autoClose={2000} limit={1} />
+                                            <Alert color="success">
+                                                Register User Successfully and Your Redirect To Login Page...
+                                            </Alert>
+                                        </>
+                                    ) : null}
+
+                                    {error && error ? (
+                                        <Alert color="danger"><div>
+                                            Something Went wrong! </div></Alert>
+                                    ) : null}
+                                    <CardBody className="p-4">
+
+
+                                        <Row>
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label>Emp.ID</Label>
+                                                    <Input type="text" name="empid" />
+                                                </div>
+                                            </Col>
+
+                                            <Col md={4}>
+                                                <div className="mb-3">
+                                                    <Label htmlFor="first_name" className="form-label">First Name <span className="text-danger">*</span></Label>
+                                                    <Input type="text" name="first_name" placeholder="Enter First Name" />
+                                                </div>
+                                            </Col>
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label>Middle Name</Label>
+                                                    <Input type="text" name="middle_name" placeholder="Enter Initial" />
+                                                </div>
+                                            </Col>
+                                            <Col md={4}>
+                                                <div className="mb-3">
+                                                    <Label htmlFor="last_name" className="form-label">Last Name <span className="text-danger">*</span></Label>
+                                                    <Input type="text" name="last_name" placeholder="Enter Last Name" />
+                                                </div>
+                                            </Col>
+
+                                        </Row>
+
+                                        <Row>
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label>Gender</Label>
+                                                    <Input type="select" name="gender">
+                                                        <option>Male</option>
+                                                        <option>Female</option>
+                                                        <option>Trans</option>
+                                                    </Input>
+                                                </div>
+                                            </Col>
+                                            <Col md={5}>
+                                                <div className="mb-3">
+                                                    <Label>Address Line 1</Label>
+                                                    <Input type="text" name="address1" placeholder="Street Line 1" />
+                                                </div>
+                                            </Col>
+
+                                            <Col md={5}>
+                                                <div className="mb-3">
+                                                    <Label>Address Line 2</Label>
+                                                    <Input type="text" name="address2" placeholder="Street Line 2" />
+                                                </div>
+                                            </Col>
+                                        </Row>
+
+                                        <Row>
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label>City</Label>
+                                                    <Input type="text" name="city" placeholder="Enter City" />
+                                                </div>
+                                            </Col>
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label>State</Label>
+                                                    <Input type="text" name="state" placeholder="Enter State" />
+                                                </div>
+                                            </Col>
+
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label>Postal Code</Label>
+                                                    <Input type="text" name="postalcode" placeholder="Enter Six digit Postal code" />
+                                                </div>
+                                            </Col>
+                                            <Col md={3}>
+                                                <div className="mb-3">
+                                                    <Label>Phone</Label>
+                                                    <Input type="text" name="phone" placeholder="Enter Phone" />
+                                                </div>
+                                            </Col>
+                                            <Col md={3}>
+                                                <div className="mb-3">
+                                                    <Label>Emergency Contact</Label>
+                                                    <Input type="text" name="emergency_contact" placeholder="Enter Alternate Phone" />
+                                                </div>
+                                            </Col>
+                                        </Row>
+
+                                        <Row>
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label>Expense Code</Label>
+                                                    <Input type="select" name="expensecode">
+                                                        <option>Salary</option>
+                                                        <option>Hourly</option>
+                                                    </Input>
+                                                </div>
+                                            </Col>
+                                            <Col md={4}>
+                                                <div className="mb-3">
+                                                    <Label>Department</Label>
+                                                    <Input type="select" name="department" >
+                                                    </Input>
+                                                </div>
+                                            </Col>
+
+                                            <Col md={4}>
+                                                <div className="mb-3">
+                                                    <Label>Supervisor</Label>
+                                                    <Input type="select" name="supervisor">
+                                                    </Input>
+                                                </div>
+                                            </Col>
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label>Shift</Label>
+                                                    <Input type="select" name="shift">
+                                                        <option>1</option>
+                                                        <option>2</option>
+                                                        <option>3</option>
+                                                    </Input>
+                                                </div>
+                                            </Col>
+
+                                        </Row>
+                                        <Row>
+                                            <Col md={4}>
+                                                <div className="mb-3">
+                                                    <Label htmlFor="useremail" className="form-label">Email <span className="text-danger">*</span></Label>
+                                                    <Input
+                                                        id="email"
+                                                        name="email"
+                                                        className="form-control"
+                                                        placeholder="Enter email address"
+                                                        type="email"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.email || ""}
+                                                        invalid={
+                                                            validation.touched.email && validation.errors.email ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.email && validation.errors.email ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.email}</div></FormFeedback>
+                                                    ) : null}
+                                                </div>
+                                            </Col>
+
+                                            <Col md={4}>
+                                                <div className="mb-3">
+                                                    <Label htmlFor="title" className="form-label">Title (Designation)<span className="text-danger">*</span></Label>
+                                                    <Input type="text" name="title" placeholder="Enter Designation" />
+                                                </div>
+                                            </Col>
+                                            <Col md={4}>
+                                                <div className="mb-3">
+                                                    <Label className="form-label">Hire Date</Label>
+                                                    <Flatpickr
+                                                        className="form-control"
+                                                        options={{
+                                                            enableTime: true,
+                                                            dateFormat: "Y-m-d H:i",
+                                                        }}
+                                                    />
+                                                </div>
+                                            </Col>
+
+
+
+                                        </Row>
+
+                                        <Row>
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label>Type</Label>
+                                                    <Input type="select" name="type">
+                                                        <option>Temp Worker</option>
+                                                        <option>Factory Worker</option>
+                                                        <option>Staff</option>
+                                                        <option>Management</option>
+                                                    </Input>
+                                                </div>
+                                            </Col>
+
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label className="form-label">FTO Offset</Label>
+                                                    <Input type="text" name="ftooffset" placeholder="0" />
+                                                </div>
+                                            </Col>
+                                            <Col md={2}>
+                                                <div>
+                                                    <Label className="form-label">EPO Limit</Label>
+                                                    <Input type="text" name="epolimit" placeholder="0" />
+                                                </div>
+                                            </Col>
+                                            <Col md={6}>
+                                                <div className="mb-3">
+                                                    <Label htmlFor="profilePic" className="form-label">Upload Image</Label>
+                                                    <Input
+                                                        type="file"
+                                                        id="profilePic"
+                                                        name="profilePic"
+                                                        onChange={handleFileChange} // optional if you want to preview or handle upload
+                                                        accept="image/*"
+                                                    />
+                                                </div>
+                                            </Col>
+
+
+                                        </Row>
+                                        <Row>
+                                            <Col md={2}>
+                                                <div className="mb-3">
+
+                                                    {previewImage ? (
+                                                        <img
+                                                            src={previewImage}
+                                                            alt="Preview"
+                                                            style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }}
+                                                        />
+                                                    ) : (
+                                                        <div className="text-muted">No image selected</div>
+                                                    )}
+                                                </div>
+                                            </Col>
+                                        </Row>
+
+
+
+                                        <button className="btn btn-success w-10 mt-3" type="submit">Sign Up</button>
+
+                                    </CardBody>
+                                </Form>
+                            </Card>
+
+                        </Row>
+
+
+                        {/* <Row className="justify-content-center">
+                            <Col md={12} lg={12} xl={18}>
+                                <Card className="mt-4" >
 
                                     <CardBody className="p-4">
                                         <div className="text-center mt-2">
-                                            <h5 className="text-primary">Create New Account</h5>
-                                            <p className="text-muted">Get your free velzon account now</p>
+                                            <h5 className="text-primary">Add New Employee</h5>
+                                            <p className="text-muted"></p>
                                         </div>
                                         <div className="p-2 mt-4">
                                             <Form
@@ -124,26 +409,28 @@ const Register = () => {
                                                         Email has been Register Before, Please Use Another Email Address... </div></Alert>
                                                 ) : null}
 
-                                                <div className="mb-3">
-                                                    <Label htmlFor="useremail" className="form-label">Email <span className="text-danger">*</span></Label>
-                                                    <Input
-                                                        id="email"
-                                                        name="email"
-                                                        className="form-control"
-                                                        placeholder="Enter email address"
-                                                        type="email"
-                                                        onChange={validation.handleChange}
-                                                        onBlur={validation.handleBlur}
-                                                        value={validation.values.email || ""}
-                                                        invalid={
-                                                            validation.touched.email && validation.errors.email ? true : false
-                                                        }
-                                                    />
-                                                    {validation.touched.email && validation.errors.email ? (
-                                                        <FormFeedback type="invalid"><div>{validation.errors.email}</div></FormFeedback>
-                                                    ) : null}
+                                                
+                                                    <div className="mb-3" >
+                                                        <Label htmlFor="useremail" className="form-label">Email <span className="text-danger">*</span></Label>
+                                                        <Input
+                                                            id="email"
+                                                            name="email"
+                                                            className="form-control"
+                                                            placeholder="Enter email address"
+                                                            type="email"
+                                                            onChange={validation.handleChange}
+                                                            onBlur={validation.handleBlur}
+                                                            value={validation.values.email || ""}
+                                                            invalid={
+                                                                validation.touched.email && validation.errors.email ? true : false
+                                                            }
+                                                        />
+                                                        {validation.touched.email && validation.errors.email ? (
+                                                            <FormFeedback type="invalid"><div>{validation.errors.email}</div></FormFeedback>
+                                                        ) : null}
 
-                                                </div>
+                                                    </div>
+                                                
                                                 <div className="mb-3">
                                                     <Label htmlFor="username" className="form-label">Username <span className="text-danger">*</span></Label>
                                                     <Input
@@ -201,36 +488,20 @@ const Register = () => {
 
                                                 </div>
 
-                                                <div className="mb-4">
-                                                    <p className="mb-0 fs-12 text-muted fst-italic">By registering you agree to the Velzon
-                                                        <Link to="#" className="text-primary text-decoration-underline fst-normal fw-medium">Terms of Use</Link></p>
-                                                </div>
+                                              
 
                                                 <div className="mt-4">
                                                     <button className="btn btn-success w-100" type="submit">Sign Up</button>
                                                 </div>
 
-                                                <div className="mt-4 text-center">
-                                                    <div className="signin-other-title">
-                                                        <h5 className="fs-13 mb-4 title text-muted">Create account with</h5>
-                                                    </div>
-
-                                                    <div>
-                                                        <button type="button" className="btn btn-primary btn-icon waves-effect waves-light"><i className="ri-facebook-fill fs-16"></i></button>{" "}
-                                                        <button type="button" className="btn btn-danger btn-icon waves-effect waves-light"><i className="ri-google-fill fs-16"></i></button>{" "}
-                                                        <button type="button" className="btn btn-dark btn-icon waves-effect waves-light"><i className="ri-github-fill fs-16"></i></button>{" "}
-                                                        <button type="button" className="btn btn-info btn-icon waves-effect waves-light"><i className="ri-twitter-fill fs-16"></i></button>
-                                                    </div>
-                                                </div>
+                                                
                                             </Form>
                                         </div>
                                     </CardBody>
                                 </Card>
-                                <div className="mt-4 text-center">
-                                    <p className="mb-0">Already have an account ? <Link to="/login" className="fw-semibold text-primary text-decoration-underline"> Signin </Link> </p>
-                                </div>
+                                
                             </Col>
-                        </Row>
+                        </Row> */}
                     </Container>
                 </div>
             </ParticlesAuth>

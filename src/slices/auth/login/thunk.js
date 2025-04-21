@@ -3,6 +3,7 @@ import { getFirebaseBackend } from "../../../helpers/firebase_helper";
 import {
   postFakeLogin,
   postJwtLogin,
+  postSocialLogin,
 } from "../../../helpers/fakebackend_helper";
 
 import { loginSuccess, logoutUserSuccess, apiError, reset_login_flag } from './reducer';
@@ -18,7 +19,7 @@ export const loginUser = (user, history) => async (dispatch) => {
           status: "success",
           data: {
             uid: 1,
-            email: user.email,
+            email: user.empcode,
             token: "mock-jwt-token",
             name: "Demo User"
           }
@@ -37,6 +38,7 @@ export const loginUser = (user, history) => async (dispatch) => {
     dispatch(apiError(error));
   }
 };
+
 
 export const logoutUser = () => async (dispatch) => {
   try {

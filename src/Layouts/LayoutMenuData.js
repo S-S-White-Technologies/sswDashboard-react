@@ -139,7 +139,7 @@ const Navdata = () => {
         },
         {
             id: "dashboard",
-            label: "Dashboards",
+            label: "SSWHITE General Tools",
             icon: "bx bxs-dashboard",
             link: "/#",
             stateVariables: isDashboard,

@@ -5,7 +5,7 @@ import MarketGraph from './MarketGraph';
 import MyCurrencies from './MyCurrencies';
 import MyPortfolio from './MyPortfolio';
 import NewsFeed from './NewsFeed';
-import RecentActivity from './RecentActivity';
+ import RecentActivity from './RecentActivity';
 import TopPerformers from './TopPerformers';
 import Trading from './Trading';
 import Widgets from './Widgets';
@@ -13,7 +13,7 @@ import Widgets1 from './Widgets1';
 
 
 const DashboardCrypto = () => {
-    document.title="Crypto Dashboard | Velzon - React Admin & Dashboard Template";
+    document.title = "SSW Technologies Dashboard";
     return (
         <React.Fragment>
             <div className="page-content">

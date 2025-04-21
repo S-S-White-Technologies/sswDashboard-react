@@ -9,5 +9,7 @@ module.exports = {
   },
   api: {
     API_URL: "https://api-node.themesbrand.website",
+
+    // http://localhost:4398/API/
   }
 };
