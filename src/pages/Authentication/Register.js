@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Flatpickr from "react-flatpickr";
 import { Row, Col, CardBody, Card, Alert, Container, Input, Label, Form, FormFeedback } from "reactstrap";
+import axios from "axios";
 
 // Formik Validation
 import * as Yup from "yup";
@@ -38,16 +39,56 @@ const Register = () => {
         }
     };
 
+    //For the Supervisor and Department
+    const [departments, setDepartments] = useState([]);
+    const [supervisors, setSupervisors] = useState([]);
+
+    useEffect(() => {
+        axios.get("https://localhost:7168/api/registration/departments")
+            .then((res) => setDepartments(res))
+            .catch((err) => console.error("Departments fetch error", err));
+        console.log("departments", departments);
+
+        axios
+            .get("https://localhost:7168/api/registration/supervisors")
+            .then((res) => setSupervisors(res))
+            .catch((err) => console.error("Supervisors fetch error", err));
+
+    }, []);
+    //End Supervisor and Department
+    //next-employee ID
+    const [nextEmpId, setNextEmpId] = useState("");
+
+    useEffect(() => {
+        axios.get("https://localhost:7168/api/registration/next-empid")
+            .then((res) => {
+                console.log("Next EmpID response 👉", res.data); // Should log 3346
+                setNextEmpId(res); // res.data is 3346
+            })
+            .catch((err) => {
+                console.error("Error fetching next EmpID:", err);
+            });
+    }, []);
+
+    //End next emp-Id
+    const [passwordShow, setPasswordShow] = useState(false);
     const validation = useFormik({
         // enableReinitialize : use this flag when initial values needs to be changed
         enableReinitialize: true,
 
         initialValues: {
-            email: ''
-
+            email: '',
+            first_name: '',
+            last_name: '',
+            title: '',
+            password: ''
         },
         validationSchema: Yup.object({
             email: Yup.string().required("Please Enter Your Email"),
+            first_name: Yup.string().required("Please Enter Your First Name"),
+            last_name: Yup.string().required("Please Enter Your Last Name"),
+            title: Yup.string().required("Please Enter Title"),
+            password: Yup.string().required("Please Enter Password"),
 
         }),
         onSubmit: (values) => {
@@ -86,14 +127,14 @@ const Register = () => {
                             <Col lg={12}>
                                 <div className="text-center mt-sm-5 mb-4 text-white-50">
                                     <div>
-                                        <Link to="/" className="d-inline-block auth-logo">
+                                        <Link className="d-inline-block auth-logo">
                                             <img src={logoLight} alt="" height="120" />
                                         </Link>
                                     </div>
                                     <p className="mt-3 fs-35 fw-medium" style={{ fontSize: "25px", color: "#070161" }}>
                                         SS White Technologies Inc.
                                     </p>
-                                    
+
                                 </div>
                             </Col>
                         </Row>
@@ -101,14 +142,14 @@ const Register = () => {
                         <Row className="justify-content-center">
 
                             <Card>
-                            <div className="text-center mt-2">
-                            <p className="mt-3 fs-35 fw-medium" style={{ fontSize: "15px", color: "#070161" }}>
+                                <div className="text-center mt-2">
+                                    <p className="mt-3 fs-35 fw-medium" style={{ fontSize: "15px", color: "#070161" }}>
                                         Add New Employee
                                     </p>
-                                        <hr className="mx-auto mb-3" style={{ width: "100", borderTop: "2px solidrgb(201, 203, 206)" }} />
-                                        <p className="text-muted"></p>
-                                    </div>
-                                
+                                    <hr className="mx-auto mb-3" style={{ width: "100", borderTop: "2px solidrgb(201, 203, 206)" }} />
+                                    <p className="text-muted"></p>
+                                </div>
+
                                 <Form
 
 
@@ -121,7 +162,7 @@ const Register = () => {
 
                                     {success && success ? (
                                         <>
-                                            {toast("Your Redirect To Login Page...", { position: "top-right", hideProgressBar: false, className: 'bg-success text-white', progress: undefined, toastId: "" })}
+                                            {toast("You're Redirect To Login Page...", { position: "top-right", hideProgressBar: true, className: 'bg-success text-white', progress: undefined, toastId: "" })}
                                             <ToastContainer autoClose={2000} limit={1} />
                                             <Alert color="success">
                                                 Register User Successfully and Your Redirect To Login Page...
@@ -130,8 +171,13 @@ const Register = () => {
                                     ) : null}
 
                                     {error && error ? (
-                                        <Alert color="danger"><div>
-                                            Something Went wrong! </div></Alert>
+                                        <>
+                                            {toast("Registration Error...", { position: "top-right", hideProgressBar: true, className: 'bg-danger text-white', progress: undefined, toastId: "" })}
+                                            <ToastContainer autoClose={2000} limit={1} />
+                                            <Alert color="danger">
+                                                Something Went wrong!
+                                            </Alert>
+                                        </>
                                     ) : null}
                                     <CardBody className="p-4">
 
@@ -140,14 +186,24 @@ const Register = () => {
                                             <Col md={2}>
                                                 <div className="mb-3">
                                                     <Label>Emp.ID</Label>
-                                                    <Input type="text" name="empid" />
+                                                    <Input type="text" name="empid" value={nextEmpId} readOnly />
                                                 </div>
                                             </Col>
 
                                             <Col md={4}>
                                                 <div className="mb-3">
                                                     <Label htmlFor="first_name" className="form-label">First Name <span className="text-danger">*</span></Label>
-                                                    <Input type="text" name="first_name" placeholder="Enter First Name" />
+                                                    <Input type="text" id="firstname" name="first_name" placeholder="Enter First Name"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.first_name || ""}
+                                                        invalid={
+                                                            validation.touched.first_name && validation.errors.first_name ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.first_name && validation.errors.first_name ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.first_name}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
                                             <Col md={2}>
@@ -159,7 +215,17 @@ const Register = () => {
                                             <Col md={4}>
                                                 <div className="mb-3">
                                                     <Label htmlFor="last_name" className="form-label">Last Name <span className="text-danger">*</span></Label>
-                                                    <Input type="text" name="last_name" placeholder="Enter Last Name" />
+                                                    <Input type="text" id="lastname" name="last_name" placeholder="Enter Last Name"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.last_name || ""}
+                                                        invalid={
+                                                            validation.touched.last_name && validation.errors.last_name ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.last_name && validation.errors.last_name ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.last_name}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
 
@@ -238,7 +304,11 @@ const Register = () => {
                                             <Col md={4}>
                                                 <div className="mb-3">
                                                     <Label>Department</Label>
-                                                    <Input type="select" name="department" >
+                                                    <Input type="select" name="department">
+                                                        <option value="">Select Department</option>
+                                                        {departments?.map((dept, index) => (
+                                                            <option key={index} value={dept}>{dept}</option>
+                                                        ))}
                                                     </Input>
                                                 </div>
                                             </Col>
@@ -247,9 +317,16 @@ const Register = () => {
                                                 <div className="mb-3">
                                                     <Label>Supervisor</Label>
                                                     <Input type="select" name="supervisor">
+                                                        <option value="">Select Supervisor</option>
+                                                        {supervisors?.map((sup) => (
+                                                            <option key={sup.empId} value={sup.empId}>
+                                                                {sup.name}
+                                                            </option>
+                                                        ))}
                                                     </Input>
                                                 </div>
                                             </Col>
+
                                             <Col md={2}>
                                                 <div className="mb-3">
                                                     <Label>Shift</Label>
@@ -263,7 +340,7 @@ const Register = () => {
 
                                         </Row>
                                         <Row>
-                                            <Col md={4}>
+                                            <Col md={3}>
                                                 <div className="mb-3">
                                                     <Label htmlFor="useremail" className="form-label">Email <span className="text-danger">*</span></Label>
                                                     <Input
@@ -284,14 +361,47 @@ const Register = () => {
                                                     ) : null}
                                                 </div>
                                             </Col>
+                                            <Col md={3}>
+                                                <Label className="form-label" htmlFor="password-input">Password<span className="text-danger">*</span></Label>
+                                                <div className="position-relative auth-pass-inputgroup mb-3">
+                                                    <Input
+                                                        name="password"
+                                                        value={validation.values.password || ""}
+                                                        type={passwordShow ? "text" : "password"}
+                                                        className="form-control pe-5"
+                                                        placeholder="Enter Password"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        invalid={
+                                                            validation.touched.password && validation.errors.password ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.password && validation.errors.password ? (
+                                                        <FormFeedback type="invalid">{validation.errors.password}</FormFeedback>
+                                                    ) : null}
+                                                    <div className="mb-3">
+                                                        <button className="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted" type="button" id="password-addon" onClick={() => setPasswordShow(!passwordShow)}><i className="ri-eye-fill align-middle"></i></button>
+                                                    </div>
 
-                                            <Col md={4}>
-                                                <div className="mb-3">
-                                                    <Label htmlFor="title" className="form-label">Title (Designation)<span className="text-danger">*</span></Label>
-                                                    <Input type="text" name="title" placeholder="Enter Designation" />
                                                 </div>
                                             </Col>
-                                            <Col md={4}>
+                                            <Col md={3}>
+                                                <div className="mb-3">
+                                                    <Label htmlFor="title" className="form-label">Title (Designation)<span className="text-danger">*</span></Label>
+                                                    <Input type="text" id="title" name="title" placeholder="Enter Designation"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.title || ""}
+                                                        invalid={
+                                                            validation.touched.title && validation.errors.title ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.title && validation.errors.title ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.title}</div></FormFeedback>
+                                                    ) : null}
+                                                </div>
+                                            </Col>
+                                            <Col md={3}>
                                                 <div className="mb-3">
                                                     <Label className="form-label">Hire Date</Label>
                                                     <Flatpickr
@@ -367,7 +477,7 @@ const Register = () => {
 
 
 
-                                        <button className="btn btn-success w-10 mt-3" type="submit">Sign Up</button>
+                                        <button className="btn btn-success w-10 mt-3" type="submit">Add Employee</button>
 
                                     </CardBody>
                                 </Form>

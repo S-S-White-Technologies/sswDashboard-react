@@ -51,6 +51,7 @@ const Navdata = () => {
     const [isApex, setIsApex] = useState(false);
 
     // Multi Level
+    const [isTime, setIsTime] = useState(false);
     const [isLevel1, setIsLevel1] = useState(false);
     const [isLevel2, setIsLevel2] = useState(false);
 
@@ -115,6 +116,9 @@ const Navdata = () => {
         if (iscurrentState !== "Landing") {
             setIsLanding(false);
         }
+        if (iscurrentState !== "Time and Attendance") {
+            setIsTime(false);
+        }
     }, [
         history,
         iscurrentState,
@@ -130,16 +134,17 @@ const Navdata = () => {
         isIcons,
         isMaps,
         isMultiLevel,
+        isTime,
     ]);
 
     const menuItems = [
         {
-            label: "Menu",
+            label: "Main Menu",
             isHeader: true,
         },
         {
             id: "dashboard",
-            label: "SSWHITE General Tools",
+            label: "SSW General Tools",
             icon: "bx bxs-dashboard",
             link: "/#",
             stateVariables: isDashboard,
@@ -151,49 +156,65 @@ const Navdata = () => {
             },
             subItems: [
                 {
-                    id: "analytics",
-                    label: "Analytics",
-                    link: "/dashboard-analytics",
+                    id: "timeandattendance",
+                    label: "Time and Attendance",
+                    link: "/#",
                     parentId: "dashboard",
+                    isChildItem: true,
+                    click: function (e) {
+                        e.preventDefault();
+                        setEmail(!isEmail);
+                    },
+                    stateVariables: isEmail,
+                    childItems: [
+                        {
+                            id: 1,
+                            label: "In for the Day",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                        },
+
+                    ]
                 },
-                {
-                    id: "crm",
-                    label: "CRM",
-                    link: "/dashboard-crm",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "ecommerce",
-                    label: "Ecommerce",
-                    link: "/dashboard",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "crypto",
-                    label: "Crypto",
-                    link: "/dashboard-crypto",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "projects",
-                    label: "Projects",
-                    link: "/dashboard-projects",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "nft",
-                    label: "NFT",
-                    link: "/dashboard-nft",
-                    parentId: "dashboard",
-                },
-                {
-                    id: "job",
-                    label: "Job",
-                    badgeName: "New",
-                    badgeColor: "success",
-                    link: "/dashboard-job",
-                    parentId: "dashboard",
-                },
+
+                // {
+                //     id: "crm",
+                //     label: "CRM",
+                //     link: "/dashboard-crm",
+                //     parentId: "dashboard",
+                // },
+                // {
+                //     id: "ecommerce",
+                //     label: "Ecommerce",
+                //     link: "/dashboard",
+                //     parentId: "dashboard",
+                // },
+                // {
+                //     id: "crypto",
+                //     label: "Crypto",
+                //     link: "/dashboard-crypto",
+                //     parentId: "dashboard",
+                // },
+                // {
+                //     id: "projects",
+                //     label: "Projects",
+                //     link: "/dashboard-projects",
+                //     parentId: "dashboard",
+                // },
+                // {
+                //     id: "nft",
+                //     label: "NFT",
+                //     link: "/dashboard-nft",
+                //     parentId: "dashboard",
+                // },
+                // {
+                //     id: "job",
+                //     label: "Job",
+                //     badgeName: "New",
+                //     badgeColor: "success",
+                //     link: "/dashboard-job",
+                //     parentId: "dashboard",
+                // },
             ],
         },
         {
@@ -620,7 +641,7 @@ const Navdata = () => {
             ],
         },
         {
-            label: "pages",
+            label: "Departments",
             isHeader: true,
         },
         {
@@ -927,10 +948,10 @@ const Navdata = () => {
                 },
             ],
         },
-        {
-            label: "Components",
-            isHeader: true,
-        },
+        // {
+        //     label: "Components",
+        //     isHeader: false,
+        // },
         {
             id: "baseUi",
             label: "Base UI",
@@ -1261,11 +1282,11 @@ const Navdata = () => {
                     link: "/tables-datatables",
                     parentId: "tables",
                 },
-                { 
-                    id: "reactdatatables", 
-                    label: "React Datatables", 
-                    link: "/tables-react", 
-                    parentId: "tables" 
+                {
+                    id: "reactdatatables",
+                    label: "React Datatables",
+                    link: "/tables-react",
+                    parentId: "tables"
                 },
             ],
         },

@@ -46,10 +46,10 @@ const Login = (props) => {
         enableReinitialize: true,
 
         initialValues: {
-            
+
         },
         validationSchema: Yup.object({
-            empcode: Yup.string().required("Please Enter Your Email"),
+            empcode: Yup.string().required("Please Enter Your Employee ID"),
             password: Yup.string().required("Please Enter Your Password"),
         }),
         onSubmit: (values) => {
@@ -89,7 +89,7 @@ const Login = (props) => {
                                     </div>
                                     <p className="mt-3 fs-35 fw-medium" style={{ fontSize: "25px", color: "#070161" }}>
                                         SS White Technologies Inc.
-                                        </p>
+                                    </p>
                                 </div>
                             </Col>
                         </Row>
@@ -100,7 +100,7 @@ const Login = (props) => {
                                     <CardBody className="p-4">
                                         <div className="text-center mt-2">
                                             <h5 className="text-primary">Log in</h5>
-                                           
+
                                         </div>
                                         {error && error ? (<Alert color="danger"> {error} </Alert>) : null}
                                         <div className="p-2 mt-4">
