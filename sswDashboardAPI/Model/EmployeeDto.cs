@@ -36,7 +36,7 @@ namespace sswDashboardAPI.Model
         public string CompanyCell { get; set; }
 
         public string Gender { get; set; }
-
+        
         public int FtoOffset { get; set; }
         public string Password { get; set; }
         

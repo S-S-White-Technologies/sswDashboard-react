@@ -59,8 +59,8 @@ namespace sswDashboardAPI.Services
         {
             using (var conn = new SqlConnection(_plutoConnectionString))
             {
-                string query = @"INSERT INTO Employees (EmpID,EmailAddress, ProjectsPassword)
-                         VALUES (@EmpID, @Email, @PasswordHash)";
+                string query = @"INSERT INTO Employees (EmpID,EmailAddress,Title,HireDate, ProjectsPassword)
+                         VALUES (@EmpID, @Email,@Title,@HireDate, @PasswordHash)";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
@@ -68,6 +68,8 @@ namespace sswDashboardAPI.Services
 
                     cmd.Parameters.AddWithValue("@EmpID", emp.EmpID);
                     cmd.Parameters.AddWithValue("@Email", emp.Email ?? "");
+                    cmd.Parameters.AddWithValue("@Title", emp.Title ?? "");
+                    cmd.Parameters.AddWithValue("@HireDate", emp.HireDate);
                     cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
 
                     await conn.OpenAsync();

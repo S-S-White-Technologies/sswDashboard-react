@@ -9,7 +9,8 @@ namespace sswDashboardAPI.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<EmpBasic> EmpBasic { get; set; }
-        public DbSet<EmployeeDto> Employees { get; set; }
+        
+        public DbSet<Employee> Employees { get; set; }
 
         public DbSet<Role> Roles { get; set; }
 

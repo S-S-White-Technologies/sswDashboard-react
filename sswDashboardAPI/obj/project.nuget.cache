@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "wV4O4f/yV9PYxWPVfqCCCl9mhbpmJdG2w/MtFCHqSXmoRv5vSCo6A6yIZEfQ2YQaLBz1FezURwQtuaE4DAKcxA==",
+  "dgSpecHash": "HfVkQv2R+kJ/r0+C6gUFyfnXWB6Hhgzim6hGDBW1a/JjZaiV3mzfVCzhM5BkC8GNCpmSXoIeAr6g5T474NauYA==",
   "success": true,
   "projectFilePath": "C:\\SSW Programs\\Chintan Development\\Dashboard Working mode\\sswDashboard-react\\sswDashboardAPI\\sswDashboardAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Chintan.SSWHITE\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\Chintan.SSWHITE\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",
     "C:\\Users\\Chintan.SSWHITE\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
+    "C:\\Users\\Chintan.SSWHITE\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\7.0.20\\microsoft.aspnetcore.authentication.jwtbearer.7.0.20.nupkg.sha512",
     "C:\\Users\\Chintan.SSWHITE\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.12\\microsoft.aspnetcore.openapi.7.0.12.nupkg.sha512",
     "C:\\Users\\Chintan.SSWHITE\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.1.1\\microsoft.bcl.asyncinterfaces.1.1.1.nupkg.sha512",
     "C:\\Users\\Chintan.SSWHITE\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",

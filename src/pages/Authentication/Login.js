@@ -49,7 +49,7 @@ const Login = (props) => {
 
         },
         validationSchema: Yup.object({
-            empcode: Yup.string().required("Please Enter Your Employee ID"),
+            empcode: Yup.string().required("Please Enter Your Email ID"),
             password: Yup.string().required("Please Enter Your Password"),
         }),
         onSubmit: (values) => {
@@ -113,7 +113,7 @@ const Login = (props) => {
                                                 action="#">
 
                                                 <div className="mb-3">
-                                                    <Label htmlFor="empcode" className="form-label">Emp.Code</Label>
+                                                    <Label htmlFor="empcode" className="form-label">Email</Label>
                                                     <Input
                                                         name="empcode"
                                                         className="form-control"
