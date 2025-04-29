@@ -19,39 +19,16 @@ const fireBaseBackend = getFirebaseBackend();
 // Is user register successfull then direct plot user in redux.
 export const registerUser = (user) => async (dispatch) => {
   try {
-    let response;
+    const response = await axios.post("https://localhost:7168/api/registration/add-employee", user);
 
-    if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
-      response = fireBaseBackend.registerUser(user.email);
-    } else if (process.env.REACT_APP_DEFAULTAUTH === "jwt") {
-      response = postJwtRegister('/post-jwt-register', user);
-    } else if (process.env.REACT_APP_API_URL) {
-      // 🔹 Inline Mock Validation Logic
-      const errors = {};
-
-      if (!user.email || user.email.trim() === "") {
-        errors.email = "Email is required";
-      } else if (!/\S+@\S+\.\S+/.test(user.email)) {
-        errors.email = "Email format is invalid";
-      }
-
-     
-
-      if (Object.keys(errors).length > 0) {
-        dispatch(registerUserFailed({ message: "error", errors }));
-      } else {
-        const data = {
-          message: "success",
-          user,
-        };
-        console.warn("Response: ", message);
-        dispatch(registerUserSuccessful(data));
-      }
-
-      return; // Stop further execution
+    if (response.status === 200 || response.status === 201) {
+      console.log("Register Response:", response.status);
+      dispatch(registerUserSuccessful(response.data));
+    } else {
+      dispatch(registerUserFailed({ message: "Registration failed", data: response.data }));
     }
   } catch (error) {
-    dispatch(registerUserFailed(error));
+    dispatch(registerUserFailed(error.response?.data || { message: "Unknown error" }));
   }
 };
 

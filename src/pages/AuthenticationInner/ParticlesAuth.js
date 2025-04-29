@@ -1,11 +1,11 @@
- import React from 'react';
+import React from 'react';
 import withRouter from '../../Components/Common/withRouter';
 
 const ParticlesAuth = ({ children }) => {
     return (
         <React.Fragment>
             <div className="auth-page-wrapper pt-5">
-                <div className="auth-one-bg-position auth-one-bg" style={{height: "0px "}}  id="auth-particles">
+                <div className="auth-one-bg-position auth-one-bg" style={{ height: "0px " }} id="auth-particles">
 
                     <div className="bg-overlay"></div>
 
@@ -31,6 +31,7 @@ const ParticlesAuth = ({ children }) => {
                         </div>
                     </div>
                 </footer>
+
             </div>
         </React.Fragment>
     );

@@ -13,12 +13,14 @@ namespace sswDashboardAPI.Controllers
         private readonly AppDbContext _mainDb;
         private readonly EpicorERPContext _epicorDb;
         private readonly EmployeeService _employeeService;
+        private readonly EmailService _emailService;
 
-        public RegistrationController(AppDbContext mainDb, EpicorERPContext epicorDb, EmployeeService employeeService)
+        public RegistrationController(AppDbContext mainDb, EpicorERPContext epicorDb, EmployeeService employeeService , EmailService emailService)
         {
             _mainDb = mainDb;
             _epicorDb = epicorDb;
             _employeeService = employeeService;
+            _emailService = emailService;
         }
 
         [HttpGet("next-empid")]
@@ -57,7 +59,11 @@ namespace sswDashboardAPI.Controllers
         {
             var departments = _epicorDb.JcDept
                 .Where(d => d.Company == "SSW")
-                .Select(d => d.Description)
+                .Select(d => new
+                {
+                    id = d.JCDept,         
+                    description = d.Description 
+                })
                 .Distinct()
                 .ToList();
 
@@ -65,18 +71,74 @@ namespace sswDashboardAPI.Controllers
         }
 
 
+        [HttpGet("roles")]
+        public IActionResult GetRoles()
+        {
+            var roles = _mainDb.Roles
+                .Select(r => new { r.RoleId, r.RoleName })
+                .OrderBy(r => r.RoleId)
+                .ToList();
+
+            return Ok(roles);
+        }
+
+
+        //[HttpPost("add-employee")]
+        //public async Task<IActionResult> AddEmployee([FromBody] EmployeeDto employeeDto)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest(ModelState);
+
+        //    var success1 = await _employeeService.InsertEmpBasicPLUTO(employeeDto);
+        //    var success2 = await _employeeService.InsertEmployeeToEmployeesTable(employeeDto);
+
+        //    if (success1 && success2)
+        //        return Ok(new { message = "Employee inserted successfully." });
+
+        //    return StatusCode(500, "Failed to insert employee.");
+        //}
+
         [HttpPost("add-employee")]
-        public async Task<IActionResult> AddEmployee([FromBody] EmployeeDto dto)
+        public async Task<IActionResult> AddEmployee([FromBody] EmployeeDto employeeDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            bool success = await _employeeService.InsertEmpBasicPLUTO(dto);
-            if (success)
-                return Ok(new { message = "Employee added successfully." });
+            var success1 = await _employeeService.InsertEmpBasicPLUTO(employeeDto);
+            var success2 = await _employeeService.InsertEmployeeToEmployeesTable(employeeDto);
 
-            return StatusCode(500, "Failed to add employee.");
+            if (success1 && success2)
+            {
+                
+                string emailTemplatePath = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplates", "WelcomeEmail.html");
+
+                if (System.IO.File.Exists(emailTemplatePath))
+                {
+                    string emailBody = await System.IO.File.ReadAllTextAsync(emailTemplatePath);
+
+                  
+                    emailBody = emailBody.Replace("{FirstName}", employeeDto.FirstName)
+                                         .Replace("{LastName}", employeeDto.LastName)
+                                         .Replace("{Email}", employeeDto.Email)
+                                         .Replace("{Password}", employeeDto.Password);  
+
+                    
+                    string subject = "Welcome to SS White Technologies Dashboard";
+
+                   
+                    await _emailService.SendEmailAsync(employeeDto.Email, subject, emailBody);
+                }
+                else
+                {
+                    return StatusCode(500, "Email template not found.");
+                }
+
+                return Ok(new { message = "Employee inserted and email sent successfully." });
+            }
+
+            return StatusCode(500, "Failed to insert employee.");
         }
+
 
 
     }

@@ -69,3 +69,4 @@ C:\SSW Programs\Chintan Development\Dashboard Working mode\sswDashboard-react\ss
 C:\SSW Programs\Chintan Development\Dashboard Working mode\sswDashboard-react\sswDashboardAPI\obj\Debug\net7.0\sswDashboardAPI.pdb
 C:\SSW Programs\Chintan Development\Dashboard Working mode\sswDashboard-react\sswDashboardAPI\obj\Debug\net7.0\sswDashboardAPI.genruntimeconfig.cache
 C:\SSW Programs\Chintan Development\Dashboard Working mode\sswDashboard-react\sswDashboardAPI\obj\Debug\net7.0\ref\sswDashboardAPI.dll
+C:\SSW Programs\Chintan Development\Dashboard Working mode\sswDashboard-react\sswDashboardAPI\bin\Debug\net7.0\BCrypt.Net-Next.dll

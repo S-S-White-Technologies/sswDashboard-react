@@ -10,33 +10,32 @@ export const initialState = {
 };
 
 const registerSlice = createSlice({
-  name: "profile",
+  name: "registration",   // ✅ Clean name
   initialState,
   reducers: {
     registerUserSuccessful(state, action) {
       state.user = action.payload;
       state.loading = false;
       state.success = true;
-      state.registrationError = null;
+      state.error = null; // ✅ No error
     },
     registerUserFailed(state, action) {
       state.user = null;
       state.loading = false;
-      state.registrationError = action.payload;
-      state.error = true;
+      state.success = false;
+      state.error = action.payload; // ✅ Store error here
     },
     resetRegisterFlagChange(state) {
       state.success = false;
-      state.error = false;
+      state.error = null; // ✅ Clear both
     },
-    apiErrorChange(state, action){
-      state.error = action.payload;
-      state.loading = false;
-      state.isUserLogout = false;
+    apiErrorChange(state) {
+      state.error = null; // ✅ Just clear error cleanly
     }
   }
 });
 
+// Exports
 export const {
   registerUserSuccessful,
   registerUserFailed,

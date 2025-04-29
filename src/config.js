@@ -8,7 +8,7 @@ module.exports = {
     APP_ID: "",
   },
   api: {
-    API_URL: "https://api-node.themesbrand.website",
+    API_URL: "https://localhost:7168/api/",
 
     // http://localhost:4398/API/
   }

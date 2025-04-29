@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Flatpickr from "react-flatpickr";
-import { Row, Col, CardBody, Card, Alert, Container, Input, Label, Form, FormFeedback } from "reactstrap";
+import { Row, Col, CardBody, Card, Alert, Button, Modal, ModalBody, ModalHeader, Container, Input, Label, Form, FormFeedback } from "reactstrap";
 import axios from "axios";
-
+import api from "../../config/api";
 // Formik Validation
 import * as Yup from "yup";
 import { useFormik } from "formik";
@@ -25,7 +25,9 @@ import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 const Register = () => {
     const history = useNavigate();
     const dispatch = useDispatch();
-
+    const [formData, setFormData] = useState({
+        roleId: ""
+    });
     const [previewImage, setPreviewImage] = React.useState(logoLight);
 
     const handleFileChange = (event) => {
@@ -42,79 +44,267 @@ const Register = () => {
     //For the Supervisor and Department
     const [departments, setDepartments] = useState([]);
     const [supervisors, setSupervisors] = useState([]);
-
-    useEffect(() => {
-        axios.get("https://localhost:7168/api/registration/departments")
-            .then((res) => setDepartments(res))
-            .catch((err) => console.error("Departments fetch error", err));
-        console.log("departments", departments);
-
-        axios
-            .get("https://localhost:7168/api/registration/supervisors")
-            .then((res) => setSupervisors(res))
-            .catch((err) => console.error("Supervisors fetch error", err));
-
-    }, []);
-    //End Supervisor and Department
-    //next-employee ID
     const [nextEmpId, setNextEmpId] = useState("");
+    const [roles, setRoles] = useState([]);
+    const [errorModalOpen, setErrorModalOpen] = useState(false);
+    const [errorModalMessage, setErrorModalMessage] = useState("");
+    const [passwordShow, setPasswordShow] = useState(false);
+    const [modal_backdrop, setmodal_backdrop] = useState(false);
+    const tog_backdrop = () => setmodal_backdrop(!modal_backdrop);
 
     useEffect(() => {
-        axios.get("https://localhost:7168/api/registration/next-empid")
-            .then((res) => {
-                console.log("Next EmpID response 👉", res.data); // Should log 3346
-                setNextEmpId(res); // res.data is 3346
-            })
-            .catch((err) => {
-                console.error("Error fetching next EmpID:", err);
-            });
+        const fetchDepartments = async () => {
+            try {
+                const res = await axios.get("https://localhost:7168/api/registration/departments");
+                setDepartments(res);
+            } catch (err) {
+                console.error("⚠️ Departments fetch error:", err.message || err);
+                toast.error("Unable to load Departments. Please try again later!");
+            }
+        };
+
+        const fetchSupervisors = async () => {
+            try {
+                const res = await axios.get("https://localhost:7168/api/registration/supervisors");
+                setSupervisors(res);
+            } catch (err) {
+                console.error("⚠️ Supervisors fetch error:", err.message || err);
+                toast.error("Unable to load Supervisors. Please try again later!");
+            }
+        };
+
+        const fetchNextEmpId = async () => {
+            try {
+                const res = await axios.get("https://localhost:7168/api/registration/next-empid");
+                setNextEmpId(res);
+            } catch (err) {
+                console.error("⚠️ Next EmpID fetch error:", err.message || err);
+                toast.error("Unable to get Next Employee ID!");
+                setErrorModalOpen(true);
+            }
+        };
+
+        const fetchRoles = async () => {
+            try {
+                const res = await axios.get("https://localhost:7168/api/registration/roles");
+                setRoles(res);
+            } catch (err) {
+                console.error("⚠️ Roles fetch error:", err.message || err);
+                toast.error("Unable to load Roles. Please try again later!");
+            }
+        };
+
+        // Call all methods here
+        fetchDepartments();
+        fetchSupervisors();
+        fetchNextEmpId();
+        fetchRoles();
+
     }, []);
 
-    //End next emp-Id
-    const [passwordShow, setPasswordShow] = useState(false);
-    const validation = useFormik({
-        // enableReinitialize : use this flag when initial values needs to be changed
-        enableReinitialize: true,
 
+    // useEffect(() => {
+    //     axios.get("https://localhost:7168/api/registration/departments")
+    //         .then((res) => setDepartments(res))
+    //         .catch(err) {
+    //         console.error("⚠️ Departments fetch error:", err.message || err);
+    //         setErrorModalMessage("Unable to load Departments. Please check your server or network!");
+    //         setErrorModalOpen(true);
+
+    //     }
+
+    //     //console.log("departments", departments);
+
+    //     axios
+    //         .get("https://localhost:7168/api/registration/supervisors")
+    //         .then((res) => setSupervisors(res))
+    //         .catch(err) {
+    //         console.error("⚠️ Departments fetch error:", err.message || err);
+    //         setErrorModalMessage("Unable to load Departments. Please check your server or network!");
+    //         setErrorModalOpen(true);
+    // }
+
+
+    // }, []);
+    // //End Supervisor and Department
+    // //next-employee ID
+
+
+    // useEffect(() => {
+    //     axios.get("https://localhost:7168/api/registration/next-empid")
+    //         .then((res) => {
+    //             console.log("Next EmpID response 👉", res); // Should log 3346
+    //             setNextEmpId(res); // res.data is 3346
+    //         })
+    //         .catch(err) {
+    //         console.error("⚠️ Departments fetch error:", err.message || err);
+    //         setErrorModalMessage("Unable to load Departments. Please check your server or network!");
+    //         setErrorModalOpen(true);
+    //     }
+    // }, []);
+
+    // //End next emp-Id
+
+
+    // useEffect(() => {
+    //     axios.get("https://localhost:7168/api/registration/roles").then((res) => {
+    //         setRoles(res);
+    //     });
+    // }, []);
+
+
+
+
+
+    // const validation = useFormik({
+    //     // enableReinitialize : use this flag when initial values needs to be changed
+    //     enableReinitialize: true,
+
+    //     initialValues: {
+    //         email: '',
+    //         first_name: '',
+    //         last_name: '',
+    //         title: '',
+    //         password: ''
+    //     },
+    //     validationSchema: Yup.object({
+    //         email: Yup.string().required("Please Enter Your Email"),
+    //         first_name: Yup.string().required("Please Enter Your First Name"),
+    //         last_name: Yup.string().required("Please Enter Your Last Name"),
+    //         title: Yup.string().required("Please Enter Title"),
+    //         password: Yup.string().required("Please Enter Password"),
+
+    //     }),
+    //     onSubmit: (values) => {
+    //         dispatch(registerUser(values));
+    //     }
+    // });
+
+    const validation = useFormik({
+        enableReinitialize: true,
         initialValues: {
+            empId: '',
             email: '',
             first_name: '',
             last_name: '',
             title: '',
-            password: ''
+            departmentId: '',
+            supervisorId: '',
+            roleId: '',
+            password: '',
+            mi: '',
+            gender: '',
+            address1: '',
+            address2: '',
+            city: '',
+            state: '',
+            postalcode: '',
+            phone: '',
+            emgcontact: '',
+            expensecode: '',
+            department: '',
+            supervisor: '',
+            shift: '',
+            hireDate: '',
+            type: '',
+            epolimit: '',
+            FtoOffset: '',
+
         },
         validationSchema: Yup.object({
-            email: Yup.string().required("Please Enter Your Email"),
+            email: Yup.string().email().required("Please Enter Your Email"),
             first_name: Yup.string().required("Please Enter Your First Name"),
             last_name: Yup.string().required("Please Enter Your Last Name"),
             title: Yup.string().required("Please Enter Title"),
-            password: Yup.string().required("Please Enter Password"),
-
+            roleId: Yup.string()
+                .notOneOf(["", "Select Role"], "Please Select Role")
+                .required("Please Select Role"),
+            password: Yup.string().min(6).required("Please Enter Password"),
+            gender: Yup.string()
+                .notOneOf(["", "Select Gender"], "Please Select Gender")
+                .required("Please Select Gender"),
+            address1: Yup.string().required("Please Enter Street Line 1"),
+            address2: Yup.string().required("Please Enter Street Line 2"),
+            city: Yup.string().required("Please Enter City"),
+            state: Yup.string().required("Please Enter State"),
+            postalcode: Yup.string().required("Please Enter PIN Code"),
+            phone: Yup.string().required("Please Enter Phone"),
+            emgcontact: Yup.string().required("Please Enter Emergency Phone"),
+            expensecode: Yup.string()
+                .notOneOf(["", "Select Expense Code"], "Please Select Expense Code")
+                .required("Please Select Expense Code"),
+            department: Yup.string()
+                .notOneOf(["", "Select Department"], "Please Select Department")
+                .required("Please Select Department"),
+            supervisor: Yup.string()
+                .notOneOf(["", "Select Supervisor"], "Please Select Supervisor")
+                .required("Please Select Supervisor"),
+            shift: Yup.string()
+                .notOneOf(["", "Select Shift"], "Please Select Shift")
+                .required("Please Select Shift"),
+            hireDate: Yup.string().required("Hire Date is required"),
+            type: Yup.string()
+                .notOneOf(["", "Select Type"], "Please Select Type")
+                .required("Please Select Type"),
         }),
-        onSubmit: (values) => {
-            dispatch(registerUser(values));
+        onSubmit: async (values, { resetForm }) => {
+
+            const expenseCodeValue = validation.values.expensecode === "Salary" ? "IDL" : "DL";
+
+            const payload = {
+                empID: nextEmpId,
+                firstName: validation.values.first_name,
+                mi: validation.values.mi,
+                lastName: validation.values.last_name,
+                street1: validation.values.address1,
+                street2: validation.values.address2,
+                city: validation.values.city,
+                state: validation.values.state,
+                zip: validation.values.postalcode,
+                country: "USA",
+                phone: validation.values.phone,
+                emgContact: validation.values.emgcontact,
+                expenseCode: expenseCodeValue,
+                dept: validation.values.department,
+                supervisor: validation.values.supervisor,
+                shift: parseInt(validation.values.shift, 10),
+                hireDate: validation.values.hireDate,
+                type: validation.values.type,
+                roleId: parseInt(validation.values.roleId, 10),
+                epoLimit: 0,
+                grade: 0,
+                rate: 0,
+                empStatus: "A",
+                extension: "",
+                email: validation.values.email,
+                windowsID: validation.values.windowsID || "",
+                title: validation.values.title,
+                companyCell: "",
+                gender: validation.values.gender,
+                ftoOffset: 0,
+                password: validation.values.password,
+
+            };
+
+
+            console.log("Submitting payload: ", JSON.stringify(payload, null, 2));
+
+            try {
+                const response = await api.post("registration/add-employee", payload);
+
+                if (response.status === 200 || response.status === 201) {
+                    setmodal_backdrop(true);
+                    resetForm();
+                } else {
+                    toast.error("Registration Failed!");
+                }
+            } catch (error) {
+                toast.error("Registration Error! Server not reachable.");
+            }
         }
+
     });
 
-    const { error, success } = useSelector(state => ({
-        success: state.Account.success,
-        error: state.Account.error
-    }));
-
-    useEffect(() => {
-        dispatch(apiError(""));
-    }, [dispatch]);
-
-    useEffect(() => {
-        if (success) {
-            setTimeout(() => history("/login"), 3000);
-        }
-
-        setTimeout(() => {
-            dispatch(resetRegisterFlag());
-        }, 3000);
-
-    }, [dispatch, success, error, history]);
 
     document.title = "SSW Dashboard Sign-up";
 
@@ -151,34 +341,15 @@ const Register = () => {
                                 </div>
 
                                 <Form
-
-
                                     onSubmit={(e) => {
                                         e.preventDefault();
                                         validation.handleSubmit();
                                         return false;
                                     }}
-                                    className="needs-validation" action="#">
+                                    className="needs-validation"
+                                    action="#"
+                                >
 
-                                    {success && success ? (
-                                        <>
-                                            {toast("You're Redirect To Login Page...", { position: "top-right", hideProgressBar: true, className: 'bg-success text-white', progress: undefined, toastId: "" })}
-                                            <ToastContainer autoClose={2000} limit={1} />
-                                            <Alert color="success">
-                                                Register User Successfully and Your Redirect To Login Page...
-                                            </Alert>
-                                        </>
-                                    ) : null}
-
-                                    {error && error ? (
-                                        <>
-                                            {toast("Registration Error...", { position: "top-right", hideProgressBar: true, className: 'bg-danger text-white', progress: undefined, toastId: "" })}
-                                            <ToastContainer autoClose={2000} limit={1} />
-                                            <Alert color="danger">
-                                                Something Went wrong!
-                                            </Alert>
-                                        </>
-                                    ) : null}
                                     <CardBody className="p-4">
 
 
@@ -189,8 +360,31 @@ const Register = () => {
                                                     <Input type="text" name="empid" value={nextEmpId} readOnly />
                                                 </div>
                                             </Col>
+                                            <Col md={2}>
+                                                <div className="mb-3">
+                                                    <Label for="roleId">Select Role</Label>
+                                                    <Input
+                                                        type="select"
+                                                        name="roleId"
+                                                        id="roleId"
+                                                        value={validation.values.roleId}
+                                                        onChange={validation.handleChange}
+                                                        invalid={validation.touched.roleId && validation.errors.roleId ? true : false}
 
-                                            <Col md={4}>
+                                                    >
+                                                        <option value="">Select Role</option>
+                                                        {roles?.map((role) => (
+                                                            <option key={role.roleId} value={role.roleId}>
+                                                                {role.roleName}
+                                                            </option>
+                                                        ))}
+                                                    </Input>
+                                                    {validation.touched.roleId && validation.errors.roleId ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.roleId}</div></FormFeedback>
+                                                    ) : null}
+                                                </div>
+                                            </Col>
+                                            <Col md={3}>
                                                 <div className="mb-3">
                                                     <Label htmlFor="first_name" className="form-label">First Name <span className="text-danger">*</span></Label>
                                                     <Input type="text" id="firstname" name="first_name" placeholder="Enter First Name"
@@ -209,10 +403,17 @@ const Register = () => {
                                             <Col md={2}>
                                                 <div className="mb-3">
                                                     <Label>Middle Name</Label>
-                                                    <Input type="text" name="middle_name" placeholder="Enter Initial" />
+                                                    <Input type="text" id="mi" name="middle_name" placeholder="Enter Initial"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.middle_name || ""}
+                                                        invalid={
+                                                            validation.touched.middle_name && validation.errors.middle_name ? true : false
+                                                        }
+                                                    />
                                                 </div>
                                             </Col>
-                                            <Col md={4}>
+                                            <Col md={3}>
                                                 <div className="mb-3">
                                                     <Label htmlFor="last_name" className="form-label">Last Name <span className="text-danger">*</span></Label>
                                                     <Input type="text" id="lastname" name="last_name" placeholder="Enter Last Name"
@@ -235,24 +436,53 @@ const Register = () => {
                                             <Col md={2}>
                                                 <div className="mb-3">
                                                     <Label>Gender</Label>
-                                                    <Input type="select" name="gender">
+                                                    <Input type="select" name="gender"
+
+                                                        value={validation.values.gender}
+                                                        onChange={validation.handleChange}
+                                                        invalid={validation.touched.gender && validation.errors.gender ? true : false}
+                                                    >
+                                                        <option>Select Gender</option>
                                                         <option>Male</option>
                                                         <option>Female</option>
                                                         <option>Trans</option>
                                                     </Input>
+                                                    {validation.touched.gender && validation.errors.gender ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.gender}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
                                             <Col md={5}>
                                                 <div className="mb-3">
                                                     <Label>Address Line 1</Label>
-                                                    <Input type="text" name="address1" placeholder="Street Line 1" />
+                                                    <Input type="text" name="address1" placeholder="Street Line 1"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.address1 || ""}
+                                                        invalid={
+                                                            validation.touched.address1 && validation.errors.address1 ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.address1 && validation.errors.address1 ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.address1}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
 
                                             <Col md={5}>
                                                 <div className="mb-3">
                                                     <Label>Address Line 2</Label>
-                                                    <Input type="text" name="address2" placeholder="Street Line 2" />
+                                                    <Input type="text" name="address2" placeholder="Street Line 2"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.address2 || ""}
+                                                        invalid={
+                                                            validation.touched.address2 && validation.errors.address2 ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.address2 && validation.errors.address2 ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.address2}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
                                         </Row>
@@ -261,32 +491,82 @@ const Register = () => {
                                             <Col md={2}>
                                                 <div className="mb-3">
                                                     <Label>City</Label>
-                                                    <Input type="text" name="city" placeholder="Enter City" />
+                                                    <Input type="text" name="city" placeholder="Enter City"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.city || ""}
+                                                        invalid={
+                                                            validation.touched.city && validation.errors.city ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.city && validation.errors.city ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.city}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
                                             <Col md={2}>
                                                 <div className="mb-3">
                                                     <Label>State</Label>
-                                                    <Input type="text" name="state" placeholder="Enter State" />
+                                                    <Input type="text" name="state" placeholder="Enter State"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.state || ""}
+                                                        invalid={
+                                                            validation.touched.state && validation.errors.state ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.state && validation.errors.state ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.state}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
 
                                             <Col md={2}>
                                                 <div className="mb-3">
                                                     <Label>Postal Code</Label>
-                                                    <Input type="text" name="postalcode" placeholder="Enter Six digit Postal code" />
+                                                    <Input type="text" name="postalcode" placeholder="Enter Six digit Postal code"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.postalcode || ""}
+                                                        invalid={
+                                                            validation.touched.postalcode && validation.errors.postalcode ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.postalcode && validation.errors.postalcode ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.postalcode}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
                                             <Col md={3}>
                                                 <div className="mb-3">
                                                     <Label>Phone</Label>
-                                                    <Input type="text" name="phone" placeholder="Enter Phone" />
+                                                    <Input type="text" name="phone" placeholder="Enter Phone"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.phone || ""}
+                                                        invalid={
+                                                            validation.touched.phone && validation.errors.phone ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.phone && validation.errors.phone ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.phone}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
                                             <Col md={3}>
                                                 <div className="mb-3">
                                                     <Label>Emergency Contact</Label>
-                                                    <Input type="text" name="emergency_contact" placeholder="Enter Alternate Phone" />
+                                                    <Input type="text" name="emgcontact" placeholder="Enter Alternate Phone"
+                                                        onChange={validation.handleChange}
+                                                        onBlur={validation.handleBlur}
+                                                        value={validation.values.emgcontact || ""}
+                                                        invalid={
+                                                            validation.touched.emgcontact && validation.errors.emgcontact ? true : false
+                                                        }
+                                                    />
+                                                    {validation.touched.emgcontact && validation.errors.emgcontact ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.emgcontact}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
                                         </Row>
@@ -295,28 +575,51 @@ const Register = () => {
                                             <Col md={2}>
                                                 <div className="mb-3">
                                                     <Label>Expense Code</Label>
-                                                    <Input type="select" name="expensecode">
+                                                    <Input type="select" name="expensecode"
+                                                        value={validation.values.expensecode}
+                                                        onBlur={validation.handleBlur}
+                                                        onChange={validation.handleChange}
+                                                        invalid={validation.touched.expensecode && validation.errors.expensecode ? true : false}
+                                                    >
+                                                        <option>Select Expense Code</option>
                                                         <option>Salary</option>
                                                         <option>Hourly</option>
                                                     </Input>
+                                                    {validation.touched.expensecode && validation.errors.expensecode ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.expensecode}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
                                             <Col md={4}>
                                                 <div className="mb-3">
                                                     <Label>Department</Label>
-                                                    <Input type="select" name="department">
+                                                    <Input type="select" name="department"
+                                                        value={validation.values.department}
+                                                        onBlur={validation.handleBlur}
+                                                        onChange={validation.handleChange}
+                                                        invalid={validation.touched.department && validation.errors.department ? true : false}
+                                                    >
                                                         <option value="">Select Department</option>
-                                                        {departments?.map((dept, index) => (
-                                                            <option key={index} value={dept}>{dept}</option>
+                                                        {departments?.map((dept) => (
+                                                            <option key={dept.id} value={dept.id}>
+                                                                {dept.description}
+                                                            </option>
                                                         ))}
                                                     </Input>
+                                                    {validation.touched.department && validation.errors.department ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.department}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
 
                                             <Col md={4}>
                                                 <div className="mb-3">
                                                     <Label>Supervisor</Label>
-                                                    <Input type="select" name="supervisor">
+                                                    <Input type="select" name="supervisor"
+                                                        value={validation.values.supervisor}
+                                                        onBlur={validation.handleBlur}
+                                                        onChange={validation.handleChange}
+                                                        invalid={validation.touched.supervisor && validation.errors.supervisor ? true : false}>
                                                         <option value="">Select Supervisor</option>
                                                         {supervisors?.map((sup) => (
                                                             <option key={sup.empId} value={sup.empId}>
@@ -324,17 +627,28 @@ const Register = () => {
                                                             </option>
                                                         ))}
                                                     </Input>
+                                                    {validation.touched.supervisor && validation.errors.supervisor ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.supervisor}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
 
                                             <Col md={2}>
                                                 <div className="mb-3">
                                                     <Label>Shift</Label>
-                                                    <Input type="select" name="shift">
+                                                    <Input type="select" name="shift"
+                                                        value={validation.values.shift}
+                                                        onChange={validation.handleChange}
+                                                        invalid={validation.touched.shift && validation.errors.shift ? true : false}
+                                                    >
+                                                        <option>Select Shift</option>
                                                         <option>1</option>
                                                         <option>2</option>
                                                         <option>3</option>
                                                     </Input>
+                                                    {validation.touched.shift && validation.errors.shift ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.shift}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
 
@@ -405,13 +719,24 @@ const Register = () => {
                                                 <div className="mb-3">
                                                     <Label className="form-label">Hire Date</Label>
                                                     <Flatpickr
-                                                        className="form-control"
+                                                        className={`form-control ${validation.touched.hireDate && validation.errors.hireDate ? "is-invalid" : ""}`}
+                                                        name="hireDate"
+                                                        value={validation.values.hireDate}
+                                                        onChange={(date) => {
+                                                            validation.setFieldValue("hireDate", date[0]?.toISOString() || "");
+                                                        }}
                                                         options={{
                                                             enableTime: true,
                                                             dateFormat: "Y-m-d H:i",
                                                         }}
                                                     />
+                                                    {validation.touched.hireDate && validation.errors.hireDate && (
+                                                        <div className="invalid-feedback d-block">
+                                                            {validation.errors.hireDate}
+                                                        </div>
+                                                    )}
                                                 </div>
+
                                             </Col>
 
 
@@ -421,13 +746,21 @@ const Register = () => {
                                         <Row>
                                             <Col md={2}>
                                                 <div className="mb-3">
-                                                    <Label>Type</Label>
-                                                    <Input type="select" name="type">
+                                                    <Label>Employement Type</Label>
+                                                    <Input type="select" name="type"
+                                                        value={validation.values.type}
+                                                        onChange={validation.handleChange}
+                                                        invalid={validation.touched.type && validation.errors.type ? true : false}
+                                                    >
+                                                        <option>Select Type</option>
                                                         <option>Temp Worker</option>
                                                         <option>Factory Worker</option>
                                                         <option>Staff</option>
                                                         <option>Management</option>
                                                     </Input>
+                                                    {validation.touched.type && validation.errors.type ? (
+                                                        <FormFeedback type="invalid"><div>{validation.errors.type}</div></FormFeedback>
+                                                    ) : null}
                                                 </div>
                                             </Col>
 
@@ -481,6 +814,57 @@ const Register = () => {
 
                                     </CardBody>
                                 </Form>
+
+
+                                <Modal isOpen={errorModalOpen} centered size="lg" backdrop="static">
+                                    <div className="modal-header bg-danger text-white">
+                                        <h5 className="modal-title">⚠️ Server Error</h5>
+                                    </div>
+                                    <div className="modal-body text-center">
+                                        <h2 className="text-danger mb-4">Something Went Wrong!</h2>
+                                        <p className="fs-5">We are unable to connect to the server right now. <br />Please try again later.</p>
+                                    </div>
+                                    <div className="modal-footer justify-content-center">
+                                        <Button color="danger" size="lg" onClick={() => history("/login")}>
+                                            Go Back to Login
+                                        </Button>
+                                    </div>
+                                </Modal>
+
+                                <Modal
+                                    isOpen={modal_backdrop}
+                                    toggle={tog_backdrop}
+                                    backdrop="static"
+                                    id="staticBackdrop"
+                                    centered
+                                >
+                                    <ModalHeader>
+                                        <h5 className="modal-title" id="staticBackdropLabel">Success</h5>
+                                    </ModalHeader>
+                                    <ModalBody className="text-center p-5">
+                                        <lord-icon
+                                            src="https://cdn.lordicon.com/lupuorrc.json"
+                                            trigger="loop"
+                                            colors="primary:#121331,secondary:#08a88a"
+                                            style={{ width: "120px", height: "120px" }}>
+                                        </lord-icon>
+
+                                        <div className="mt-4">
+                                            <h4 className="mb-3">Employee Registered!</h4>
+                                            <p className="text-muted mb-4">You have successfully added a new employee. 🎉</p>
+                                            <div className="hstack gap-2 justify-content-center">
+                                                <Button color="success" onClick={() => {
+                                                    setmodal_backdrop(false);
+                                                    history("/login"); // Redirect if needed
+                                                }}>
+                                                    Go to Login
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </ModalBody>
+                                </Modal>
+
+
                             </Card>
 
                         </Row>

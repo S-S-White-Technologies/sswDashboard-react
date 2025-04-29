@@ -20,8 +20,8 @@ namespace sswDashboardAPI.Services
                     ? $"{emp.FirstName} {emp.LastName}"
                     : $"{emp.FirstName} {emp.MI} {emp.LastName}";
 
-                string query = @"INSERT INTO empbasic (cnvempid, dcduserid, name, company, firstname, middleinitial, lastname, address, address2, city, state, zip, country, phone, emgphone, emgContact, empstatus, expensecode, jcdept, supervisorid, empid, rate)
-                             VALUES (@blank, @blank, @name, @company, @firstname, @middleinitial, @lastname, @address, @address2, @city, @state, @zip, @country, @phone, @emgphone, @emgcontact, @empstatus, @expensecode, @jcdept, @supervisorid, @empid, @rate);";
+                string query = @"INSERT INTO empbasic (cnvempid, dcduserid, name, company, firstname, middleinitial, lastname, address, address2, city, state, zip, country, phone,  emgContact, empstatus, expensecode, jcdept, supervisorid, empid,  roleid)
+                             VALUES (@blank, @blank, @name, @company, @firstname, @middleinitial, @lastname, @address, @address2, @city, @state, @zip, @country, @phone, @emgcontact, @empstatus, @expensecode, @jcdept, @supervisorid, @empid,  @roleid);";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
@@ -38,14 +38,15 @@ namespace sswDashboardAPI.Services
                     cmd.Parameters.AddWithValue("@zip", emp.Zip);
                     cmd.Parameters.AddWithValue("@country", emp.Country);
                     cmd.Parameters.AddWithValue("@phone", emp.Phone);
-                    cmd.Parameters.AddWithValue("@emgphone", emp.EmgPhone);
+                
                     cmd.Parameters.AddWithValue("@emgcontact", emp.EmgContact);
                     cmd.Parameters.AddWithValue("@empstatus", emp.EmpStatus);
                     cmd.Parameters.AddWithValue("@expensecode", emp.ExpenseCode);
                     cmd.Parameters.AddWithValue("@jcdept", emp.Dept);
                     cmd.Parameters.AddWithValue("@supervisorid", emp.Supervisor);
                     cmd.Parameters.AddWithValue("@empid", emp.EmpID);
-                    cmd.Parameters.AddWithValue("@rate", emp.Rate);
+                 
+                    cmd.Parameters.AddWithValue("@roleid", emp.RoleId);
 
                     await conn.OpenAsync();
                     int rowsAffected = await cmd.ExecuteNonQueryAsync();
@@ -53,6 +54,29 @@ namespace sswDashboardAPI.Services
                 }
             }
         }
+
+        public async Task<bool> InsertEmployeeToEmployeesTable(EmployeeDto emp)
+        {
+            using (var conn = new SqlConnection(_plutoConnectionString))
+            {
+                string query = @"INSERT INTO Employees (EmpID,EmailAddress, ProjectsPassword)
+                         VALUES (@EmpID, @Email, @PasswordHash)";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    string passwordHash = BCrypt.Net.BCrypt.HashPassword(emp.Password);
+
+                    cmd.Parameters.AddWithValue("@EmpID", emp.EmpID);
+                    cmd.Parameters.AddWithValue("@Email", emp.Email ?? "");
+                    cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
+
+                    await conn.OpenAsync();
+                    int rows = await cmd.ExecuteNonQueryAsync();
+                    return rows > 0;
+                }
+            }
+        }
+
     }
 
 }

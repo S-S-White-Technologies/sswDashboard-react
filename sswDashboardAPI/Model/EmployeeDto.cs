@@ -5,7 +5,7 @@ namespace sswDashboardAPI.Model
     public class EmployeeDto
     {
         [Key]
-        public string EmpID { get; set; }
+        public int EmpID { get; set; }
         public string FirstName { get; set; }
         public string MI { get; set; }
         public string LastName { get; set; }
@@ -16,13 +16,13 @@ namespace sswDashboardAPI.Model
         public string Zip { get; set; }
         public string Country { get; set; }
         public string Phone { get; set; }
-        public string EmgPhone { get; set; }
+       
         public string EmgContact { get; set; }
         public int EpoLimit { get; set; }
         public DateTime HireDate { get; set; }
         public int Grade { get; set; }
         public string Type { get; set; }
-        public bool Temporary { get; set; }
+        //public bool Temporary { get; set; }
         public decimal Rate { get; set; }
         public string EmpStatus { get; set; }
         public string ExpenseCode { get; set; }
@@ -34,10 +34,16 @@ namespace sswDashboardAPI.Model
         public string WindowsID { get; set; }
         public string Title { get; set; }
         public string CompanyCell { get; set; }
-       
+
+        public string Gender { get; set; }
+
         public int FtoOffset { get; set; }
+        public string Password { get; set; }
         
-        public IFormFile? UploadImage { get; set; }
+
+        //public IFormFile? UploadImage { get; set; }
+
+        public int RoleId { get; set; } 
 
     }
 

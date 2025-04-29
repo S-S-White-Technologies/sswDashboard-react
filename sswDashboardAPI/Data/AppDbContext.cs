@@ -10,6 +10,8 @@ namespace sswDashboardAPI.Data
 
         public DbSet<EmpBasic> EmpBasic { get; set; }
         public DbSet<EmployeeDto> Employees { get; set; }
-        
+
+        public DbSet<Role> Roles { get; set; }
+
     }
 }
