@@ -66,7 +66,7 @@ namespace sswDashboardAPI.Services
                 {
                     string passwordHash = BCrypt.Net.BCrypt.HashPassword(emp.Password);
 
-                    cmd.Parameters.AddWithValue("@EmpID", emp.EmpID);
+                    cmd.Parameters.AddWithValue("@EmpID", emp.EmpID); 
                     cmd.Parameters.AddWithValue("@Email", emp.Email ?? "");
                     cmd.Parameters.AddWithValue("@Title", emp.Title ?? "");
                     cmd.Parameters.AddWithValue("@HireDate", emp.HireDate);

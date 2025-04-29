@@ -31,7 +31,7 @@ namespace sswDashboardAPI.Model
         public string Dept { get; set; }
         public string Extension { get; set; }
         public string Email { get; set; }
-        public string WindowsID { get; set; }
+        public string WindowsID { get; set; } 
         public string Title { get; set; }
         public string CompanyCell { get; set; }
 

@@ -7,7 +7,7 @@ namespace sswDashboardAPI.Model
         [Key]
         public string EmpId { get; set; }
         public string Name { get; set; }
-        public string SupervisorId { get; set; }
+        public string SupervisorId { get; set; } 
         public string EmpStatus { get; set; }
         public string firstname { get; set; }
         public string lastname { get; set; }

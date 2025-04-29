@@ -98,7 +98,7 @@ namespace sswDashboardAPI.Controllers
         //    return StatusCode(500, "Failed to insert employee.");
         //}
 
-        [HttpPost("add-employee")]
+        [HttpPost("add-employee")] 
         public async Task<IActionResult> AddEmployee([FromBody] EmployeeDto employeeDto)
         {
             if (!ModelState.IsValid)

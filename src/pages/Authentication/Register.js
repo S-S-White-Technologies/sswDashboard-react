@@ -296,7 +296,7 @@ const Register = () => {
                     setmodal_backdrop(true);
                     resetForm();
                 } else {
-                    toast.error("Registration Failed!");
+                    toast.error("Registration Error!");
                 }
             } catch (error) {
                 toast.error("Registration Error! Server not reachable.");

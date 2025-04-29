@@ -19,14 +19,14 @@ namespace sswDashboardAPI.Services
             var smtpServer = _configuration["EmailSettings:SmtpServer"];
             var port = int.Parse(_configuration["EmailSettings:Port"]);
             var senderEmail = _configuration["EmailSettings:SenderEmail"];
-            var username = _configuration["EmailSettings:Username"];
+            var username = _configuration["EmailSettings:Username"]; 
             var password = _configuration["EmailSettings:Password"];
 
             using (var client = new SmtpClient(smtpServer, port))
             {
                 client.Credentials = new NetworkCredential(username, password);
                 client.EnableSsl = true;
-                client.UseDefaultCredentials = false; 
+                client.UseDefaultCredentials = false;  
 
                 var mailMessage = new MailMessage
                 {
