@@ -10,17 +10,45 @@ const ProfileDropdown = () => {
     const { user } = useSelector(state => ({
         user: state.Profile.user,
     }));
+    const [userDetails, setUserDetails] = useState({
+        name: "Guest User",
+        title: "User",
+
+    });
+
+    useEffect(() => {
+        const authData = sessionStorage.getItem("authUser");
+        if (authData) {
+            const parsed = JSON.parse(authData);
+
+            const name = parsed?.name || "Guest User";  // ✅ not parsed.data.name
+            const title = parsed?.title || "User";
+
+            setUserDetails({ name, title });
+        }
+    }, []);
 
     const [userName, setUserName] = useState("Admin");
 
     useEffect(() => {
-        if (sessionStorage.getItem("authUser")) {
-            const obj = JSON.parse(sessionStorage.getItem("authUser"));
-            setUserName(process.env.REACT_APP_DEFAULTAUTH === "fake" ? obj.username === undefined ? user.first_name ? user.first_name : obj.data.first_name : "Admin" || "Admin" :
-                process.env.REACT_APP_DEFAULTAUTH === "firebase" ? obj.email && obj.email : "Admin"
-            );
+        const authUser = sessionStorage.getItem("authUser");
+        if (authUser) {
+            const obj = JSON.parse(authUser);
+            let name = "Admin";
+
+            if (process.env.REACT_APP_DEFAULTAUTH === "fake") {
+                name = obj?.username || user?.first_name || obj?.data?.first_name || "Admin";
+            } else if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
+                name = obj?.email || "Admin";
+            } else {
+                // For your actual login API
+                name = obj?.data?.name || obj?.name || user?.name || "Admin";
+            }
+
+            setUserName(name);
         }
-    }, [userName, user]);
+    }, [user]);
+
 
     //Dropdown Toggle
     const [isProfileDropdown, setIsProfileDropdown] = useState(false);
@@ -35,17 +63,17 @@ const ProfileDropdown = () => {
                         <img className="rounded-circle header-profile-user" src={avatar1}
                             alt="Header Avatar" />
                         <span className="text-start ms-xl-2">
-                            <span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text">Dummy User</span>
-                            <span className="d-none d-xl-block ms-1 fs-12 text-muted user-name-sub-text">Founder</span>
+                            <span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text">{userDetails.name}</span>
+                            <span className="d-none d-xl-block ms-1 fs-12 text-muted user-name-sub-text">{userDetails.title}</span>
                         </span>
                     </span>
                 </DropdownToggle>
                 <DropdownMenu className="dropdown-menu-end">
 
-                    <h6 className="dropdown-header">Welcome {userName}!</h6>
+                    <h6 className="dropdown-header">Welcome {userDetails.name}!</h6>
                     <DropdownItem href={process.env.PUBLIC_URL + "/profile"}><i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i>
                         <span className="align-middle">Profile</span></DropdownItem>
-                    <DropdownItem href={process.env.PUBLIC_URL + "/apps-chat"}><i
+                    {/* <DropdownItem href={process.env.PUBLIC_URL + "/apps-chat"}><i
                         className="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span
                             className="align-middle">Messages</span></DropdownItem>
                     <DropdownItem href={process.env.PUBLIC_URL + "#"}><i
@@ -63,7 +91,7 @@ const ProfileDropdown = () => {
                             className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> <span
                                 className="align-middle">Settings</span></DropdownItem>
                     <DropdownItem href={process.env.PUBLIC_URL + "/auth-lockscreen-basic"}><i
-                        className="mdi mdi-lock text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Lock screen</span></DropdownItem>
+                        className="mdi mdi-lock text-muted fs-16 align-middle me-1"></i> <span className="align-middle">Lock screen</span></DropdownItem> */}
                     <DropdownItem href={process.env.PUBLIC_URL + "/logout"}><i
                         className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span
                             className="align-middle" data-key="t-logout">Logout</span></DropdownItem>

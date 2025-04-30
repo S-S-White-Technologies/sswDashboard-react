@@ -39,26 +39,46 @@ const UserProfile = () => {
     success: state.Profile.success,
     error: state.Profile.error
   }));
+  const [userDetails, setUserDetails] = useState({
+    name: "Guest User",
+    title: "User",
+
+  });
 
   useEffect(() => {
-    if (sessionStorage.getItem("authUser")) {
-      const obj = JSON.parse(sessionStorage.getItem("authUser"));
+    const authData = sessionStorage.getItem("authUser");
+    if (authData) {
+      const parsed = JSON.parse(authData);
 
-      if (!isEmpty(user)) {
-        obj.data.first_name = user.first_name;
-        sessionStorage.removeItem("authUser");
-        sessionStorage.setItem("authUser", JSON.stringify(obj));
-      }
+      const name = parsed?.name || "Guest User";  // ✅ not parsed.data.name
+      const email = parsed?.email || "emailnotfound@gmail.com";
+      const uid = parsed?.uid || "1";
 
-      setUserName(obj.data.first_name);
-      setemail(obj.data.email);
-      setidx(obj.data._id || "1");
-
-      setTimeout(() => {
-        dispatch(resetProfileFlag());
-      }, 3000);
+      setUserDetails({ name, email, uid });
+      setUserName(name);
+      setemail(email);
+      setidx(uid);
     }
-  }, [dispatch, user]);
+  }, []);
+  // useEffect(() => {
+  //   if (sessionStorage.getItem("authUser")) {
+  //     const obj = JSON.parse(sessionStorage.getItem("authUser"));
+
+  //     if (!isEmpty(user)) {
+  //       obj.data.name = user.name;
+  //       sessionStorage.removeItem("authUser");
+  //       sessionStorage.setItem("authUser", JSON.stringify(obj));
+  //     }
+
+  //     setUserName(obj.data.name);
+  //     setemail(obj.data.email);
+  //     setidx(obj.data.uid || "1");
+
+  //     setTimeout(() => {
+  //       dispatch(resetProfileFlag());
+  //     }, 3000);
+  //   }
+  // }, [dispatch, user]);
 
 
 

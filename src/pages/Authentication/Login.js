@@ -46,10 +46,11 @@ const Login = (props) => {
         enableReinitialize: true,
 
         initialValues: {
-
+            email: '',
+            password: '',
         },
         validationSchema: Yup.object({
-            empcode: Yup.string().required("Please Enter Your Email ID"),
+            email: Yup.string().required("Please Enter Your Email ID"),
             password: Yup.string().required("Please Enter Your Password"),
         }),
         onSubmit: (values) => {
@@ -113,21 +114,21 @@ const Login = (props) => {
                                                 action="#">
 
                                                 <div className="mb-3">
-                                                    <Label htmlFor="empcode" className="form-label">Email</Label>
+                                                    <Label htmlFor="email" className="form-label">Email</Label>
                                                     <Input
-                                                        name="empcode"
+                                                        name="email"
                                                         className="form-control"
-                                                        placeholder="Enter Employee Code"
+                                                        placeholder="Enter Email Address"
                                                         type="text"
                                                         onChange={validation.handleChange}
                                                         onBlur={validation.handleBlur}
-                                                        value={validation.values.empcode || ""}
+                                                        value={validation.values.email || ""}
                                                         invalid={
-                                                            validation.touched.empcode && validation.errors.empcode ? true : false
+                                                            validation.touched.email && validation.errors.email ? true : false
                                                         }
                                                     />
-                                                    {validation.touched.empcode && validation.errors.empcode ? (
-                                                        <FormFeedback type="invalid">{validation.errors.empcode}</FormFeedback>
+                                                    {validation.touched.email && validation.errors.email ? (
+                                                        <FormFeedback type="invalid">{validation.errors.email}</FormFeedback>
                                                     ) : null}
                                                 </div>
 
@@ -202,9 +203,9 @@ const Login = (props) => {
                                     </CardBody>
                                 </Card>
 
-                                <div className="mt-4 text-center">
+                                {/* <div className="mt-4 text-center">
                                     <p className="mb-0">For the Employee Registration (Only Admin access) <Link to="/loginAdmin" className="fw-semibold text-primary text-decoration-underline"> Signup </Link> </p>
-                                </div>
+                                </div> */}
 
                             </Col>
                         </Row>

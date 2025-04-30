@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace sswDashboardAPI.Model
 {
@@ -12,8 +13,10 @@ namespace sswDashboardAPI.Model
         public string firstname { get; set; }
         public string lastname { get; set; }
         public string expensecode { get; set; }
-        public string Dept { get; set; }
+        public string JcDept { get; set; }
         public int RoleId { get; set; }
+
+        [ForeignKey("RoleId")]
         public Role Role { get; set; }
 
     }

@@ -5,40 +5,61 @@ import {
   postJwtLogin,
   postSocialLogin,
 } from "../../../helpers/fakebackend_helper";
-
+import api from "../../../config/api";
 import { loginSuccess, logoutUserSuccess, apiError, reset_login_flag } from './reducer';
+
+// export const loginUser = (user, history) => async (dispatch) => {
+//   try {
+//     let response;
+
+//     // ✅ MOCK LOGIN always (bypass all backend logic)
+//     response = new Promise((resolve) => {
+//       setTimeout(() => {
+//         resolve({
+//           status: "success",
+//           data: {
+//             uid: 1,
+//             email: user.empcode,
+//             token: "mock-jwt-token",
+//             name: "Demo User"
+//           }
+//         });
+//       }, 500);
+//     });
+
+//     const data = await response;
+
+//     if (data) {
+//       sessionStorage.setItem("authUser", JSON.stringify(data));
+//       dispatch(loginSuccess(data.data));
+//       history("/dashboard");
+//     }
+//   } catch (error) {
+//     dispatch(apiError(error));
+//   }
+// };
 
 export const loginUser = (user, history) => async (dispatch) => {
   try {
-    let response;
+    const response = await api.post("Auth/login", user);
 
-    // ✅ MOCK LOGIN always (bypass all backend logic)
-    response = new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          status: "success",
-          data: {
-            uid: 1,
-            email: user.empcode,
-            token: "mock-jwt-token",
-            name: "Demo User"
-          }
-        });
-      }, 500);
-    });
+    if (response.status === 200) {
+      // store auth user in session
+      sessionStorage.setItem("authUser", JSON.stringify(response.data));
 
-    const data = await response;
+      // dispatch to redux
+      dispatch(loginSuccess(response.data));
 
-    if (data) {
-      sessionStorage.setItem("authUser", JSON.stringify(data));
-      dispatch(loginSuccess(data.data));
+      // redirect to dashboard
       history("/dashboard");
+    } else {
+      dispatch(apiError("Invalid credentials."));
     }
   } catch (error) {
-    dispatch(apiError(error));
+    const msg = error.response?.data || "Login failed!";
+    dispatch(apiError(msg));
   }
 };
-
 
 export const logoutUser = () => async (dispatch) => {
   try {
@@ -65,10 +86,10 @@ export const socialLogin = (type, history) => async (dispatch) => {
       response = fireBaseBackend.socialLoginUser(type);
     }
     //  else {
-      //   response = postSocialLogin(data);
-      // }
-      
-      const socialdata = await response;
+    //   response = postSocialLogin(data);
+    // }
+
+    const socialdata = await response;
     if (socialdata) {
       sessionStorage.setItem("authUser", JSON.stringify(response));
       dispatch(loginSuccess(response));

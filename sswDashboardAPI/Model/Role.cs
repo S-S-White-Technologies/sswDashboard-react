@@ -8,7 +8,7 @@ namespace sswDashboardAPI.Model
         public int RoleId { get; set; } 
         public string RoleName { get; set; }
 
-        public ICollection<EmpBasic> Employees { get; set; }  // Navigation property
+        //public ICollection<EmpBasic> EmpBasic { get; set; }  
     }
 
 }
