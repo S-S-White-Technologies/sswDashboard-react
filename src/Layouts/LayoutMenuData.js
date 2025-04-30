@@ -16,6 +16,7 @@ const Navdata = () => {
     const [isIcons, setIsIcons] = useState(false);
     const [isMaps, setIsMaps] = useState(false);
     const [isMultiLevel, setIsMultiLevel] = useState(false);
+    const [isTimeandAttendance, setIsTimeandAttendance] = useState(false)
 
     // Apps
     const [isEmail, setEmail] = useState(false);
@@ -51,7 +52,6 @@ const Navdata = () => {
     const [isApex, setIsApex] = useState(false);
 
     // Multi Level
-    const [isTime, setIsTime] = useState(false);
     const [isLevel1, setIsLevel1] = useState(false);
     const [isLevel2, setIsLevel2] = useState(false);
 
@@ -109,15 +109,15 @@ const Navdata = () => {
         if (iscurrentState !== "MuliLevel") {
             setIsMultiLevel(false);
         }
+        if (iscurrentState !== "MuliLevel") {
+            setIsTimeandAttendance(false);
+        }
         if (iscurrentState === "Widgets") {
             history("/widgets");
             document.body.classList.add("twocolumn-panel");
         }
         if (iscurrentState !== "Landing") {
             setIsLanding(false);
-        }
-        if (iscurrentState !== "Time and Attendance") {
-            setIsTime(false);
         }
     }, [
         history,
@@ -134,17 +134,17 @@ const Navdata = () => {
         isIcons,
         isMaps,
         isMultiLevel,
-        isTime,
+        isTimeandAttendance,
     ]);
 
     const menuItems = [
         {
-            label: "Main Menu",
+            label: "Menu",
             isHeader: true,
         },
         {
             id: "dashboard",
-            label: "SSW General Tools",
+            label: "General SS White",
             icon: "bx bxs-dashboard",
             link: "/#",
             stateVariables: isDashboard,
@@ -160,61 +160,236 @@ const Navdata = () => {
                     label: "Time and Attendance",
                     link: "/#",
                     parentId: "dashboard",
+                    stateVariables: isDashboard,
                     isChildItem: true,
-                    click: function (e) {
-                        e.preventDefault();
-                        setEmail(!isEmail);
-                    },
-                    stateVariables: isEmail,
-                    childItems: [
-                        {
-                            id: 1,
+                    
+                click: function (e) {
+                    e.preventDefault();
+                    setEmail(!isEmail);
+                },
+                stateVariables: isEmail,
+                childItems: [
+                    
+                
+                    {
+                        id: 1,
                             label: "In for the Day",
                             link: "/#",
                             parentId: "timeandattendance",
+                    },
+                    {
+                        id: 2,
+                            label: "Out for the Day",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                    },
+                    {
+                        id: 3,
+                            label: "Out for Lunch",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                    },
+                    {
+                        id: 4,
+                            label: "Break for Lunch",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                    },
+                    {
+                        id: 5,
+                            label: "Out for Business",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                    },
+                    {
+                        id: 6,
+                            label: "Back From Business",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                    },
+                    {
+                        id: 7,
+                            label: "Out for Personal Break",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                    },
+                    {
+                        id: 8,
+                            label: "Back from Personal Break",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                    },
+                    {
+                        id: 9,
+                            label: "My Missisng Punches",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                    },
+                    {
+                        id: 10,
+                            label: "My Time Punch Records",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                    },
+                    {
+                        id: 11,
+                            label: "Who's in the Building?",
+                            link: "/#",
+                            parentId: "timeandattendance",
+                    },
+                   
+                ]
+                },
+                {
+                    id: "taskmanagement",
+                    label: "Task Management",
+                    link: "/dashboard-crm",
+                    parentId: "dashboard",
+                    isChildItem: true,
+                    click: function (e) {
+                        e.preventDefault();
+                        setIsCRM(!isCRM);
+                    },
+                    stateVariables: isCRM,
+                    childItems:[
+                        {
+                            id: 1,
+                                label: "My Tasks",
+                                link: "/#",
+                                parentId: "taskmanagement",
+                        },
+                        {
+                            id: 2,
+                                label: "Create New Tasks",
+                                link: "/#",
+                                parentId: "taskmanagement",
+                        },
+                        {
+                            id: 3,
+                                label: "End of the Day Review",
+                                link: "/#",
+                                parentId: "taskmanagement",
+                        },
+                        {
+                            id: 4,
+                                label: "Find Task by Task ID",
+                                link: "/#",
+                                parentId: "taskmanagement",
+                        },
+                        {
+                            id: 5,
+                                label: "View My Task Reporting By Date",
+                                link: "/#",
+                                parentId: "taskmanagement",
+                        },
+                        {
+                            id: 6,
+                                label: "View Tasks I have Assigned",
+                                link: "/#",
+                                parentId: "taskmanagement",
+                        },
+
+
+                    ]
+
+                },
+                {
+                    id: "epo",
+                    label: "Expense Purchase Order (EPO)",
+                    link: "/dashboard",
+                    parentId: "dashboard",
+                    isChildItem: true,
+                    click: function (e) {
+                        e.preventDefault();
+                        setIsEcommerce(!isEcommerce);
+                    },
+                    stateVariables: isEcommerce,
+                    childItems:[
+                        {
+                            id: 1,
+                                label: "Create New EPO",
+                                link: "/#",
+                                parentId: "epo",
+                        },
+                        {
+                            id: 2,
+                                label: "Edit EPO",
+                                link: "/#",
+                                parentId: "epo",
+                        },
+                        {
+                            id: 3,
+                                label: "Find EPO By Number",
+                                link: "/#",
+                                parentId: "epo",
+                        },
+                        {
+                            id: 4,
+                                label: "My EPOs",
+                                link: "/#",
+                                parentId: "epo",
+                        },
+                        {
+                            id: 5,
+                                label: "EPOs Not Ready For Payment",
+                                link: "/#",
+                                parentId: "epo",
+                        },
+                    ]
+                },
+                {
+                    id: "project",
+                    label: "Project Approval System",
+                    link: "/dashboard-crypto",
+                    parentId: "dashboard",
+                    isChildItem: true,
+                    click: function (e) {
+                        e.preventDefault();
+                        setIsCrypto(!isCrypto);
+                    },
+                    stateVariables: isCrypto,
+                    childItems:[
+                        {
+                            id: 1,
+                                label: "Create New Project",
+                                link: "/#",
+                                parentId: "project",
+                        },
+                        {
+                            id: 2,
+                                label: "My Project",
+                                link: "/#",
+                                parentId: "project",
+                        },
+                        {
+                            id: 3,
+                                label: "View All Approved Projects",
+                                link: "/#",
+                                parentId: "project",
                         },
 
                     ]
                 },
-
-                // {
-                //     id: "crm",
-                //     label: "CRM",
-                //     link: "/dashboard-crm",
-                //     parentId: "dashboard",
-                // },
-                // {
-                //     id: "ecommerce",
-                //     label: "Ecommerce",
-                //     link: "/dashboard",
-                //     parentId: "dashboard",
-                // },
-                // {
-                //     id: "crypto",
-                //     label: "Crypto",
-                //     link: "/dashboard-crypto",
-                //     parentId: "dashboard",
-                // },
-                // {
-                //     id: "projects",
-                //     label: "Projects",
-                //     link: "/dashboard-projects",
-                //     parentId: "dashboard",
-                // },
-                // {
-                //     id: "nft",
-                //     label: "NFT",
-                //     link: "/dashboard-nft",
-                //     parentId: "dashboard",
-                // },
-                // {
-                //     id: "job",
-                //     label: "Job",
-                //     badgeName: "New",
-                //     badgeColor: "success",
-                //     link: "/dashboard-job",
-                //     parentId: "dashboard",
-                // },
+                {
+                    id: "personalattendance",
+                    label: "Personal Attendance Change",
+                    link: "/dashboard-projects",
+                    parentId: "dashboard",
+                },
+                {
+                    id: "documentmanagement",
+                    label: "Document Management System",
+                    link: "/dashboard-nft",
+                    parentId: "dashboard",
+                },
+                {
+                    id: "job",
+                    label: "Job",
+                    badgeName: "New",
+                    badgeColor: "success",
+                    link: "/dashboard-job",
+                    parentId: "dashboard",
+                },
             ],
         },
         {
@@ -641,7 +816,7 @@ const Navdata = () => {
             ],
         },
         {
-            label: "Departments",
+            label: "pages",
             isHeader: true,
         },
         {
@@ -948,10 +1123,10 @@ const Navdata = () => {
                 },
             ],
         },
-        // {
-        //     label: "Components",
-        //     isHeader: false,
-        // },
+        {
+            label: "Components",
+            isHeader: true,
+        },
         {
             id: "baseUi",
             label: "Base UI",
@@ -1282,11 +1457,11 @@ const Navdata = () => {
                     link: "/tables-datatables",
                     parentId: "tables",
                 },
-                {
-                    id: "reactdatatables",
-                    label: "React Datatables",
-                    link: "/tables-react",
-                    parentId: "tables"
+                { 
+                    id: "reactdatatables", 
+                    label: "React Datatables", 
+                    link: "/tables-react", 
+                    parentId: "tables" 
                 },
             ],
         },
