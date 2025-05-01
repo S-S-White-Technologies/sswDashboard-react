@@ -1,8 +1,10 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, CardBody, Col, Container, Row, Form, Input, Label, FormFeedback } from 'reactstrap';
 import ParticlesAuth from '../ParticlesAuth';
-import logoLight from "../../../assets/images/logo-light.png";
+import logoLight from "../../../assets/images/logofinal.png";
+import { useLocation } from "react-router-dom";
+import api from "../../../config/api";
 
 //formik
 import { useFormik } from 'formik';
@@ -10,10 +12,15 @@ import * as Yup from 'yup';
 
 const BasicPasswCreate = () => {
 
-    document.title = "Create New Password | Velzon - React Admin & Dashboard Template";
+    document.title = "Create New Password | SSW Technologies";
+
 
     const [passwordShow, setPasswordShow] = useState(false);
-    const [confrimPasswordShow, setConfrimPasswordShow] = useState(false);    
+    const [confrimPasswordShow, setConfrimPasswordShow] = useState(false);
+
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const token = queryParams.get("token");
 
     const validation = useFormik({
         enableReinitialize: true,
@@ -39,8 +46,22 @@ const BasicPasswCreate = () => {
                 })
                 .required("Confirm Password Required"),
         }),
-        onSubmit: (values) => {
-            // console.log(values);
+        onSubmit: async (values, { resetForm }) => {
+            try {
+                const response = await api.post("Auth/reset-password", {
+                    token: token,
+                    newPassword: values.password
+                });
+
+                if (response.status === 200) {
+                    alert("✅ Password reset successful! You can now log in.");
+                    resetForm();
+                    window.location.href = "/login"; // Navigate to login page
+                }
+            } catch (error) {
+                console.error("Reset password failed", error);
+                alert("❌ Error resetting password. Please try again.");
+            }
         }
     });
     return (
@@ -51,11 +72,11 @@ const BasicPasswCreate = () => {
                         <Col lg={12}>
                             <div className="text-center mt-sm-5 mb-4 text-white-50">
                                 <div>
-                                    <Link to="/#" className="d-inline-block auth-logo">
-                                        <img src={logoLight} alt="" height="20" />
+                                    <Link to="/" className="d-inline-block auth-logo">
+                                        <img src={logoLight} alt="" height="120" />
                                     </Link>
                                 </div>
-                                <p className="mt-3 fs-15 fw-medium">Premium Admin & Dashboard Template</p>
+                                <p className="mt-3 fs-15 fw-medium" style={{ fontSize: "25px", color: "#070161" }}>SS White Technologies Inc.</p>
                             </div>
                         </Col>
                     </Row>
@@ -98,11 +119,11 @@ const BasicPasswCreate = () => {
                                                 <Label className="form-label" htmlFor="confirm-password-input">Confirm Password</Label>
                                                 <div className="position-relative auth-pass-inputgroup mb-3">
                                                     <Input
-                                                         type={confrimPasswordShow ? "text" : "password"}
+                                                        type={confrimPasswordShow ? "text" : "password"}
                                                         className="form-control pe-5 password-input"
                                                         placeholder="Confirm password"
                                                         id="confirm-password-input"
-                                                        name="confrim_password"                                                       
+                                                        name="confrim_password"
                                                         value={validation.values.confrim_password}
                                                         onBlur={validation.handleBlur}
                                                         onChange={validation.handleChange}
@@ -112,7 +133,7 @@ const BasicPasswCreate = () => {
                                                         <FormFeedback type="invalid">{validation.errors.confrim_password}</FormFeedback>
                                                     ) : null}
                                                     <Button color="link" onClick={() => setConfrimPasswordShow(!confrimPasswordShow)} className="position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button">
-                                                    <i className="ri-eye-fill align-middle"></i></Button>
+                                                        <i className="ri-eye-fill align-middle"></i></Button>
                                                 </div>
                                             </div>
 

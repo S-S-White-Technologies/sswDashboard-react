@@ -2,24 +2,27 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Alert, Card, CardBody, Col, Container, Row, Form, Label, Input, FormFeedback } from 'reactstrap';
 import ParticlesAuth from '../ParticlesAuth';
-import logoLight from "../../../assets/images/logo-light.png";
+import logoLight from "../../../assets/images/logofinal.png";
 
 //formik
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
 const BasicPasswReset = () => {
-    document.title="Reset Password | Velzon - React Admin & Dashboard Template";
+    document.title = "Reset Password | SSW Technologies";
+
+
+
 
     const validation = useFormik({
         enableReinitialize: true,
-        
+
         initialValues: {
             email: "",
         },
         validationSchema: Yup.object({
             email: Yup.string().required("Please Enter Your Email")
-            .matches("Please include an @ in the email address"),
+                .matches("Please include an @ in the email address"),
         }),
         onSubmit: (values) => {
             // console.log(values);
@@ -28,7 +31,7 @@ const BasicPasswReset = () => {
 
     return (
         <ParticlesAuth>
-            <div className="auth-page-content">                
+            <div className="auth-page-content">
                 <Container>
                     <Row>
                         <Col lg={12}>
@@ -38,7 +41,7 @@ const BasicPasswReset = () => {
                                         <img src={logoLight} alt="" height="20" />
                                     </Link>
                                 </div>
-                                <p className="mt-3 fs-16 fw-semibold">Premium Admin & Dashboard Template</p>
+                                <p className="mt-3 fs-16 fw-semibold"> SS White Technologies Inc.</p>
                             </div>
                         </Col>
                     </Row>
@@ -67,20 +70,20 @@ const BasicPasswReset = () => {
                                         <Form onSubmit={validation.handleSubmit}>
                                             <div className="mb-4">
                                                 <Label className="form-label">Email</Label>
-                                                <Input 
-                                                type="email" 
-                                                className="form-control" 
-                                                id="email"
-                                                placeholder="Enter Email" 
-                                                name="email"
-                                                value={validation.values.email}
-                                                onBlur={validation.handleBlur}
-                                                onChange={validation.handleChange}
-                                                invalid={validation.errors.email && validation.touched.email ? true : false}
+                                                <Input
+                                                    type="email"
+                                                    className="form-control"
+                                                    id="email"
+                                                    placeholder="Enter Email"
+                                                    name="email"
+                                                    value={validation.values.email}
+                                                    onBlur={validation.handleBlur}
+                                                    onChange={validation.handleChange}
+                                                    invalid={validation.errors.email && validation.touched.email ? true : false}
                                                 />
                                                 {validation.errors.email && validation.touched.email ? (
                                                     <FormFeedback type="invalid">{validation.errors.email}</FormFeedback>
-                                                ): null}
+                                                ) : null}
                                             </div>
 
                                             <div className="text-center mt-4">

@@ -102,6 +102,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using sswDashboardAPI.Data;
 using sswDashboardAPI.Model;
+using sswDashboardAPI.Services;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -114,11 +115,13 @@ public class AuthController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
+    private readonly EmailService _emailService;
 
-    public AuthController(AppDbContext db, IConfiguration config)
+    public AuthController(AppDbContext db, IConfiguration config, EmailService emailService)
     {
         _db = db;
         _config = config;
+        _emailService = emailService;
     }
 
     [HttpPost("login")]
@@ -238,15 +241,45 @@ public class AuthController : ControllerBase
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
     {
-        var user = await _db.Employees.FirstOrDefaultAsync(x => x.EmailAddress == model.Email);
+        var user = await _db.Employees.FirstOrDefaultAsync(x => x.ResetToken == model.Token);
         if (user == null)
-            return NotFound("User not found.");
+            return NotFound("Invalid or expired reset token.");
 
         user.ProjectsPassword = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+        user.ResetToken = null;
+        
         await _db.SaveChangesAsync();
 
         return Ok("Password updated successfully.");
     }
+
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
+    {
+        if (string.IsNullOrEmpty(model.Email))
+            return BadRequest("Email is required.");
+
+        var user = await _db.Employees.FirstOrDefaultAsync(u => u.EmailAddress == model.Email);
+        if (user == null)
+            return NotFound("No user found with this email.");
+
+        // Generate a reset token (could be JWT or GUID)
+        var token = Guid.NewGuid().ToString(); // or GenerateJwtToken(user, purpose: "reset")
+
+        // Store token in DB or a cache for short-lived expiry (optional)
+        user.ResetToken = token;
+        user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(15);
+        await _db.SaveChangesAsync();
+
+        // Send email
+        string resetLink = $"http://localhost:3001/auth-pass-change-basic?token={token}";
+        await _emailService.SendEmailAsync(user.EmailAddress, "Password Reset Request",
+            $"Click the following link to reset your password: <a href='{resetLink}'>Reset Password</a>");
+
+        return Ok(new { message = "Reset link has been sent to your email." });
+    }
+
 
 
 

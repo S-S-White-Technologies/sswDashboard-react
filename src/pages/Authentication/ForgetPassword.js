@@ -17,7 +17,7 @@ import { userForgetPassword } from "../../slices/thunks";
 
 // import images
 // import profile from "../../assets/images/bg.png";
-import logoLight from "../../assets/images/logo-light.png";
+import logoLight from "../../assets/images/logofinal.png";
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 
 const ForgetPasswordPage = props => {
@@ -43,21 +43,21 @@ const ForgetPasswordPage = props => {
     forgetSuccessMsg: state.ForgetPassword.forgetSuccessMsg,
   }));
 
-document.title ="Reset Password | Velzon - React Admin & Dashboard Template";
+  document.title = "Reset Password | SSW Technologies";
   return (
     <ParticlesAuth>
       <div className="auth-page-content">
-        
+
         <Container>
           <Row>
             <Col lg={12}>
               <div className="text-center mt-sm-5 mb-4 text-white-50">
                 <div>
                   <Link to="/" className="d-inline-block auth-logo">
-                    <img src={logoLight} alt="" height="20" />
+                    <img src={logoLight} alt="" height="120" />
                   </Link>
                 </div>
-                <p className="mt-3 fs-15 fw-medium">Premium Admin & Dashboard Template</p>
+                <p className="mt-3 fs-15 fw-medium" style={{ fontSize: "25px", color: "#070161" }}>SS White Technologies Inc.</p>
               </div>
             </Col>
           </Row>
@@ -68,8 +68,8 @@ document.title ="Reset Password | Velzon - React Admin & Dashboard Template";
 
                 <CardBody className="p-4">
                   <div className="text-center mt-2">
-                    <h5 className="text-primary">Forgot Password?</h5>
-                    <p className="text-muted">Reset password with velzon</p>
+                    <h5 className="text-primary" style={{ color: "#070161" }}>Forgot Password?</h5>
+                    {/* <p className="text-muted">Reset password with velzon</p> */}
 
                     <lord-icon
                       src="https://cdn.lordicon.com/rhvddzym.json"
@@ -77,7 +77,7 @@ document.title ="Reset Password | Velzon - React Admin & Dashboard Template";
                       colors="primary:#0ab39c"
                       className="avatar-xl"
                       style={{ width: "120px", height: "120px" }}
-                      >
+                    >
                     </lord-icon>
 
                   </div>

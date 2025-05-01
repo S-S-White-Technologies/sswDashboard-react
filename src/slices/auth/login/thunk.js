@@ -57,6 +57,7 @@ export const loginUser = (user, history) => async (dispatch) => {
     }
   } catch (error) {
     const msg = error.response?.data || "Login failed!";
+    console.log("Error is here:", msg);
     dispatch(apiError(msg));
   }
 };

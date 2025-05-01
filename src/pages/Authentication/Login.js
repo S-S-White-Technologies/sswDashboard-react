@@ -15,17 +15,18 @@ import { useFormik } from "formik";
 import { loginUser, socialLogin, resetLoginFlag } from "../../slices/thunks";
 
 import logoLight from "../../assets/images/logofinal.png";
+import { loginSuccess } from '../../slices/auth/login/reducer';
 //import images
 
 const Login = (props) => {
     const dispatch = useDispatch();
-    const { user, error, loading, errorMsg } = useSelector(state => ({
+    const { user, error, loading } = useSelector(state => ({
         user: state.Account.user,
         error: state.Login.error,
         loading: state.Login.loading,
-        errorMsg: state.Login.errorMsg,
-    }));
 
+    }));
+    const { errorMsg } = useSelector(state => state.Login);
     const [userLogin, setUserLogin] = useState([]);
     const [passwordShow, setPasswordShow] = useState(false);
 
@@ -103,7 +104,7 @@ const Login = (props) => {
                                             <h5 className="text-primary">Log in</h5>
 
                                         </div>
-                                        {error && error ? (<Alert color="danger"> {error} </Alert>) : null}
+                                        {errorMsg && <Alert color="danger">{errorMsg}</Alert>}
                                         <div className="p-2 mt-4">
                                             <Form
                                                 onSubmit={(e) => {
