@@ -20,28 +20,18 @@ import avatar6 from "../../assets/images/users/avatar-6.jpg";
 const ecomWidgets = [
     {
         id: 1,
+        label: "Attendance", // use this to detect it's a custom card
         cardColor: "primary",
-        label: "Total Earnings",
-        badge: "ri-arrow-right-up-line",
-        badgeClass: "success",
-        percentage: "+16.24",
-        counter: "559.25",
-        link: "View net earnings",
-        bgcolor: "success",
-        icon: "bx bx-dollar-circle",
-        decimals: 2,
-        prefix: "$",
-        suffix: "k"
-    },
+       },
     {
         id: 2,
         cardColor: "secondary",
-        label: "Orders",
+        label: "epos",
         badge: "ri-arrow-right-down-line",
         badgeClass: "danger",
         percentage: "-3.57",
-        counter: "36894",
-        link: "View all orders",
+        counter: "36",
+        link: "View all EPOs",
         bgcolor: "info",
         icon: "bx bx-shopping-bag",
         decimals: 0,
@@ -52,32 +42,33 @@ const ecomWidgets = [
     {
         id: 3,
         cardColor: "success",
-        label: "Customers",
+        label: "leaves",
         badge: "ri-arrow-right-up-line",
         badgeClass: "success",
         percentage: "+29.08",
-        counter: "183.35",
+        counter: "13",
         link: "See details",
         bgcolor: "warning",
         icon: "bx bx-user-circle",
-        decimals: 2,
+        decimals: 0,
         prefix: "",
-        suffix: "M"
+        suffix: "days"
     },
     {
         id: 4,
         cardColor: "info",
-        label: "My Balance",
+        label: "tasks",
         badgeClass: "muted",
         percentage: "+0.00",
-        counter: "165.89",
-        link: "Withdraw money",
+        counter: "11",
+        link: "View all tasks",
         bgcolor: "danger",
         icon: "bx bx-wallet",
-        decimals: 2,
-        prefix: "$",
-        suffix: "k"
+        decimals: 0,
+        prefix: "",
+        suffix: ""
     },
+    
 ];
 
 const bestSellingProducts = [
@@ -316,7 +307,7 @@ const allRevenueData = [
         name: "Earnings",
         type: "bar",
         data: [
-            89.25, 98.58, 68.74, 108.87, 77.54, 84.03, 51.24, 28.57, 92.57, 42.36,
+            9.25, 98.58, 68.74, 108.87, 77.54, 84.03, 51.24, 28.57, 92.57, 42.36,
             88.51, 36.57,
         ],
     },
@@ -337,7 +328,7 @@ const monthRevenueData = [
         name: "Earnings",
         type: "bar",
         data: [
-            89.25, 98.58, 68.74, 108.87, 77.54, 84.03, 51.24, 28.57, 92.57, 42.36,
+            9.25, 98.58, 68.74, 108.87, 77.54, 84.03, 51.24, 28.57, 92.57, 42.36,
             88.51, 36.57,
         ],
     },
