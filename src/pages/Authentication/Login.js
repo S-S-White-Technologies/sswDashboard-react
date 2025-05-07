@@ -135,7 +135,7 @@ const Login = (props) => {
 
                                                 <div className="mb-3">
                                                     <div className="float-end">
-                                                        <Link to="/forgot-password" className="text-muted">Forgot password?</Link>
+                                                        <Link to="/forgot-password" className="text-muted">Reset password?</Link>
                                                     </div>
                                                     <Label className="form-label" htmlFor="password-input">Password</Label>
                                                     <div className="position-relative auth-pass-inputgroup mb-3">

@@ -68,7 +68,7 @@ const ForgetPasswordPage = props => {
 
                 <CardBody className="p-4">
                   <div className="text-center mt-2">
-                    <h5 className="text-primary" style={{ color: "#070161" }}>Forgot Password?</h5>
+                    <h5 className="text-primary" style={{ color: "#070161" }}>Reset Password?</h5>
                     {/* <p className="text-muted">Reset password with velzon</p> */}
 
                     <lord-icon

@@ -273,6 +273,7 @@ public class AuthController : ControllerBase
         await _db.SaveChangesAsync();
 
         // Send email
+        //string resetLink = $"{_config["Frontend:BaseUrl"]}/reset-password?token={token}";
         string resetLink = $"http://localhost:3001/auth-pass-change-basic?token={token}";
         await _emailService.SendEmailAsync(user.EmailAddress, "Password Reset Request",
             $"Click the following link to reset your password: <a href='{resetLink}'>Reset Password</a>");
