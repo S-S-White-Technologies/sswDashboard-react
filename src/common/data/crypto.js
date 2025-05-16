@@ -9,7 +9,7 @@ import dashCoin from "../../assets/images/svg/crypto-icons/dash.svg";
 import neoCoin from "../../assets/images/svg/crypto-icons/neo.svg";
 import dogeCoin from "../../assets/images/svg/crypto-icons/doge.svg";
 import aaveCoin from "../../assets/images/svg/crypto-icons/aave.svg";
-
+import { Link } from 'react-router-dom';
 import img1 from "../../assets/images/small/img-1.jpg";
 import img2 from "../../assets/images/small/img-2.jpg";
 import img3 from "../../assets/images/small/img-3.jpg";
@@ -19,7 +19,7 @@ const cyptoWidgets = [
     {
         id: 1,
         icon: "ri-money-dollar-circle-fill",
-        label: "Total Invested",
+        label: "In for The Day",
         counter: "2390.68",
         badge: "ri-arrow-up-s-fill",
         badgeColor: "success",
@@ -31,7 +31,7 @@ const cyptoWidgets = [
     {
         id: 2,
         icon: "ri-arrow-up-circle-fill",
-        label: "Total Change",
+        label: "Out for The Day",
         counter: "19523.25",
         badge: "ri-arrow-up-s-fill",
         badgeColor: "success",
@@ -43,7 +43,7 @@ const cyptoWidgets = [
     {
         id: 3,
         icon: "ri-arrow-down-circle-fill",
-        label: "Day Change",
+        label: "Out for the Lunch",
         counter: "14799.44",
         badge: "ri-arrow-down-s-fill",
         badgeColor: "danger",
@@ -53,6 +53,35 @@ const cyptoWidgets = [
         separator: ","
     },
 ];
+
+const WidgetList = () => {
+    return (
+        <div className="widget-list">
+            {cryptoWidgets.map((widget) => (
+                <Link
+                    key={widget.id}
+                    to={`/details/${widget.id}`} // Set the path to redirect
+                    className="widget-card" // Add a custom class for styling
+                    style={{ textDecoration: "none" }} // Optional: remove underline from the link
+                >
+                    <div className="widget-content">
+                        <i className={widget.icon} style={{ fontSize: "24px" }}></i> {/* Widget icon */}
+                        <div>
+                            <h5>{widget.label}</h5>
+                            <p>{widget.prefix}{parseFloat(widget.counter).toFixed(widget.decimal)}</p>
+                        </div>
+                        <div>
+                            <i className={widget.badge + " text-" + widget.badgeColor}></i>
+                            <span>{widget.percentage}%</span>
+                        </div>
+                    </div>
+                </Link>
+            ))}
+        </div>
+    );
+}
+
+
 
 const cryptoSlider = [
     {
@@ -1660,4 +1689,5 @@ const MarketGraphHour = [{
     ]
 }];
 
-export { cyptoWidgets, currencies, recentActivity, topPerformers, newsFeed, cryptoSlider, btcPortfolioData, usdPortfolioData, euroPortfolioData, MarketGraphAll, MarketGraphYear, MarketGraphMonth, MarketGraphWeek, MarketGraphHour};
+
+export { WidgetList, cyptoWidgets, currencies, recentActivity, topPerformers, newsFeed, cryptoSlider, btcPortfolioData, usdPortfolioData, euroPortfolioData, MarketGraphAll, MarketGraphYear, MarketGraphMonth, MarketGraphWeek, MarketGraphHour };

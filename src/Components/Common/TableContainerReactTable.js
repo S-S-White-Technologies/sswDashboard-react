@@ -91,9 +91,9 @@ const TableContainer = ({
       data,
       defaultColumn: { Filter: DefaultColumnFilter },
       initialState: {
-        pageIndex: 0, pageSize: customPageSize, selectedRowIds: 0, sortBy: [
+        pageIndex: 0, pageSize: 5, selectedRowIds: 0, sortBy: [
           {
-            desc: true,
+            desc: false,
           },
         ],
       },
@@ -135,6 +135,7 @@ const TableContainer = ({
                   </option>
                 ))}
               </select>
+
             </Col>
           )}
           {isGlobalFilter && (
@@ -145,7 +146,10 @@ const TableContainer = ({
               SearchPlaceholder={SearchPlaceholder}
             />
           )}
+
         </Row>
+
+
       )}
 
 

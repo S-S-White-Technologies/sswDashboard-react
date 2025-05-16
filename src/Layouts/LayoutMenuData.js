@@ -158,87 +158,88 @@ const Navdata = () => {
                 {
                     id: "timeandattendance",
                     label: "Time and Attendance",
-                    link: "/#",
-                    parentId: "dashboard",
-                    stateVariables: isDashboard,
-                    isChildItem: true,
-                    
-                click: function (e) {
-                    e.preventDefault();
-                    setEmail(!isEmail);
-                },
-                stateVariables: isEmail,
-                childItems: [
-                    
-                
-                    {
-                        id: 1,
+                    link: "/time-and-attendance",
+                    //dashboard-crypto
+                    // parentId: "dashboard",
+                    // stateVariables: isDashboard,
+                    // isChildItem: true,
+
+                    // click: function (e) {
+                    //     e.preventDefault();
+                    //     setEmail(!isEmail);
+                    // },
+                    stateVariables: isEmail,
+                    childItems: [
+
+
+                        {
+                            id: 1,
                             label: "In for the Day",
                             link: "/#",
                             parentId: "timeandattendance",
-                    },
-                    {
-                        id: 2,
+                        },
+                        {
+                            id: 2,
                             label: "Out for the Day",
                             link: "/#",
                             parentId: "timeandattendance",
-                    },
-                    {
-                        id: 3,
+                        },
+                        {
+                            id: 3,
                             label: "Out for Lunch",
                             link: "/#",
                             parentId: "timeandattendance",
-                    },
-                    {
-                        id: 4,
+                        },
+                        {
+                            id: 4,
                             label: "Break for Lunch",
                             link: "/#",
                             parentId: "timeandattendance",
-                    },
-                    {
-                        id: 5,
+                        },
+                        {
+                            id: 5,
                             label: "Out for Business",
                             link: "/#",
                             parentId: "timeandattendance",
-                    },
-                    {
-                        id: 6,
+                        },
+                        {
+                            id: 6,
                             label: "Back From Business",
                             link: "/#",
                             parentId: "timeandattendance",
-                    },
-                    {
-                        id: 7,
+                        },
+                        {
+                            id: 7,
                             label: "Out for Personal Break",
                             link: "/#",
                             parentId: "timeandattendance",
-                    },
-                    {
-                        id: 8,
+                        },
+                        {
+                            id: 8,
                             label: "Back from Personal Break",
                             link: "/#",
                             parentId: "timeandattendance",
-                    },
-                    {
-                        id: 9,
+                        },
+                        {
+                            id: 9,
                             label: "My Missisng Punches",
                             link: "/#",
                             parentId: "timeandattendance",
-                    },
-                    {
-                        id: 10,
+                        },
+                        {
+                            id: 10,
                             label: "My Time Punch Records",
                             link: "/#",
                             parentId: "timeandattendance",
-                    },
-                    {
-                        id: 11,
+                        },
+                        {
+                            id: 11,
                             label: "Who's in the Building?",
-                            link: "/#",
+                            link: "/who-in-the-building",
                             parentId: "timeandattendance",
-                    },
-                   
-                ]
+                        },
+
+                    ]
                 },
                 {
                     id: "taskmanagement",
@@ -251,42 +252,42 @@ const Navdata = () => {
                         setIsCRM(!isCRM);
                     },
                     stateVariables: isCRM,
-                    childItems:[
+                    childItems: [
                         {
                             id: 1,
-                                label: "My Tasks",
-                                link: "/#",
-                                parentId: "taskmanagement",
+                            label: "My Tasks",
+                            link: "/#",
+                            parentId: "taskmanagement",
                         },
                         {
                             id: 2,
-                                label: "Create New Tasks",
-                                link: "/#",
-                                parentId: "taskmanagement",
+                            label: "Create New Tasks",
+                            link: "/#",
+                            parentId: "taskmanagement",
                         },
                         {
                             id: 3,
-                                label: "End of the Day Review",
-                                link: "/#",
-                                parentId: "taskmanagement",
+                            label: "End of the Day Review",
+                            link: "/#",
+                            parentId: "taskmanagement",
                         },
                         {
                             id: 4,
-                                label: "Find Task by Task ID",
-                                link: "/#",
-                                parentId: "taskmanagement",
+                            label: "Find Task by Task ID",
+                            link: "/#",
+                            parentId: "taskmanagement",
                         },
                         {
                             id: 5,
-                                label: "View My Task Reporting By Date",
-                                link: "/#",
-                                parentId: "taskmanagement",
+                            label: "View My Task Reporting By Date",
+                            link: "/#",
+                            parentId: "taskmanagement",
                         },
                         {
                             id: 6,
-                                label: "View Tasks I have Assigned",
-                                link: "/#",
-                                parentId: "taskmanagement",
+                            label: "View Tasks I have Assigned",
+                            link: "/#",
+                            parentId: "taskmanagement",
                         },
 
 
@@ -304,36 +305,36 @@ const Navdata = () => {
                         setIsEcommerce(!isEcommerce);
                     },
                     stateVariables: isEcommerce,
-                    childItems:[
+                    childItems: [
                         {
                             id: 1,
-                                label: "Create New EPO",
-                                link: "/#",
-                                parentId: "epo",
+                            label: "Create New EPO",
+                            link: "/#",
+                            parentId: "epo",
                         },
                         {
                             id: 2,
-                                label: "Edit EPO",
-                                link: "/#",
-                                parentId: "epo",
+                            label: "Edit EPO",
+                            link: "/#",
+                            parentId: "epo",
                         },
                         {
                             id: 3,
-                                label: "Find EPO By Number",
-                                link: "/#",
-                                parentId: "epo",
+                            label: "Find EPO By Number",
+                            link: "/#",
+                            parentId: "epo",
                         },
                         {
                             id: 4,
-                                label: "My EPOs",
-                                link: "/#",
-                                parentId: "epo",
+                            label: "My EPOs",
+                            link: "/#",
+                            parentId: "epo",
                         },
                         {
                             id: 5,
-                                label: "EPOs Not Ready For Payment",
-                                link: "/#",
-                                parentId: "epo",
+                            label: "EPOs Not Ready For Payment",
+                            link: "/#",
+                            parentId: "epo",
                         },
                     ]
                 },
@@ -348,24 +349,24 @@ const Navdata = () => {
                         setIsCrypto(!isCrypto);
                     },
                     stateVariables: isCrypto,
-                    childItems:[
+                    childItems: [
                         {
                             id: 1,
-                                label: "Create New Project",
-                                link: "/#",
-                                parentId: "project",
+                            label: "Create New Project",
+                            link: "/#",
+                            parentId: "project",
                         },
                         {
                             id: 2,
-                                label: "My Project",
-                                link: "/#",
-                                parentId: "project",
+                            label: "My Project",
+                            link: "/#",
+                            parentId: "project",
                         },
                         {
                             id: 3,
-                                label: "View All Approved Projects",
-                                link: "/#",
-                                parentId: "project",
+                            label: "View All Approved Projects",
+                            link: "/#",
+                            parentId: "project",
                         },
 
                     ]
@@ -774,7 +775,7 @@ const Navdata = () => {
                                 {
                                     id: 2,
                                     label: "Grid View",
-                                    link: "/apps-job-candidate-grid",
+                                    link: "/who-in-the-building",
                                     parentId: "apps",
                                 },
                             ],
@@ -1457,11 +1458,11 @@ const Navdata = () => {
                     link: "/tables-datatables",
                     parentId: "tables",
                 },
-                { 
-                    id: "reactdatatables", 
-                    label: "React Datatables", 
-                    link: "/tables-react", 
-                    parentId: "tables" 
+                {
+                    id: "reactdatatables",
+                    label: "React Datatables",
+                    link: "/tables-react",
+                    parentId: "tables"
                 },
             ],
         },

@@ -79,6 +79,91 @@ namespace sswDashboardAPI.Services
             }
         }
 
+
+        public List<Employee> GetEmployees(string employeeType, bool isUSA)
+        {
+            var employees = new List<Employee>();
+            string query = string.Empty;
+
+            if (employeeType == "salaried")
+            {
+                query = isUSA
+                    ? @"select convert(nvarchar(255), t.empid) as temp, convert(nvarchar(255), Name) as Name, Status, backTime as 'Returning At', empbasic.empstatus 
+                        from (select *, ROW_NUMBER() over (partition by empid order by clocktime desc) TimeRank FROM TimeClock  
+                        WHERE (datediff(dd, clocktime, getdate()) < 30) AND ((APPROVAL not like '%PENDING%' OR APPROVAL IS NULL))) T 
+                        inner join EMPBASIC ON convert(nvarchar(255), empbasic.empid) = convert(nvarchar(255), T.empID) 
+                        where TimeRank = 1 AND empbasic.empstatus = 'A' AND empbasic.expensecode = 'IDL' 
+                        and (empbasic.empid <> '2693' and empbasic.empid <> '2969') 
+                        order by Name ASC;"
+                    : @"select convert(nvarchar(255), t.empid) as temp, convert(nvarchar(255), Name) as Name, Status, backTime as 'Returning At', empbasic.empstatus 
+                        from (select *, ROW_NUMBER() over (partition by empid order by clocktime desc) TimeRank FROM TimeClock  
+                        WHERE (datediff(dd, clocktime, getdate()) < 30) AND ((APPROVAL not like '%PENDING%' OR APPROVAL IS NULL))) T 
+                        inner join EMPBASIC ON convert(nvarchar(255), empbasic.empid) = convert(nvarchar(255), T.empID) 
+                        where TimeRank = 1 AND empbasic.empstatus = 'A' AND empbasic.expensecode = 'IDL' 
+                        and (empbasic.empid <> '2693' and empbasic.empid <> '2969') 
+                        order by Name ASC;";
+            }
+            else if (employeeType == "hourly")
+            {
+                query = isUSA
+                    ? @"select convert(nvarchar(255), t.empid) as temp, convert(nvarchar(255), Name) as Name, Status, backTime as 'Returning At', empbasic.empstatus 
+                        from (select *, ROW_NUMBER() over (partition by empid order by clocktime desc) TimeRank FROM TimeClockFactory  
+                        WHERE (datediff(dd, clocktime, getdate()) < 30) AND ((APPROVAL not like '%PENDING%' OR APPROVAL IS NULL))) T 
+                        inner join EMPBASIC ON convert(nvarchar(255), empbasic.empid) = convert(nvarchar(255), T.empID) 
+                        where TimeRank = 1 AND empbasic.empstatus = 'A' and empbasic.expensecode = 'DL' 
+                        and (t.empid <> '2900' and t.empid <> '2864' and t.empid <> '2865');"
+                    : @"select convert(nvarchar(255), t.empid) as temp, convert(nvarchar(255), Name) as Name, Status, backTime as 'Returning At', empbasic.empstatus 
+                        from (select *, ROW_NUMBER() over (partition by empid order by clocktime desc) TimeRank FROM TimeClockFactory  
+                        WHERE (datediff(dd, clocktime, getdate()) < 30) AND ((APPROVAL not like '%PENDING%' OR APPROVAL IS NULL))) T 
+                        inner join EMPBASIC ON convert(nvarchar(255), empbasic.empid) = convert(nvarchar(255), T.empID) 
+                        where TimeRank = 1 AND empbasic.empstatus = 'A' and empbasic.expensecode = 'DL' 
+                        and (t.empid <> '2900' and t.empid <> '2864' and t.empid <> '2865');";
+            }
+
+            using (var connection = new SqlConnection(_plutoConnectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqlCommand(query, connection))
+                {
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        // Check if the columns exist in the result set
+                        string empId = reader["temp"] != DBNull.Value ? reader["temp"].ToString() : string.Empty;
+                        string name = reader["Name"] != DBNull.Value ? reader["Name"].ToString() : string.Empty;
+                        string status = reader["Status"] != DBNull.Value ? reader["Status"].ToString() : string.Empty;
+                        string returningAt = reader["Returning At"] != DBNull.Value ? reader["Returning At"].ToString() : string.Empty;
+
+                        employees.Add(new Employee
+                        {
+                            EmpId = empId,
+                            Name = name,
+                            Status = status,
+                            ReturningAt = "N/A"
+                        });
+                    }
+
+                }
+            }
+
+            return employees;
+        }
+    }
+
+    public interface IEmployeeService
+    {
+        List<Employee> GetEmployees(string employeeType, bool isUSA);
+    }
+
+    public class Employee
+    {
+        public string EmpId { get; set; }
+        public string Name { get; set; }
+        public string Status { get; set; }
+        public string ReturningAt { get; set; }
     }
 
 }
+
+

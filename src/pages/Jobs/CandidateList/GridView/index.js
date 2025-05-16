@@ -1,147 +1,163 @@
 import React from "react";
-import { NavLink, Link } from "react-router-dom";
-import { Card, CardBody, Col, Container, Input, Row } from "reactstrap";
-import Select from "react-select";
-import { jobCandidates } from "../../../../common/data/appsJobs";
-import BreadCrumb from "../../../../Components/Common/BreadCrumb";
+import { useState, useEffect } from 'react';
+import TableContainer from "../../../../Components/Common/TableContainerReactTable";
+import { Card, CardBody, Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane, UncontrolledTooltip } from "reactstrap";
+import BreadCrumb from '../../../../Components/Common/BreadCrumb';
+import logoRefresh from "../../../../assets/images/refresh_icon.png";
+import axios from "axios";
+import { DefaultTable, PaginationTable, SearchTable, SortingTable, LoadingStateTable, HiddenColumns } from '../../../../pages/Tables/ReactTables/ReactTable'
+import { Link } from 'react-router-dom';
+import classnames from "classnames";
 
 const CandidateGrid = () => {
-  const sortbyname = [
-    {
-      options: [
-        { label: "All", value: "All" },
-        { label: "Today", value: "Today" },
-        { label: "Yesterday", value: "Yesterday" },
-        { label: "Last 7 Days", value: "Last 7 Days" },
-        { label: "Last 30 Days", value: "Last 30 Days" },
-        { label: "Thise Month", value: "Thise Month" },
-        { label: "Last Year", value: "Last Year" },
-      ],
-    },
-  ];
+  const [pillsTab, setpillsTab] = useState("1");  // Active tab for salaried or hourly
+  const [salariedData, setSalariedData] = useState([]);  // Salaried employees data
+  const [hourlyData, setHourlyData] = useState([]);  // Hourly employees data
+  const [lastRefreshed, setLastRefreshed] = useState("");
+
+  const pillsToggle = (tab) => {
+    if (pillsTab !== tab) {
+      setpillsTab(tab);
+    }
+  };
+
+  useEffect(() => {
+    if (pillsTab === "1") {
+      axios.get("https://localhost:7168/api/WhosInBuilding/salaried")
+        .then((response) => {
+          setSalariedData(response);
+          console.log("Salaried", response);
+        });
+    }
+  }, [pillsTab]);
+
+  useEffect(() => {
+    if (pillsTab === "2") {
+      axios.get("https://localhost:7168/api/WhosInBuilding/hourly")
+        .then((response) => {
+          setHourlyData(response);
+          console.log("Hourly", response);
+        });
+    }
+  }, [pillsTab]);
+
+  const handleRefresh = () => {
+    const currentDateTime = new Date().toLocaleString();
+    setLastRefreshed(currentDateTime);  // Update the last refreshed time
+    setpillsTab('1');
+    setpillsTab('2');
+    setpillsTab('1');
+  };
+
 
   document.title =
-    "Candidates Grid View | Velzon -  Admin & Dashboard Template";
+    "Who's In the Building | SSW Technologies Inc.";
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <BreadCrumb title="Grid View" pageTitle="Candidates Grid" />
+          <Row>
+            <Col xxl={12}>
+              <h5 className="mb-3">
+                <div className="flex-grow-1">
+                  <h4 className="fs-16 mb-1">Who's In the Building?</h4>
 
-          <Row className="g-4 mb-4">
-            <Col sm="auto">
-              <div>
-                <Link to="#!" className="btn btn-primary">
-                  <i className="ri-add-line align-bottom me-1"></i> Add
-                  Candidate
-                </Link>
-              </div>
-            </Col>
-            <Col className="col-sm">
-              <div className="d-md-flex justify-content-sm-end gap-2">
-                <div className="search-box ms-md-2 flex-shrink-0 mb-3 mb-md-0">
-                  <Input
-                    type="text"
-                    className="form-control"
-                    id="searchJob"
-                    autoComplete="off"
-                    placeholder="Search for candidate name or designation..."
-                  />
-                  <i className="ri-search-line search-icon"></i>
                 </div>
+              </h5>
+              <br />
+              <Card>
+                <CardBody>
 
-                <Select
-                  className="w-md"
-                  style={{
-                    border: "1px solid rgba(0, 0, 0, 0.15)",
-                    borderRadius: "5px",
-                  }}
-                  options={sortbyname}
-                ></Select>
-              </div>
-            </Col>
-          </Row>
 
-          <Row className="gy-2 mb-2" id="candidate-list">
-            {jobCandidates.map((item, key) => (
-              <Col xxl={3} md={6} key={key}>
-                <Card>
-                  <CardBody>
-                    <div className="d-flex align-items-center">
-                      <div className="flex-shrink-0">
-                        {item.nickname ? (
-                          <div className="avatar-lg rounded">
-                            <div className="avatar-title border bg-light text-primary rounded text-uppercase fs-24">
-                              {item.nickname}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="avatar-lg rounded">
-                            <img
-                              src={item.userImg}
-                              alt=""
-                              className="member-img img-fluid d-block rounded"
-                            ></img>
-                          </div>
-                        )}
+                  <Nav pills className="nav-success mb-3">
+                    <NavItem>
+                      <NavLink style={{ cursor: "pointer" }} className={classnames({ active: pillsTab === "1", })} onClick={() => { pillsToggle("1"); }} >
+                        Salaried
+                      </NavLink>
+                    </NavItem>
+                    <NavItem>
+                      <NavLink style={{ cursor: "pointer" }} className={classnames({ active: pillsTab === "2", })} onClick={() => { pillsToggle("2"); }} >
+                        Hourly
+                      </NavLink>
+                    </NavItem>
+                  </Nav>
+
+
+
+
+                  <TabContent activeTab={pillsTab} className="text-muted">
+                    <TabPane tabId="1" id="home-1">
+                      <div className="d-flex">
+
+                        <CardBody>
+                          <SearchTable data={salariedData} />
+                        </CardBody>
+
                       </div>
-                      <div className="flex-grow-1 ms-3">
-                        <NavLink to="/pages-profile">
-                          <h5 className="fs-16 mb-1">{item.candidateName}</h5>
-                        </NavLink>
-                        <p className="text-muted mb-2">{item.designation}</p>
-                        <div className="d-flex flex-wrap gap-2 align-items-center">
-                          <div className="badge text-bg-success">
-                            <i className="mdi mdi-star me-1"></i>
-                            {item.rating[0]}
-                          </div>
-                          <div className="text-muted">{item.rating[1]}</div>
+
+                    </TabPane>
+
+                    <TabPane tabId="2" id="profile-1">
+
+                      <div className="d-flex">
+
+                        <CardBody>
+                          <SearchTable data={hourlyData} />
+                        </CardBody>
+
+                      </div>
+
+                      {/* <div className="d-flex">
+                        <div className="flex-shrink-0">
+                          <i className="ri-checkbox-circle-fill text-success"></i>
                         </div>
-                        <div className="d-flex gap-4 mt-2 text-muted">
-                          <div>
-                            <i className="ri-map-pin-2-line text-primary me-1 align-bottom"></i>{" "}
-                            {item.location}
-                          </div>
-                          <div>
-                            <i className="ri-time-line text-primary me-1 align-bottom"></i>
-                            {item.type === "Part Time" ? (
-                              <span className="badge badge-soft-danger">
-                                {item.type}
-                              </span>
-                            ) : item.type === "Full Time" ? (
-                              <span className="badge badge-soft-success">
-                                {item.type}
-                              </span>
-                            ) : (
-                              <span className="badge badge-soft-secondary">
-                                {item.type}
-                              </span>
-                            )}
-                          </div>
+                        <div className="flex-grow-1 ms-2">
+                          In some designs, you might adjust your tracking to create a certain artistic effect. It can also help you fix fonts that are poorly spaced to begin with.
                         </div>
                       </div>
+                      <div className="d-flex mt-2">
+                        <div className="flex-shrink-0">
+                          <i className="ri-checkbox-circle-fill text-success"></i>
+                        </div>
+                        <div className="flex-grow-1 ms-2">
+                          A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart.
+                        </div>
+                      </div> */}
+                    </TabPane>
+                    <hr
+                      style={{
+                        borderTop: "1px solid lightgrey",
+                        width: "100%",
+                        margin: "20px 0",
+                      }}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <button onClick={handleRefresh} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                        <img
+                          src={logoRefresh}
+                          alt="Refresh Icon"
+                          style={{ height: "20px", width: "20px" }}
+                        />
+                      </button>
+                      <span style={{ fontSize: "14px", color: "#6c757d" }}>Click to refresh</span>
                     </div>
-                  </CardBody>
-                </Card>
-              </Col>
-            ))}
-          </Row>
 
-          <Row className="g-0 justify-content-end mb-4" id="pagination-element">
-            <Col sm={6}>
-              <div className="pagination-block pagination pagination-separated justify-content-center justify-content-sm-end mb-sm-0">
-                <div className="page-item">
-                  <Link to="" className="page-link" id="page-prev">
-                    Previous
-                  </Link>
-                </div>
-                <span id="page-num" className="pagination"></span>
-                <div className="page-item">
-                  <Link to="" className="page-link" id="page-next">
-                    Next
-                  </Link>
-                </div>
-              </div>
+
+                    {lastRefreshed && (
+                      <div style={{ textAlign: "center", marginTop: "10px", fontSize: "12px", color: "#6c757d" }}>
+                        <span>Last refreshed on: {lastRefreshed}</span>
+                      </div>
+                    )}
+                  </TabContent>
+                </CardBody>
+              </Card>
             </Col>
           </Row>
         </Container>
