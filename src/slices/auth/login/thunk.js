@@ -47,6 +47,8 @@ export const loginUser = (user, history) => async (dispatch) => {
       // store auth user in session
       sessionStorage.setItem("authUser", JSON.stringify(response.data));
 
+      console.log("Whats the Data: ", response.data);
+
       // dispatch to redux
       dispatch(loginSuccess(response.data));
 

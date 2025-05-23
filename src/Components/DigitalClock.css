@@ -1,0 +1,46 @@
+.clock-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    /* Dark background */
+    color: #28292a;
+    /* White text color */
+    padding: 20px;
+    border-radius: 15px;
+    /* box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    width: 250px;
+    margin: 50px auto; */
+}
+
+.clock-time {
+    font-size: 50px;
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+}
+
+.clock-date {
+    font-size: 18px;
+    font-family: 'Arial', sans-serif;
+    color: #28292a;
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+
+/* Add a glowing effect to the clock */
+.clock-time {
+    animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+/* Glowing animation effect */
+@keyframes glow {
+    0% {
+        text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+    }
+
+    100% {
+        text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00, 0 0 60px #00ff00;
+    }
+}
