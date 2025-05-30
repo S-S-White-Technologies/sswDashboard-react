@@ -91,7 +91,7 @@ const TableContainer = ({
       data,
       defaultColumn: { Filter: DefaultColumnFilter },
       initialState: {
-        pageIndex: 0, pageSize: 5, selectedRowIds: 0, sortBy: [
+        pageIndex: 0, pageSize: 10, selectedRowIds: 0, sortBy: [
           {
             desc: false,
           },
@@ -232,6 +232,8 @@ const TableContainer = ({
     </Fragment>
   );
 };
+
+
 
 TableContainer.propTypes = {
   preGlobalFilteredRows: PropTypes.any,

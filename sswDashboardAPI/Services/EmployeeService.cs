@@ -1,15 +1,19 @@
 ﻿using Microsoft.Data.SqlClient;
+using sswDashboardAPI.Data;
 using sswDashboardAPI.Model;
+using System.Data;
 
 namespace sswDashboardAPI.Services
 {
     public class EmployeeService
     {
+        private readonly AppDbContext _context;
         private readonly string _plutoConnectionString;
 
-        public EmployeeService(IConfiguration configuration)
+        public EmployeeService(IConfiguration configuration, AppDbContext context)
         {
             _plutoConnectionString = configuration.GetConnectionString("DefaultConnection");
+            _context = context;
         }
 
         public async Task<bool> InsertEmpBasicPLUTO(EmployeeDto emp)
@@ -38,14 +42,14 @@ namespace sswDashboardAPI.Services
                     cmd.Parameters.AddWithValue("@zip", emp.Zip);
                     cmd.Parameters.AddWithValue("@country", emp.Country);
                     cmd.Parameters.AddWithValue("@phone", emp.Phone);
-                
+
                     cmd.Parameters.AddWithValue("@emgcontact", emp.EmgContact);
                     cmd.Parameters.AddWithValue("@empstatus", emp.EmpStatus);
                     cmd.Parameters.AddWithValue("@expensecode", emp.ExpenseCode);
                     cmd.Parameters.AddWithValue("@jcdept", emp.Dept);
                     cmd.Parameters.AddWithValue("@supervisorid", emp.Supervisor);
                     cmd.Parameters.AddWithValue("@empid", emp.EmpID);
-                 
+
                     cmd.Parameters.AddWithValue("@roleid", emp.RoleId);
 
                     await conn.OpenAsync();
@@ -78,7 +82,6 @@ namespace sswDashboardAPI.Services
                 }
             }
         }
-
 
         public List<Employee> GetEmployees(string employeeType, bool isUSA)
         {
@@ -154,26 +157,33 @@ namespace sswDashboardAPI.Services
         {
             var lastActionResponse = new LastActionResponse();
 
+            // Try to parse empId into a valid number (short or int based on your DB schema)
+            if (!short.TryParse(empId, out short empIdNumeric))
+            {
+                throw new ArgumentException("EmpId must be a valid number.");
+            }
+
             using (var conn = new SqlConnection(_plutoConnectionString))
             {
                 string query = @"
-            SELECT 
-                t1.ClockTime AS MaxTime,
-                t1.Status
-            FROM TimeClock t1
-            WHERE t1.ClockTime = (
-                SELECT MAX(t2.ClockTime)
-                FROM TimeClock t2
-                WHERE t2.empid = t1.empid
-                AND (t2.APPROVAL NOT LIKE '%PENDING%' OR t2.APPROVAL IS NULL)
-                AND t2.ClockType='Normal'
-            )
-            AND t1.empid = @empid
-            AND (t1.APPROVAL NOT LIKE '%PENDING%' OR t1.APPROVAL IS NULL)";
+        SELECT 
+            t1.ClockTime AS MaxTime,
+            t1.Status
+        FROM TimeClock t1
+        WHERE t1.ClockTime = (
+            SELECT MAX(t2.ClockTime)
+            FROM TimeClock t2
+            WHERE t2.empid = t1.empid
+            AND (t2.APPROVAL NOT LIKE '%PENDING%' OR t2.APPROVAL IS NULL)
+            AND t2.ClockType='Normal'
+        )
+        AND t1.empid = @empid
+        AND (t1.APPROVAL NOT LIKE '%PENDING%' OR t1.APPROVAL IS NULL)";
 
                 using (var command = new SqlCommand(query, conn))
                 {
-                    command.Parameters.AddWithValue("@empid", empId);
+                    // Use SqlParameter and specify the parameter type
+                    command.Parameters.Add(new SqlParameter("@empid", SqlDbType.SmallInt) { Value = empIdNumeric });
                     conn.Open();
 
                     using (var reader = await command.ExecuteReaderAsync())
@@ -185,8 +195,12 @@ namespace sswDashboardAPI.Services
                                 : reader.GetDateTime(reader.GetOrdinal("MaxTime"));
 
                             lastActionResponse.Status = reader.IsDBNull(reader.GetOrdinal("Status"))
-                                ? string.Empty
+                                ? "New"
                                 : reader.GetString(reader.GetOrdinal("Status"));
+                        }
+                        else {
+                            lastActionResponse.MaxTime = default(DateTime);
+                            lastActionResponse.Status = "OUT";
                         }
                     }
                 }
@@ -223,6 +237,99 @@ namespace sswDashboardAPI.Services
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {
+
+                        if (await reader.ReadAsync())
+                        {
+                            lastActionResponse.MaxTime = reader.IsDBNull(reader.GetOrdinal("MaxTime"))
+                                ? default(DateTime)
+                                : reader.GetDateTime(reader.GetOrdinal("MaxTime"));
+
+                            lastActionResponse.Status = reader.IsDBNull(reader.GetOrdinal("Status"))
+                                ? string.Empty
+                                : reader.GetString(reader.GetOrdinal("Status"));
+                        }
+                    }
+                }
+            }
+
+            return lastActionResponse;
+        }
+
+        public async Task<LastActionResponse> GetLastActionBusiness(string empId)
+        {
+            var lastActionResponse = new LastActionResponse();
+
+            using (var conn = new SqlConnection(_plutoConnectionString))
+            {
+                string query = @"
+            SELECT 
+                t1.ClockTime AS MaxTime,
+                t1.Status
+            FROM TimeClock t1
+            WHERE t1.ClockTime = (
+                SELECT MAX(t2.ClockTime)
+                FROM TimeClock t2
+                WHERE t2.empid = t1.empid
+                AND (t2.APPROVAL NOT LIKE '%PENDING%' OR t2.APPROVAL IS NULL)
+                AND t2.ClockType='Business'
+            )
+            AND t1.empid = @empid
+            AND (t1.APPROVAL NOT LIKE '%PENDING%' OR t1.APPROVAL IS NULL)";
+
+                using (var command = new SqlCommand(query, conn))
+                {
+                    command.Parameters.AddWithValue("@empid", empId);
+                    conn.Open();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+
+                        if (await reader.ReadAsync())
+                        {
+                            lastActionResponse.MaxTime = reader.IsDBNull(reader.GetOrdinal("MaxTime"))
+                                ? default(DateTime)
+                                : reader.GetDateTime(reader.GetOrdinal("MaxTime"));
+
+                            lastActionResponse.Status = reader.IsDBNull(reader.GetOrdinal("Status"))
+                                ? string.Empty
+                                : reader.GetString(reader.GetOrdinal("Status"));
+                        }
+                    }
+                }
+            }
+
+            return lastActionResponse;
+        }
+
+        public async Task<LastActionResponse> GetLastActionPersonal(string empId)
+        {
+            var lastActionResponse = new LastActionResponse();
+
+            using (var conn = new SqlConnection(_plutoConnectionString))
+            {
+                string query = @"
+            SELECT 
+                t1.ClockTime AS MaxTime,
+                t1.Status
+            FROM TimeClock t1
+            WHERE t1.ClockTime = (
+                SELECT MAX(t2.ClockTime)
+                FROM TimeClock t2
+                WHERE t2.empid = t1.empid
+                AND (t2.APPROVAL NOT LIKE '%PENDING%' OR t2.APPROVAL IS NULL)
+                AND t2.ClockType='Personal'
+            )
+            AND t1.empid = @empid
+            AND (t1.APPROVAL NOT LIKE '%PENDING%' OR t1.APPROVAL IS NULL)";
+
+                using (var command = new SqlCommand(query, conn))
+                {
+                    command.Parameters.AddWithValue("@empid", empId);
+                    conn.Open();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+
                         if (await reader.ReadAsync())
                         {
                             lastActionResponse.MaxTime = reader.IsDBNull(reader.GetOrdinal("MaxTime"))
@@ -326,6 +433,176 @@ namespace sswDashboardAPI.Services
             }
         }
 
+        public async Task<bool> ClockOutForBusiness(string empId)
+        {
+            using (var conn = new SqlConnection(_plutoConnectionString))
+            {
+                try
+                {
+                    await conn.OpenAsync();
+
+                    string query = @"INSERT INTO TimeClock (ClockTime, ClockType, WeekNumber, Year, empID, computer, status, reportDate, remote)
+                             VALUES (SYSDATETIME(), @ClockType, DATEPART(WK, SYSDATETIME()), DATEPART(YEAR, SYSDATETIME()), @empid, @computer, @status, @reportDate, @remote);";
+
+                    using (var cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ClockType", "Business");
+                        cmd.Parameters.AddWithValue("@empid", empId);
+                        cmd.Parameters.AddWithValue("@computer", Environment.MachineName);
+                        cmd.Parameters.AddWithValue("@status", "OUT");
+                        cmd.Parameters.AddWithValue("@reportDate", DateTime.Today);
+
+                        bool remote = false;
+                        cmd.Parameters.AddWithValue("@remote", remote);
+
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        return rowsAffected > 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> ClockOutForPersonal(string empId)
+        {
+            using (var conn = new SqlConnection(_plutoConnectionString))
+            {
+                try
+                {
+                    await conn.OpenAsync();
+
+                    string query = @"INSERT INTO TimeClock (ClockTime, ClockType, WeekNumber, Year, empID, computer, status, reportDate, remote)
+                             VALUES (SYSDATETIME(), @ClockType, DATEPART(WK, SYSDATETIME()), DATEPART(YEAR, SYSDATETIME()), @empid, @computer, @status, @reportDate, @remote);";
+
+                    using (var cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ClockType", "Personal");
+                        cmd.Parameters.AddWithValue("@empid", empId);
+                        cmd.Parameters.AddWithValue("@computer", Environment.MachineName);
+                        cmd.Parameters.AddWithValue("@status", "OUT");
+                        cmd.Parameters.AddWithValue("@reportDate", DateTime.Today);
+
+                        bool remote = false;
+                        cmd.Parameters.AddWithValue("@remote", remote);
+
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        return rowsAffected > 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> ClockInForLunch(string empId)
+        {
+            using (var conn = new SqlConnection(_plutoConnectionString))
+            {
+                try
+                {
+                    await conn.OpenAsync();
+
+                    string query = @"INSERT INTO TimeClock (ClockTime, ClockType, WeekNumber, Year, empID, computer, status, reportDate, remote)
+                             VALUES (SYSDATETIME(), @ClockType, DATEPART(WK, SYSDATETIME()), DATEPART(YEAR, SYSDATETIME()), @empid, @computer, @status, @reportDate, @remote);";
+
+                    using (var cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ClockType", "Break");
+                        cmd.Parameters.AddWithValue("@empid", empId);
+                        cmd.Parameters.AddWithValue("@computer", Environment.MachineName);
+                        cmd.Parameters.AddWithValue("@status", "IN");
+                        cmd.Parameters.AddWithValue("@reportDate", DateTime.Today);
+
+                        bool remote = false;
+                        cmd.Parameters.AddWithValue("@remote", remote);
+
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        return rowsAffected > 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> ClockInForBusiness(string empId)
+        {
+            using (var conn = new SqlConnection(_plutoConnectionString))
+            {
+                try
+                {
+                    await conn.OpenAsync();
+
+                    string query = @"INSERT INTO TimeClock (ClockTime, ClockType, WeekNumber, Year, empID, computer, status, reportDate, remote)
+                             VALUES (SYSDATETIME(), @ClockType, DATEPART(WK, SYSDATETIME()), DATEPART(YEAR, SYSDATETIME()), @empid, @computer, @status, @reportDate, @remote);";
+
+                    using (var cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ClockType", "Business");
+                        cmd.Parameters.AddWithValue("@empid", empId);
+                        cmd.Parameters.AddWithValue("@computer", Environment.MachineName);
+                        cmd.Parameters.AddWithValue("@status", "IN");
+                        cmd.Parameters.AddWithValue("@reportDate", DateTime.Today);
+
+                        bool remote = false;
+                        cmd.Parameters.AddWithValue("@remote", remote);
+
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        return rowsAffected > 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> ClockInForPersonal(string empId)
+        {
+            using (var conn = new SqlConnection(_plutoConnectionString))
+            {
+                try
+                {
+                    await conn.OpenAsync();
+
+                    string query = @"INSERT INTO TimeClock (ClockTime, ClockType, WeekNumber, Year, empID, computer, status, reportDate, remote)
+                             VALUES (SYSDATETIME(), @ClockType, DATEPART(WK, SYSDATETIME()), DATEPART(YEAR, SYSDATETIME()), @empid, @computer, @status, @reportDate, @remote);";
+
+                    using (var cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ClockType", "Personal");
+                        cmd.Parameters.AddWithValue("@empid", empId);
+                        cmd.Parameters.AddWithValue("@computer", Environment.MachineName);
+                        cmd.Parameters.AddWithValue("@status", "IN");
+                        cmd.Parameters.AddWithValue("@reportDate", DateTime.Today);
+
+                        bool remote = false;
+                        cmd.Parameters.AddWithValue("@remote", remote);
+
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        return rowsAffected > 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                    return false;
+                }
+            }
+        }
+
         public async Task<WorkTime> GetWorkTimeForDay(string empId, DateTime reportDate)
         {
             var workTime = new WorkTime();
@@ -341,8 +618,12 @@ namespace sswDashboardAPI.Services
                     empID,
                     MAX(CASE WHEN ClockType = 'Normal' AND status = 'IN' THEN ClockTime END) AS ClockInTime,
                     MAX(CASE WHEN ClockType = 'Normal' AND status = 'OUT' THEN ClockTime END) AS ClockOutTime,
-                    MAX(CASE WHEN ClockType = 'Break' THEN ClockTime END) AS BreakStartTime,
-                    MIN(CASE WHEN ClockType = 'Break' THEN ClockTime END) AS BreakEndTime
+                    MAX(CASE WHEN ClockType = 'Break' AND status = 'OUT' THEN ClockTime END) AS BreakStartTime,
+                    MIN(CASE WHEN ClockType = 'Break' AND status = 'IN' THEN ClockTime END) AS BreakEndTime,
+                    MAX(CASE WHEN ClockType = 'Business' AND status = 'OUT' THEN ClockTime END) AS BusinessStartTime,
+                    MIN(CASE WHEN ClockType = 'Business' AND status = 'IN' THEN ClockTime END) AS BusinessEndTime,
+                    MAX(CASE WHEN ClockType = 'Personal' AND status = 'OUT' THEN ClockTime END) AS PersonalStartTime,
+                    MIN(CASE WHEN ClockType = 'Personal' AND status = 'IN' THEN ClockTime END) AS PersonalEndTime
                 FROM TimeClock
                 WHERE empID = @empID
                     AND reportDate = @reportDate
@@ -363,6 +644,10 @@ namespace sswDashboardAPI.Services
                                 workTime.ClockOutTime = reader["ClockOutTime"] as DateTime?;
                                 workTime.BreakStartTime = reader["BreakStartTime"] as DateTime?;
                                 workTime.BreakEndTime = reader["BreakEndTime"] as DateTime?;
+                                workTime.BusinessStartTime = reader["BusinessStartTime"] as DateTime?;
+                                workTime.BusinessEndTime = reader["BusinessEndTime"] as DateTime?;
+                                workTime.PersonalStartTime = reader["PersonalStartTime"] as DateTime?;
+                                workTime.PersonalEndTime = reader["PersonalEndTime"] as DateTime?;
                             }
                         }
                     }

@@ -54,60 +54,54 @@ const CandidateGrid = () => {
     "Who's In the Building | SSW Technologies Inc.";
   return (
     <React.Fragment>
-      <div className="page-content">
-        <Container fluid>
-          <Row>
-            <Col xxl={12}>
-              <h5 className="mb-3">
-                <div className="flex-grow-1">
-                  <h4 className="fs-16 mb-1">Who's In the Building?</h4>
 
-                </div>
-              </h5>
-              <br />
-              <Card>
-                <CardBody>
+      <Container fluid>
+        <Row>
+          <Col xxl={12}>
+
+            <Card>
+              <CardBody>
 
 
-                  <Nav pills className="nav-success mb-3">
-                    <NavItem>
-                      <NavLink style={{ cursor: "pointer" }} className={classnames({ active: pillsTab === "1", })} onClick={() => { pillsToggle("1"); }} >
-                        Salaried
-                      </NavLink>
-                    </NavItem>
-                    <NavItem>
-                      <NavLink style={{ cursor: "pointer" }} className={classnames({ active: pillsTab === "2", })} onClick={() => { pillsToggle("2"); }} >
-                        Hourly
-                      </NavLink>
-                    </NavItem>
-                  </Nav>
+                <Nav pills className="nav-success mb-3">
+                  <NavItem>
+                    <NavLink style={{ cursor: "pointer" }} className={classnames({ active: pillsTab === "1", })} onClick={() => { pillsToggle("1"); }} >
+                      Salaried
+                    </NavLink>
+                  </NavItem>
+                  <NavItem>
+                    <NavLink style={{ cursor: "pointer" }} className={classnames({ active: pillsTab === "2", })} onClick={() => { pillsToggle("2"); }} >
+                      Hourly
+                    </NavLink>
+                  </NavItem>
+                </Nav>
 
 
 
 
-                  <TabContent activeTab={pillsTab} className="text-muted">
-                    <TabPane tabId="1" id="home-1">
-                      <div className="d-flex">
+                <TabContent activeTab={pillsTab} className="text-muted">
+                  <TabPane tabId="1" id="home-1">
+                    <div className="d-flex">
 
-                        <CardBody>
-                          <SearchTable data={salariedData} />
-                        </CardBody>
+                      <CardBody>
+                        <SearchTable data={salariedData} />
+                      </CardBody>
 
-                      </div>
+                    </div>
 
-                    </TabPane>
+                  </TabPane>
 
-                    <TabPane tabId="2" id="profile-1">
+                  <TabPane tabId="2" id="profile-1">
 
-                      <div className="d-flex">
+                    <div className="d-flex">
 
-                        <CardBody>
-                          <SearchTable data={hourlyData} />
-                        </CardBody>
+                      <CardBody>
+                        <SearchTable data={hourlyData} />
+                      </CardBody>
 
-                      </div>
+                    </div>
 
-                      {/* <div className="d-flex">
+                    {/* <div className="d-flex">
                         <div className="flex-shrink-0">
                           <i className="ri-checkbox-circle-fill text-success"></i>
                         </div>
@@ -123,45 +117,45 @@ const CandidateGrid = () => {
                           A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart.
                         </div>
                       </div> */}
-                    </TabPane>
-                    <hr
-                      style={{
-                        borderTop: "1px solid lightgrey",
-                        width: "100%",
-                        margin: "20px 0",
-                      }}
-                    />
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "10px",
-                      }}
-                    >
-                      <button onClick={handleRefresh} style={{ background: "none", border: "none", cursor: "pointer" }}>
-                        <img
-                          src={logoRefresh}
-                          alt="Refresh Icon"
-                          style={{ height: "20px", width: "20px" }}
-                        />
-                      </button>
-                      <span style={{ fontSize: "14px", color: "#6c757d" }}>Click to refresh</span>
+                  </TabPane>
+                  <hr
+                    style={{
+                      borderTop: "1px solid lightgrey",
+                      width: "100%",
+                      margin: "20px 0",
+                    }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "10px",
+                    }}
+                  >
+                    <button onClick={handleRefresh} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                      <img
+                        src={logoRefresh}
+                        alt="Refresh Icon"
+                        style={{ height: "20px", width: "20px" }}
+                      />
+                    </button>
+                    <span style={{ fontSize: "14px", color: "#6c757d" }}>Click to refresh</span>
+                  </div>
+
+
+                  {lastRefreshed && (
+                    <div style={{ textAlign: "center", marginTop: "10px", fontSize: "12px", color: "#6c757d" }}>
+                      <span>Last refreshed on: {lastRefreshed}</span>
                     </div>
+                  )}
+                </TabContent>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
 
-
-                    {lastRefreshed && (
-                      <div style={{ textAlign: "center", marginTop: "10px", fontSize: "12px", color: "#6c757d" }}>
-                        <span>Last refreshed on: {lastRefreshed}</span>
-                      </div>
-                    )}
-                  </TabContent>
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </Container>
-      </div>
     </React.Fragment>
   );
 };

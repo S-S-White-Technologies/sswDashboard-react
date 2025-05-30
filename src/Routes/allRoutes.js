@@ -11,6 +11,24 @@ import DashboardProject from "../pages/DashboardProject";
 import DashboardNFT from "../pages/DashboardNFT";
 import DashboardJob from "../pages/DashboardJob/";
 
+
+//Accounting //Eng. //HR //IT // Planning // Production // Quality // Sales // Shipping //Shukla Medical // Supervisor // KPIs
+
+import Accounting from "../pages/Accounting/index"
+import Engineering from "../pages/Engineering/index"
+import HumanResource from "../pages/HumanResource/index"
+import InfoTechnology from "../pages/IT/index"
+import Planning from "../pages/Planning/index"
+import Production from "../pages/Production/index"
+import Quality from "../pages/Quality/index"
+import Sales from "../pages/Sales/index"
+import Shipping from "../pages/Shipping/index"
+import Shukla from "../pages/Shukla/index"
+import Supervisor from "../pages/Supervisor/index"
+import KPI from "../pages/KPI/index"
+
+
+
 //Calendar
 // Email box
 import MailInbox from "../pages/EmailInbox";
@@ -241,6 +259,7 @@ import UserProfile from "../pages/Authentication/user-profile";
 
 import FileManager from "../pages/FileManager";
 import ToDoList from "../pages/ToDo";
+import IT from "../pages/IT";
 
 const authProtectedRoutes = [
   { path: "/dashboard-analytics", component: <DashboardAnalytics /> },
@@ -266,6 +285,25 @@ const authProtectedRoutes = [
 
   { path: "/apps-file-manager", component: <FileManager /> },
   { path: "/apps-todo", component: <ToDoList /> },
+
+
+  // Accounting
+
+  { path: "/accounting", component: <Accounting /> },
+
+  //Engineering
+
+  { path: "/engineering", component: <Engineering /> },
+
+  //HR
+  { path: "/humanresource", component: <HumanResource /> },
+  { path: "/planning", component: <Planning /> }, { path: "/production", component: <Production /> },
+  { path: "/it", component: <IT /> }, { path: "/quality", component: <Quality /> },
+  { path: "/shukla", component: <Shukla /> }, { path: "/shipping", component: <Shipping /> },
+  { path: "/sales", component: <Sales /> }, { path: "/supervisor", component: <Supervisor /> },
+  { path: "/kpi", component: <KPI /> },
+
+
 
 
   //Chat

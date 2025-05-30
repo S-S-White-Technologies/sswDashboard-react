@@ -31,23 +31,23 @@ const ComingSoon = () => {
         }
     }
 
-document.title ="Coming Soon | Velzon - React Admin & Dashboard Template";
+
 
     return (
-        <React.Fragment>            
-            <ParticlesAuth>
-                <div className="auth-page-content">
-                    <Container>
-                        <Row>
-                            <Col lg={12}>
-                                <div className="text-center mt-sm-5 pt-4 mb-4">
-                                    <div className="mb-sm-5 pb-sm-4 pb-5">
-                                        <img src={comingsoon} alt="" height="120" className="move-animation" />
-                                    </div>
-                                    <div className="mb-5">
-                                        <h1 className="display-2 coming-soon-text">Coming Soon</h1>
-                                    </div>
-                                    <div>
+        <React.Fragment>
+
+            <div className="auth-page-content">
+                <Container>
+                    <Row>
+                        <Col lg={12}>
+                            <div className="text-center mt-sm-5 pt-4 mb-4">
+                                <div className="mb-sm-5 pb-sm-4 pb-5">
+                                    <img src={comingsoon} alt="" height="120" className="move-animation" />
+                                </div>
+                                <div className="mb-5">
+                                    <h1 className="display-2 coming-soon-text">Under Development</h1>
+                                </div>
+                                {/* <div>
                                         <Row className="justify-content-center mt-5">
                                             <Col lg={8}>
                                                 <Countdown date="2025/12/31" renderer={renderer} />
@@ -65,15 +65,15 @@ document.title ="Coming Soon | Velzon - React Admin & Dashboard Template";
                                                 <i className="ri-send-plane-2-fill align-bottom ms-2"></i>
                                             </button>
                                         </InputGroup>
-                                    </div>
-                                </div>
-                            </Col>
-                        </Row>
+                                    </div> */}
+                            </div>
+                        </Col>
+                    </Row>
 
-                    </Container>
+                </Container>
 
-                </div>
-            </ParticlesAuth>
+            </div>
+
         </React.Fragment>
     )
 }

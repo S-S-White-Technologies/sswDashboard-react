@@ -274,6 +274,102 @@ const SearchTable = ({ data }) => {
   );
 };
 
+const SearchTableEdit = ({ data }) => {
+  const [searchTable, setSearchTable] = useState(data);
+
+  useEffect(() => {
+    setSearchTable(data);  // Update state when data prop changes
+  }, [data]);
+  // const searchTable =
+  //   [
+  //     { EmpId: "3300", Name: "Abha Magal", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Adam Gosik-Wolfe", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Adrianna Plotkin", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Akash Sharma", Status: "IN", ReturningAt: "3:30 PM" },
+  //     { EmpId: "3300", Name: "Akash Shukla", Status: "IN", ReturningAt: "4:00 PM" },
+  //     { EmpId: "3300", Name: "Amjad Daluol", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Angela Vo", Status: "IN", ReturningAt: "5:00 PM" },
+  //     { EmpId: "3300", Name: "Atul Achaya", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Austin Stroh", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Brian Perkins", Status: "IN", ReturningAt: "3:45 PM" },
+  //     { EmpId: "3300", Name: "Brian Sereno", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Christine Martin", Status: "IN", ReturningAt: "4:30 PM" },
+  //     { EmpId: "3300", Name: "Cierra Carlstrom", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Eddy Casimir", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Edward Sittler", Status: "IN", ReturningAt: "4:15 PM" },
+  //     { EmpId: "3300", Name: "Eric Benson", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Govind Govind", Status: "IN", ReturningAt: "5:00 PM" },
+  //     { EmpId: "3300", Name: "Han Lin", Status: "IN", ReturningAt: "3:30 PM" },
+  //     { EmpId: "3300", Name: "Henry Pivax", Status: "OUT", ReturningAt: "N/A" },
+  //     { EmpId: "3300", Name: "Ivette Benitez", Status: "IN", ReturningAt: "4:00 PM" },
+  //     { EmpId: "3300", Name: "Jan Korzonowicz", Status: "OUT", ReturningAt: "N/A" }
+  //   ]
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Emp ID",
+        accessor: (cellProps) => {
+          return (
+            <span className="fw-semibold">{cellProps.empId}</span>
+          )
+        },
+        disableFilters: true,
+        filterable: false,
+      },
+
+      {
+        Header: "Name",
+        accessor: "name",
+        disableFilters: true,
+        filterable: false,
+      },
+      {
+        Header: "Status",
+        accessor: "status",
+        disableFilters: true,
+        filterable: false,
+        Cell: ({ value }) => {
+          // Apply badge with class based on status
+          const badgeClass = value === "IN" ? "bg-success" : "bg-danger";
+          return <span className={`badge ${badgeClass}`}>{value}</span>;
+        },
+      },
+      {
+        Header: "ReturningAt",
+        accessor: "returningAt",
+        disableFilters: true,
+        filterable: false,
+      }
+
+    ],
+    []
+  );
+
+
+
+
+  return (
+    <React.Fragment >
+      <TableContainer
+        columns={(columns || [])}
+        data={(searchTable || [])}
+        isPagination={true}
+        isGlobalFilter={true}
+        iscustomPageSize={false}
+        isBordered={false}
+        customPageSize={10}
+        className="custom-header-css table align-middle table-nowrap"
+        tableClassName="table-centered align-middle table-nowrap mb-0"
+        theadClassName="text-muted table-light"
+        SearchPlaceholder='Search...'
+
+      />
+
+    </React.Fragment >
+  );
+};
+
 const SortingTable = () => {
   const sortingTable =
     [
@@ -487,4 +583,4 @@ const HiddenColumns = () => {
   );
 };
 
-export { DefaultTable, PaginationTable, SearchTable, SortingTable, LoadingStateTable, HiddenColumns };
+export { DefaultTable, PaginationTable, SearchTable, SearchTableEdit, SortingTable, LoadingStateTable, HiddenColumns };

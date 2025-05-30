@@ -47,7 +47,7 @@ export const loginUser = (user, history) => async (dispatch) => {
       // store auth user in session
       sessionStorage.setItem("authUser", JSON.stringify(response.data));
 
-      console.log("Whats the Data: ", response.data);
+      //console.log("Whats the Data: ", response.data);
 
       // dispatch to redux
       dispatch(loginSuccess(response.data));
@@ -67,6 +67,7 @@ export const loginUser = (user, history) => async (dispatch) => {
 export const logoutUser = () => async (dispatch) => {
   try {
     sessionStorage.removeItem("authUser");
+    sessionStorage.clear();
     let fireBaseBackend = getFirebaseBackend();
     if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
       const response = fireBaseBackend.logout;

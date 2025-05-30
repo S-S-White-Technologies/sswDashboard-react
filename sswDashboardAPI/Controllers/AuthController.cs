@@ -281,8 +281,5 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Reset link has been sent to your email." });
     }
 
-
-
-
 }
 
