@@ -747,7 +747,7 @@ const DashboardCrypto = () => {
 
             if (response.status === 200 || response.status === 201) {
                 if (Array.isArray(response.data) && response.data.length === 0) {
-                    toast.error("Clock In and Clock Out is Necessary");
+                    toast.error("Clock-In is necessary");
                 } else {
                     setAttendanceData(response.data);
                     tog_togViewAttendace();

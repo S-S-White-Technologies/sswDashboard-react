@@ -47,11 +47,11 @@ const Login = (props) => {
         enableReinitialize: true,
 
         initialValues: {
-            email: '',
+            emailOrEmpId: '',
             password: '',
         },
         validationSchema: Yup.object({
-            email: Yup.string().required("Please Enter Your Email ID"),
+            emailOrEmpId: Yup.string().required("Please Enter Your Email ID"),
             password: Yup.string().required("Please Enter Your Password"),
         }),
         onSubmit: (values) => {
@@ -115,21 +115,21 @@ const Login = (props) => {
                                                 action="#">
 
                                                 <div className="mb-3">
-                                                    <Label htmlFor="email" className="form-label">Email</Label>
+                                                    <Label htmlFor="emailOrEmpId" className="form-label">Email or Emp. ID</Label>
                                                     <Input
-                                                        name="email"
+                                                        name="emailOrEmpId"
                                                         className="form-control"
-                                                        placeholder="Enter Email Address"
+                                                        placeholder="Enter Email Address or Emp ID"
                                                         type="text"
                                                         onChange={validation.handleChange}
                                                         onBlur={validation.handleBlur}
-                                                        value={validation.values.email || ""}
-                                                        invalid={
-                                                            validation.touched.email && validation.errors.email ? true : false
-                                                        }
+                                                        value={validation.values.emailOrEmpId || ""}
+                                                    // invalid={
+                                                    //     validation.touched.emailOrEmpId && validation.errors.emailOrEmpId ? true : false
+                                                    // }
                                                     />
-                                                    {validation.touched.email && validation.errors.email ? (
-                                                        <FormFeedback type="invalid">{validation.errors.email}</FormFeedback>
+                                                    {validation.touched.emailOrEmpId && validation.errors.emailOrEmpId ? (
+                                                        <FormFeedback type="invalid">{validation.errors.emailOrEmpId}</FormFeedback>
                                                     ) : null}
                                                 </div>
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using sswDashboardAPI.Data;
 using sswDashboardAPI.Model;
 using System.Data;
@@ -153,7 +154,107 @@ namespace sswDashboardAPI.Services
             return employees;
         }
 
-        public async Task<LastActionResponse> GetLastAction(string empId)
+
+
+        public List<Users> GetUsers()
+        {
+            var employees = new List<Users>();
+            string query = string.Empty;
+
+
+            query = @"SELECT EB.EmpId,EB.Name,EB.EmpStatus, E.Title, EB.SupervisorId, (SELECT Name FROM EmpBasic WHERE EmpId = EB.SupervisorId) AS SupervisorName
+            FROM EmpBasic EB INNER JOIN Employees E ON E.EmpId = EB.EmpId WHERE EB.EmpStatus = 'A' ORDER BY EB.Name;";
+
+            using (var connection = new SqlConnection(_plutoConnectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqlCommand(query, connection))
+                {
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        // Check if the columns exist in the result set
+                        string empId = reader["EmpId"] != DBNull.Value ? reader["EmpId"].ToString() : string.Empty;
+                        string name = reader["Name"] != DBNull.Value ? reader["Name"].ToString() : string.Empty;
+                        string status = reader["EmpStatus"] != DBNull.Value ? reader["EmpStatus"].ToString() : string.Empty;
+                        string title = reader["Title"] != DBNull.Value ? reader["Title"].ToString() : string.Empty;
+                        string supervisor = reader["SupervisorName"] != DBNull.Value ? reader["SupervisorName"].ToString() : string.Empty;
+
+                        employees.Add(new Users
+                        {
+                            EmpId = empId,
+                            Name = name,
+                            Status = status,
+                            Title = title,
+                            Supervisor = supervisor
+
+                        });
+                    }
+
+                }
+            }
+
+            return employees;
+        }
+
+
+                //public List<Employee> GetEmployees(string employeeType, bool isUSA)
+                //{
+                //    var excludedIds = new List<string>();
+
+                //    IQueryable<dynamic> groupedClocks;
+
+                //    if (employeeType == "salaried")
+                //    {
+                //        excludedIds = new List<string> { "2693", "2969" };
+
+                //        // Query latest TimeClock entry per employee
+                //        groupedClocks = _context.TimeClock
+                //            .Where(tc =>
+                //                EF.Functions.DateDiffDay(tc.ClockTime, DateTime.Now) < 30 &&
+                //                (tc.Approval == null || !tc.Approval.Contains("PENDING")))
+                //            .GroupBy(tc => tc.EmpId)
+                //            .Select(g => g.OrderByDescending(tc => tc.ClockTime).FirstOrDefault());
+                //    }
+                //    else // hourly
+                //    {
+                //        excludedIds = new List<string> { "2900", "2864", "2865" };
+
+                //        groupedClocks = _context.TimeClockFactory
+                //            .Where(tc =>
+                //                EF.Functions.DateDiffDay(tc.ClockTime, DateTime.Now) < 30 &&
+                //                (tc.Approval == null || !tc.Approval.Contains("PENDING")))
+                //            .GroupBy(tc => tc.EmpId)
+                //            .Select(g => g.OrderByDescending(tc => tc.ClockTime).FirstOrDefault());
+                //    }
+
+                //    // Switch to in-memory to avoid EF Core translation error
+                //    var timeClocks = groupedClocks
+                //        .AsEnumerable() // <<=== This is the key to solving the error
+                //        .Join(_context.EmpBasic,
+                //              tc => tc.EmpId,
+                //              eb => eb.EmpId,
+                //              (tc, eb) => new { tc, eb })
+                //        .Where(joined =>
+                //            joined.eb.EmpStatus == "A" &&
+                //            joined.eb.expensecode == (employeeType == "salaried" ? "IDL" : "DL") &&
+                //            !excludedIds.Contains(joined.tc.EmpId))
+                //        .OrderBy(joined => joined.eb.firstname)
+                //        .Select(joined => new Employee
+                //        {
+                //            EmpId = joined.tc.EmpId,
+                //            Name = $"{joined.eb.firstname} {joined.eb.lastname}",
+                //            Status = joined.tc.Status,
+                //            ReturningAt = "N/A"
+                //        })
+                //        .ToList();
+
+                //    return timeClocks;
+                //}
+
+
+                public async Task<LastActionResponse> GetLastAction(string empId)
         {
             var lastActionResponse = new LastActionResponse();
 
@@ -667,6 +768,7 @@ namespace sswDashboardAPI.Services
     public interface IEmployeeService
     {
         List<Employee> GetEmployees(string employeeType, bool isUSA);
+        List<Users> GetUsers();
     }
 
     public class Employee
@@ -675,6 +777,15 @@ namespace sswDashboardAPI.Services
         public string Name { get; set; }
         public string Status { get; set; }
         public string ReturningAt { get; set; }
+    }
+
+    public class Users
+    {
+        public string EmpId { get; set; }
+        public string Name { get; set; }
+        public string Status { get; set; }
+        public string Title { get; set; }
+        public string Supervisor { get; set; }
     }
 
 }

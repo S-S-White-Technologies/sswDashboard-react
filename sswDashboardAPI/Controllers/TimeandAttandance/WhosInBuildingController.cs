@@ -29,6 +29,21 @@ namespace sswDashboardAPI.Controllers.TimeandAttandance
             }
         }
 
+        [HttpGet("userList")]
+        public IActionResult GetUserList()
+        {
+            try
+            {
+                var salariedEmployees = _employeeService.GetUsers();
+                return Ok(salariedEmployees);
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
         [HttpGet("hourly")]
         public IActionResult GetHourlyEmployees()
         {
