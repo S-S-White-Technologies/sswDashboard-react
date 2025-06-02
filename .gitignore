@@ -26,3 +26,18 @@ yarn-error.log*
 Velzon-React-2.0.zip
 yarn.lock
 yarn.lock
+
+
+# Ignore build artifacts
+/bin/
+/obj/
+/.vs/
+/*.user
+*.suo
+*.pdb
+*.dll
+
+# Ignore generated caches
+*.vsidx
+*.dtbcache.v2
+
