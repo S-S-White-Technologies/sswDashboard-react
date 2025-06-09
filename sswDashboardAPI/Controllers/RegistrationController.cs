@@ -30,7 +30,7 @@ namespace sswDashboardAPI.Controllers
                 .Where(e => string.Compare(e.EmpId, "3060") > 0 && string.Compare(e.EmpId, "4000") < 0)
                 .MaxAsync(e => e.EmpId);
 
-            if (int.TryParse(maxEmpId, out int maxIdNum))
+            if (int.TryParse(maxEmpId.ToString(), out int maxIdNum))
             {
                 int nextId = maxIdNum + 1;
                 return Ok(nextId.ToString());
@@ -103,11 +103,12 @@ namespace sswDashboardAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
+            //var success3 = await _employeeService.UpdateKineticEmpBasicAsync(employeeDto);
             var success1 = await _employeeService.InsertEmpBasicPLUTO(employeeDto);
             var success2 = await _employeeService.InsertEmployeeToEmployeesTable(employeeDto);
+            //var success3 = await _employeeService.UpdateKineticEmpBasicAsync(employeeDto);
 
-            if (success1 && success2)
+            if (success1 && success2  )
             {
                 
                 string emailTemplatePath = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplates", "WelcomeEmail.html");

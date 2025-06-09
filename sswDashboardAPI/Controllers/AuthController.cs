@@ -124,22 +124,106 @@ public class AuthController : ControllerBase
         _emailService = emailService;
     }
 
+    //[HttpPost("login")]
+
+    //public async Task<IActionResult> Login([FromBody] LoginRequestDto loginDto)
+    //{
+    //    if (string.IsNullOrEmpty(loginDto.EmailOrEmpId) || string.IsNullOrEmpty(loginDto.Password))
+    //        return BadRequest("Email/Emp ID and Password are required.");
+
+    //    var user = await _db.Employees
+    //        .FirstOrDefaultAsync(x => x.EmailAddress == loginDto.EmailOrEmpId || x.EmpId == loginDto.EmailOrEmpId);
+
+    //    if (user == null)
+    //        return Unauthorized("Invalid Email or Employee ID.");
+
+    //    var empBasic = await _db.EmpBasic
+    //        .Include(x => x.Role)
+    //        .FirstOrDefaultAsync(x => x.EmpId == user.EmpId);
+
+    //    if (empBasic == null)
+    //        return Unauthorized("Employee record not found.");
+
+    //    bool isPasswordValid = false;
+    //    bool isBcrypt = false;
+    //    bool needsPasswordReset = false;
+
+    //    if (!string.IsNullOrEmpty(user.ProjectsPassword) && user.ProjectsPassword.StartsWith("$2"))
+    //    {
+    //        try
+    //        {
+    //            isPasswordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.ProjectsPassword);
+    //            isBcrypt = true;
+    //        }
+    //        catch
+    //        {
+    //            return Unauthorized("Invalid password.");
+    //        }
+    //    }
+
+    //    if (!isBcrypt)
+    //    {
+    //        try
+    //        {
+    //            string decrypted = AesEncryptionHelper.DecryptOldVB(
+    //                user.ProjectsPassword,
+    //                "Jehym!",
+    //                "S@!tS@!tS@!t",
+    //                "SHA1",
+    //                7,
+    //                "@1f2c8e9e5Z2g7H9",
+    //                128
+    //            );
+
+    //            if (decrypted == loginDto.Password)
+    //            {
+    //                isPasswordValid = true;
+    //                needsPasswordReset = true;
+    //            }
+    //            else
+    //            {
+    //                needsPasswordReset = true;
+    //            }
+    //        }
+    //        catch
+    //        {
+    //            needsPasswordReset = true;
+    //        }
+    //    }
+
+    //    if (!isPasswordValid && !needsPasswordReset)
+    //        return Unauthorized("Invalid password.");
+
+    //    var token = GenerateJwtToken(user, empBasic);
+
+    //    return Ok(new
+    //    {
+    //        uid = user.EmpId,
+    //        email = user.EmailAddress,
+    //        name = $"{empBasic.firstname} {empBasic.lastname}",
+    //        title = user.Title,
+    //        role = empBasic.Role?.RoleName ?? "User",
+    //        supervisorId = empBasic.SupervisorId,
+    //        empStatus = empBasic.EmpStatus,
+    //        expenseCode = empBasic.expensecode,
+    //        token = token,
+    //        needsPasswordReset = needsPasswordReset
+    //    });
+    //}
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto loginDto)
     {
         if (string.IsNullOrEmpty(loginDto.EmailOrEmpId) || string.IsNullOrEmpty(loginDto.Password))
-            return BadRequest("Email/Emp ID and Password are required.");
+            return BadRequest("Email and Password are required.");
 
-        var user = await _db.Employees
-            .FirstOrDefaultAsync(x => x.EmailAddress == loginDto.EmailOrEmpId || x.EmpId == loginDto.EmailOrEmpId);
-
+        var user = await _db.Employees.FirstOrDefaultAsync(x => x.EmailAddress == loginDto.EmailOrEmpId || x.EmpId == loginDto.EmailOrEmpId);
         if (user == null)
-            return Unauthorized("Invalid Email or Employee ID.");
+            return Unauthorized("Invalid Email.");
 
         var empBasic = await _db.EmpBasic
             .Include(x => x.Role)
             .FirstOrDefaultAsync(x => x.EmpId == user.EmpId);
-
         if (empBasic == null)
             return Unauthorized("Employee record not found.");
 
@@ -147,6 +231,7 @@ public class AuthController : ControllerBase
         bool isBcrypt = false;
         bool needsPasswordReset = false;
 
+        // Check if password is BCrypt (starts with $2)
         if (!string.IsNullOrEmpty(user.ProjectsPassword) && user.ProjectsPassword.StartsWith("$2"))
         {
             try
@@ -156,10 +241,12 @@ public class AuthController : ControllerBase
             }
             catch
             {
-                return Unauthorized("Invalid password.");
+                // corrupt bcrypt hash, treat as invalid
+                return Unauthorized("Invalid Password.");
             }
         }
 
+        // If not bcrypt, try AES
         if (!isBcrypt)
         {
             try
@@ -177,21 +264,24 @@ public class AuthController : ControllerBase
                 if (decrypted == loginDto.Password)
                 {
                     isPasswordValid = true;
-                    needsPasswordReset = true;
+                    needsPasswordReset = true; // matched AES, still force reset
                 }
                 else
                 {
+                    // AES decryption success, but password mismatch
                     needsPasswordReset = true;
                 }
             }
             catch
             {
+                // AES decryption failed completely
                 needsPasswordReset = true;
             }
         }
 
         if (!isPasswordValid && !needsPasswordReset)
-            return Unauthorized("Invalid password.");
+            return Unauthorized("Invalid Password.");
+       
 
         var token = GenerateJwtToken(user, empBasic);
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using sswDashboardAPI.Data;
 using sswDashboardAPI.Model;
 using sswDashboardAPI.Model.Time_and_Attendance;
 using System.Collections.Generic;
@@ -18,8 +19,8 @@ namespace sswDashboardAPI.Data
             base.OnModelCreating(modelBuilder);
         }
 
-        public DbSet<EmpBasic> EmpBasic { get; set; } 
-        
+        public DbSet<EmpBasic> EmpBasic { get; set; }
+
         public DbSet<Employee> Employees { get; set; }
 
         public DbSet<Role> Roles { get; set; }
@@ -29,3 +30,8 @@ namespace sswDashboardAPI.Data
 
     }
 }
+
+
+
+
+
