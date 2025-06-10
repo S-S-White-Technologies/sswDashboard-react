@@ -244,13 +244,13 @@ const Navdata = () => {
                 {
                     id: "taskmanagement",
                     label: "Task Management",
-                    link: "/dashboard-crm",
+                    link: "/apps-tasks-list-view",
                     parentId: "dashboard",
-                    isChildItem: true,
-                    click: function (e) {
-                        e.preventDefault();
-                        setIsCRM(!isCRM);
-                    },
+                    // isChildItem: true,
+                    // click: function (e) {
+                    //     e.preventDefault();
+                    //     setIsCRM(!isCRM);
+                    // },
                     stateVariables: isCRM,
                     childItems: [
                         {
@@ -902,6 +902,24 @@ const Navdata = () => {
             label: "KPIs",
             icon: "mdi mdi-cloud-check",
             link: "/kpi",
+
+        },
+        {
+            label: "apps",
+            isHeader: true,
+        },
+        {
+            id: "di",
+            label: "Digital Inspection",
+            icon: "ri-checkbox-circle-fill",
+            link: "/di",
+
+        },
+        {
+            id: "mafia",
+            label: "Mafia Aux",
+            icon: "ri-key-2-fill",
+            link: "/mafia",
 
         },
 

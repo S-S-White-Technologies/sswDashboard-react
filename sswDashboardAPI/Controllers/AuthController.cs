@@ -214,6 +214,8 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto loginDto)
     {
+
+
         if (string.IsNullOrEmpty(loginDto.EmailOrEmpId) || string.IsNullOrEmpty(loginDto.Password))
             return BadRequest("Email and Password are required.");
 
@@ -223,7 +225,7 @@ public class AuthController : ControllerBase
 
         var empBasic = await _db.EmpBasic
             .Include(x => x.Role)
-            .FirstOrDefaultAsync(x => x.EmpId == user.EmpId);
+            .FirstOrDefaultAsync(x => x.EmpID == user.EmpId);
         if (empBasic == null)
             return Unauthorized("Employee record not found.");
 
@@ -289,12 +291,12 @@ public class AuthController : ControllerBase
         {
             uid = user.EmpId,
             email = user.EmailAddress,
-            name = $"{empBasic.firstname} {empBasic.lastname}",
+            name = $"{empBasic.FirstName} {empBasic.LastName}",
             title = user.Title,
             role = empBasic.Role?.RoleName ?? "User",
-            supervisorId = empBasic.SupervisorId,
+            supervisorId = empBasic.SupervisorID,
             empStatus = empBasic.EmpStatus,
-            expenseCode = empBasic.expensecode,
+            expenseCode = empBasic.ExpenseCode,
             token = token,
             needsPasswordReset = needsPasswordReset
         });

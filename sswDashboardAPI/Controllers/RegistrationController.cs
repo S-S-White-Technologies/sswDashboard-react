@@ -27,8 +27,8 @@ namespace sswDashboardAPI.Controllers
         public async Task<IActionResult> GetNextEmpId()
         {
             var maxEmpId = await _mainDb.EmpBasic
-                .Where(e => string.Compare(e.EmpId, "3060") > 0 && string.Compare(e.EmpId, "4000") < 0)
-                .MaxAsync(e => e.EmpId);
+                .Where(e => string.Compare(e.EmpID, "3060") > 0 && string.Compare(e.EmpID, "4000") < 0)
+                .MaxAsync(e => e.EmpID);
 
             if (int.TryParse(maxEmpId.ToString(), out int maxIdNum))
             {
@@ -43,11 +43,11 @@ namespace sswDashboardAPI.Controllers
         public IActionResult GetSupervisors()
         {
             var supervisors = (from e in _mainDb.EmpBasic
-                               join m in _mainDb.EmpBasic on e.SupervisorId equals m.EmpId
+                               join m in _mainDb.EmpBasic on e.SupervisorID equals m.EmpID
                                where m.Name != null && m.EmpStatus == "A"
                                select new
                                {
-                                   m.EmpId,
+                                   m.EmpID,
                                    m.Name
                                }).Distinct().OrderBy(x => x.Name).ToList();
 
@@ -103,12 +103,13 @@ namespace sswDashboardAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            //var success3 = await _employeeService.UpdateKineticEmpBasicAsync(employeeDto);
-            var success1 = await _employeeService.InsertEmpBasicPLUTO(employeeDto);
+            var success3 = await _employeeService.InsertKineticEmpBasicAsync(employeeDto);
             var success2 = await _employeeService.InsertEmployeeToEmployeesTable(employeeDto);
+            var success1 = await _employeeService.InsertEmpBasicPLUTO(employeeDto);
+            
             //var success3 = await _employeeService.UpdateKineticEmpBasicAsync(employeeDto);
 
-            if (success1 && success2  )
+            if (success1 && success2 && success3 )
             {
                 
                 string emailTemplatePath = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplates", "WelcomeEmail.html");

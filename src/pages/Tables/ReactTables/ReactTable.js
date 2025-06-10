@@ -2,9 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import TableContainer from "../../../Components/Common/TableContainerReactTable";
 import TableContainerUser from "../../../Components/Common/TableContainerReactTableUser";
 import { Link } from 'react-router-dom';
-import { Spinner } from 'reactstrap';
+import FeatherIcon from "feather-icons-react";
+import { Alert, Card, CardBody, Modal, ModalHeader, Container, ModalBody, ModalFooter, Button, Toast, ToastBody, Table, Spinner } from 'reactstrap';
+import { CardHeader, Col, Form, Input, Label, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
 import classnames from "classnames";
-
+import logoLight from "../../../assets/images/logofinal.png";
+import progileBg from '../../../assets/images/profile-bg.jpg';
 const DefaultTable = () => {
   const defaultTable =
     [
@@ -276,17 +279,26 @@ const SearchTable = ({ data }) => {
 };
 
 const SearchTableEdit = ({ data }) => {
-  const [searchTable, setSearchTable] = useState(data);
 
+  const [activeTab, setActiveTab] = useState("1");
 
-  const handleView = (empId) => {
-    console.log("View:", empId);
-    // Navigate or show modal
+  const tabChange = (tab) => {
+    if (activeTab !== tab) setActiveTab(tab);
   };
+
+  const [searchTable, setSearchTable] = useState(data);
+  const [modal_togView, setmodal_togView] = useState('');
+  function tog_togView() {
+    setmodal_togView(!modal_togView);
+  }
+
 
   const handleEdit = (empId) => {
     console.log("Edit:", empId);
     // Navigate or open form to edit
+  };
+  const handleView = (empId) => {
+    tog_togView()
   };
 
   const handleDelete = async (empId) => {
@@ -296,7 +308,7 @@ const SearchTableEdit = ({ data }) => {
       const response = await axios.put(`https://localhost:7168/api/employee/inactivate/${empId}`);
       if (response.status === 200) {
         alert("User inactivated successfully!");
-        // Refresh your list (e.g., re-fetch API data)
+
       }
     } catch (error) {
       console.error("Error inactivating user", error);
@@ -419,6 +431,174 @@ const SearchTableEdit = ({ data }) => {
         SearchPlaceholder='Search User...'
 
       />
+
+      <Modal size="xl" isOpen={modal_togView} toggle={tog_togView}>
+        <ModalHeader toggle={tog_togView}>
+
+        </ModalHeader>
+        <ModalBody>
+          <Container fluid>
+            <div className="position-relative mx-n4 mt-n4">
+              <div className="profile-wid-bg profile-setting-img">
+                <img src={progileBg} className="profile-wid-img" alt="" />
+                <div className="overlay-content">
+                  <div className="text-end p-3">
+                    <div className="p-0 ms-auto rounded-circle profile-photo-edit">
+                      <Input id="profile-foreground-img-file-input" type="file"
+                        className="profile-foreground-img-file-input" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <Row>
+              <Col xxl={3}>
+                <Card className="mt-n5">
+                  <CardBody className="p-4">
+                    <div className="text-center">
+                      <div className="profile-user position-relative d-inline-block mx-auto  mb-4">
+                        <img src={logoLight}
+                          className="rounded-circle avatar-xl img-thumbnail user-profile-image"
+                          alt="user-profile" />
+                      </div>
+                      <h5 className="fs-16 mb-1">Anna Adame</h5>
+                      <p className="text-muted mb-0">Lead Designer / Developer</p>
+                    </div>
+                  </CardBody>
+                </Card>
+
+
+              </Col>
+
+              <Col xxl={9}>
+                <Card className="mt-xxl-n5">
+                  <CardHeader>
+                    <Nav className="nav-tabs-custom rounded card-header-tabs border-bottom-0"
+                      role="tablist">
+                      <NavItem>
+                        <NavLink
+                          className={classnames({ active: activeTab === "1" })}
+                          onClick={() => {
+                            tabChange("1");
+                          }}>
+                          <i className="fas fa-home"></i>
+                          Personal Details
+                        </NavLink>
+                      </NavItem>
+
+                    </Nav>
+                  </CardHeader>
+                  <CardBody className="p-4">
+                    <TabContent activeTab={activeTab}>
+                      <TabPane tabId="1">
+                        <Form>
+                          <Row>
+                            <Col lg={6}>
+                              <div className="mb-3">
+                                <Label htmlFor="firstnameInput" className="form-label">First
+                                  Name</Label>
+                                <Input type="text" className="form-control" id="firstnameInput"
+                                  placeholder="Enter your firstname" defaultValue="Dave" />
+                              </div>
+                            </Col>
+                            <Col lg={6}>
+                              <div className="mb-3">
+                                <Label htmlFor="lastnameInput" className="form-label">Last
+                                  Name</Label>
+                                <Input type="text" className="form-control" id="lastnameInput"
+                                  placeholder="Enter your lastname" defaultValue="Adame" />
+                              </div>
+                            </Col>
+                            <Col lg={6}>
+                              <div className="mb-3">
+                                <Label htmlFor="phonenumberInput" className="form-label">Phone
+                                  Number</Label>
+                                <Input type="text" className="form-control"
+                                  id="phonenumberInput"
+                                  placeholder="Enter your phone number"
+                                  defaultValue="+(1) 987 6543" />
+                              </div>
+                            </Col>
+                            <Col lg={6}>
+                              <div className="mb-3">
+                                <Label htmlFor="emailInput" className="form-label">Email
+                                  Address</Label>
+                                <Input type="email" className="form-control" id="emailInput"
+                                  placeholder="Enter your email"
+                                  defaultValue="daveadame@velzon.com" />
+                              </div>
+                            </Col>
+
+                            <Col lg={12}>
+                              <div className="mb-3">
+                                <Label htmlFor="skillsInput" className="form-label">Skills</Label>
+                                <select className="form-select mb-3">
+                                  <option >Select your Skill </option>
+                                  <option value="Choices1">CSS</option>
+                                  <option value="Choices2">HTML</option>
+                                  <option value="Choices3">PYTHON</option>
+                                  <option value="Choices4">JAVA</option>
+                                  <option value="Choices5">ASP.NET</option>
+                                </select>
+                              </div>
+                            </Col>
+                            <Col lg={6}>
+                              <div className="mb-3">
+                                <Label htmlFor="designationInput"
+                                  className="form-label">Designation</Label>
+                                <Input type="text" className="form-control"
+                                  id="designationInput" placeholder="Designation"
+                                  defaultValue="Lead Designer / Developer" />
+                              </div>
+                            </Col>
+                            <Col lg={6}>
+                              <div className="mb-3">
+                                <Label htmlFor="websiteInput1"
+                                  className="form-label">Website</Label>
+                                <Input type="text" className="form-control" id="websiteInput1"
+                                  placeholder="www.example.com" defaultValue="www.velzon.com" />
+                              </div>
+                            </Col>
+                            <Col lg={4}>
+                              <div className="mb-3">
+                                <Label htmlFor="cityInput" className="form-label">City</Label>
+                                <Input type="text" className="form-control" id="cityInput"
+                                  placeholder="City" defaultValue="California" />
+                              </div>
+                            </Col>
+                            <Col lg={4}>
+                              <div className="mb-3">
+                                <Label htmlFor="countryInput" className="form-label">Country</Label>
+                                <Input type="text" className="form-control" id="countryInput"
+                                  placeholder="Country" defaultValue="United States" />
+                              </div>
+                            </Col>
+                            <Col lg={4}>
+                              <div className="mb-3">
+                                <Label htmlFor="zipcodeInput" className="form-label">Zip
+                                  Code</Label>
+                                <Input type="text" className="form-control" minLength="5"
+                                  maxLength="6" id="zipcodeInput"
+                                  placeholder="Enter zipcode" defaultValue="90011" />
+                              </div>
+                            </Col>
+
+
+                          </Row>
+                        </Form>
+                      </TabPane>
+
+                    </TabContent>
+                  </CardBody>
+                </Card>
+              </Col>
+            </Row>
+          </Container>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={tog_togView}>Close</Button>
+        </ModalFooter>
+      </Modal>
 
     </React.Fragment >
   );

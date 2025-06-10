@@ -3,6 +3,7 @@
 
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using sswDashboardAPI.Data;
 using sswDashboardAPI.Model;
 using sswDashboardAPI.Model.Time_and_Attendance;
@@ -10,7 +11,11 @@ using sswDashboardAPI.Model.Time_and_Attendance;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
+using System.Text;
 using System.Threading.Tasks;
 using static sswDashboardAPI.Services.EmployeeService;
 
@@ -28,203 +33,124 @@ namespace sswDashboardAPI.Services
         }
 
 
-        //public class MyAdoNet()
-        //{
-            public async Task<LastActionResponse> GetLastAction(string empId)
+
+        public async Task<LastActionResponse> GetLastAction(string empId)
+        {
+            var lastActionResponse = new LastActionResponse();
+
+            if (!short.TryParse(empId, out short empIdShort))
+                throw new ArgumentException("Invalid EmpId");
+
+            var lastAction = await _context.TimeClock
+                .AsNoTracking()
+                .Where(t => t.EmpId == empIdShort.ToString() &&
+                            (t.Approval == null || !t.Approval.Contains("PENDING")) &&
+                            t.ClockType == "Normal")
+                .OrderByDescending(t => t.ClockTime)
+                .FirstOrDefaultAsync();
+
+            if (lastAction != null)
             {
-                var lastActionResponse = new LastActionResponse();
-
-                // Try to parse empId into a valid number (short or int based on your DB schema)
-                if (!short.TryParse(empId, out short empIdNumeric))
-                {
-                    throw new ArgumentException("EmpId must be a valid number.");
-                }
-
-                using (var conn = new SqlConnection(_plutoConnectionString))
-                {
-                    string query = @"
-        SELECT 
-            t1.ClockTime AS MaxTime,
-            t1.Status
-        FROM TimeClock t1
-        WHERE t1.ClockTime = (
-            SELECT MAX(t2.ClockTime)
-            FROM TimeClock t2
-            WHERE t2.empid = t1.empid
-            AND (t2.APPROVAL NOT LIKE '%PENDING%' OR t2.APPROVAL IS NULL)
-            AND t2.ClockType='Normal'
-        )
-        AND t1.empid = @empid
-        AND (t1.APPROVAL NOT LIKE '%PENDING%' OR t1.APPROVAL IS NULL)";
-
-                    using (var command = new SqlCommand(query, conn))
-                    {
-                        // Use SqlParameter and specify the parameter type
-                        command.Parameters.Add(new SqlParameter("@empid", SqlDbType.SmallInt) { Value = empIdNumeric });
-                        conn.Open();
-
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-                            if (await reader.ReadAsync())
-                            {
-                                lastActionResponse.MaxTime = reader.IsDBNull(reader.GetOrdinal("MaxTime"))
-                                    ? default(DateTime)
-                                    : reader.GetDateTime(reader.GetOrdinal("MaxTime"));
-
-                                lastActionResponse.Status = reader.IsDBNull(reader.GetOrdinal("Status"))
-                                    ? "New"
-                                    : reader.GetString(reader.GetOrdinal("Status"));
-                            }
-                            else
-                            {
-                                lastActionResponse.MaxTime = default(DateTime);
-                                lastActionResponse.Status = "OUT";
-                            }
-                        }
-                    }
-                }
-
-                return lastActionResponse;
+                lastActionResponse.MaxTime = lastAction.ClockTime;
+                lastActionResponse.Status = lastAction.Status ?? "New";
+            }
+            else
+            {
+                lastActionResponse.MaxTime = default;
+                lastActionResponse.Status = "OUT";
             }
 
-            public async Task<LastActionResponse> GetLastActionBreak(string empId)
+            return lastActionResponse;
+        }
+
+
+        public async Task<LastActionResponse> GetLastActionBreak(string empId)
             {
-                var lastActionResponse = new LastActionResponse();
+            var lastActionResponse = new LastActionResponse();
 
-                using (var conn = new SqlConnection(_plutoConnectionString))
-                {
-                    string query = @"
-            SELECT 
-                t1.ClockTime AS MaxTime,
-                t1.Status
-            FROM TimeClock t1
-            WHERE t1.ClockTime = (
-                SELECT MAX(t2.ClockTime)
-                FROM TimeClock t2
-                WHERE t2.empid = t1.empid
-                AND (t2.APPROVAL NOT LIKE '%PENDING%' OR t2.APPROVAL IS NULL)
-                AND t2.ClockType='Break'
-            )
-            AND t1.empid = @empid
-            AND (t1.APPROVAL NOT LIKE '%PENDING%' OR t1.APPROVAL IS NULL)";
+            if (!short.TryParse(empId, out short empIdShort))
+                throw new ArgumentException("Invalid EmpId");
 
-                    using (var command = new SqlCommand(query, conn))
-                    {
-                        command.Parameters.AddWithValue("@empid", empId);
-                        conn.Open();
+            var lastAction = await _context.TimeClock
+                .AsNoTracking()
+                .Where(t => t.EmpId == empIdShort.ToString() &&
+                            (t.Approval == null || !t.Approval.Contains("PENDING")) &&
+                            t.ClockType == "Break")
+                .OrderByDescending(t => t.ClockTime)
+                .FirstOrDefaultAsync();
 
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-
-                            if (await reader.ReadAsync())
-                            {
-                                lastActionResponse.MaxTime = reader.IsDBNull(reader.GetOrdinal("MaxTime"))
-                                    ? default(DateTime)
-                                    : reader.GetDateTime(reader.GetOrdinal("MaxTime"));
-
-                                lastActionResponse.Status = reader.IsDBNull(reader.GetOrdinal("Status"))
-                                    ? string.Empty
-                                    : reader.GetString(reader.GetOrdinal("Status"));
-                            }
-                        }
-                    }
-                }
-
-                return lastActionResponse;
+            if (lastAction != null)
+            {
+                lastActionResponse.MaxTime = lastAction.ClockTime;
+                lastActionResponse.Status = lastAction.Status ?? "New";
             }
+            else
+            {
+                lastActionResponse.MaxTime = default;
+                lastActionResponse.Status = "OUT";
+            }
+
+            return lastActionResponse;
+        }
 
             public async Task<LastActionResponse> GetLastActionBusiness(string empId)
             {
-                var lastActionResponse = new LastActionResponse();
+            var lastActionResponse = new LastActionResponse();
 
-                using (var conn = new SqlConnection(_plutoConnectionString))
-                {
-                    string query = @"
-            SELECT 
-                t1.ClockTime AS MaxTime,
-                t1.Status
-            FROM TimeClock t1
-            WHERE t1.ClockTime = (
-                SELECT MAX(t2.ClockTime)
-                FROM TimeClock t2
-                WHERE t2.empid = t1.empid
-                AND (t2.APPROVAL NOT LIKE '%PENDING%' OR t2.APPROVAL IS NULL)
-                AND t2.ClockType='Business'
-            )
-            AND t1.empid = @empid
-            AND (t1.APPROVAL NOT LIKE '%PENDING%' OR t1.APPROVAL IS NULL)";
+            if (!short.TryParse(empId, out short empIdShort))
+                throw new ArgumentException("Invalid EmpId");
 
-                    using (var command = new SqlCommand(query, conn))
-                    {
-                        command.Parameters.AddWithValue("@empid", empId);
-                        conn.Open();
+            var lastAction = await _context.TimeClock
+                .AsNoTracking()
+                .Where(t => t.EmpId == empIdShort.ToString() &&
+                            (t.Approval == null || !t.Approval.Contains("PENDING")) &&
+                            t.ClockType == "Business")
+                .OrderByDescending(t => t.ClockTime)
+                .FirstOrDefaultAsync();
 
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-
-                            if (await reader.ReadAsync())
-                            {
-                                lastActionResponse.MaxTime = reader.IsDBNull(reader.GetOrdinal("MaxTime"))
-                                    ? default(DateTime)
-                                    : reader.GetDateTime(reader.GetOrdinal("MaxTime"));
-
-                                lastActionResponse.Status = reader.IsDBNull(reader.GetOrdinal("Status"))
-                                    ? string.Empty
-                                    : reader.GetString(reader.GetOrdinal("Status"));
-                            }
-                        }
-                    }
-                }
-
-                return lastActionResponse;
+            if (lastAction != null)
+            {
+                lastActionResponse.MaxTime = lastAction.ClockTime;
+                lastActionResponse.Status = lastAction.Status ?? "New";
             }
+            else
+            {
+                lastActionResponse.MaxTime = default;
+                lastActionResponse.Status = "OUT";
+            }
+
+            return lastActionResponse;
+        }
 
             public async Task<LastActionResponse> GetLastActionPersonal(string empId)
             {
-                var lastActionResponse = new LastActionResponse();
+            var lastActionResponse = new LastActionResponse();
 
-                using (var conn = new SqlConnection(_plutoConnectionString))
-                {
-                    string query = @"
-            SELECT 
-                t1.ClockTime AS MaxTime,
-                t1.Status
-            FROM TimeClock t1
-            WHERE t1.ClockTime = (
-                SELECT MAX(t2.ClockTime)
-                FROM TimeClock t2
-                WHERE t2.empid = t1.empid
-                AND (t2.APPROVAL NOT LIKE '%PENDING%' OR t2.APPROVAL IS NULL)
-                AND t2.ClockType='Personal'
-            )
-            AND t1.empid = @empid
-            AND (t1.APPROVAL NOT LIKE '%PENDING%' OR t1.APPROVAL IS NULL)";
+            if (!short.TryParse(empId, out short empIdShort))
+                throw new ArgumentException("Invalid EmpId");
 
-                    using (var command = new SqlCommand(query, conn))
-                    {
-                        command.Parameters.AddWithValue("@empid", empId);
-                        conn.Open();
+            var lastAction = await _context.TimeClock
+                .AsNoTracking()
+                .Where(t => t.EmpId == empIdShort.ToString() &&
+                            (t.Approval == null || !t.Approval.Contains("PENDING")) &&
+                            t.ClockType == "Personal")
+                .OrderByDescending(t => t.ClockTime)
+                .FirstOrDefaultAsync();
 
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-
-                            if (await reader.ReadAsync())
-                            {
-                                lastActionResponse.MaxTime = reader.IsDBNull(reader.GetOrdinal("MaxTime"))
-                                    ? default(DateTime)
-                                    : reader.GetDateTime(reader.GetOrdinal("MaxTime"));
-
-                                lastActionResponse.Status = reader.IsDBNull(reader.GetOrdinal("Status"))
-                                    ? string.Empty
-                                    : reader.GetString(reader.GetOrdinal("Status"));
-                            }
-                        }
-                    }
-                }
-
-                return lastActionResponse;
+            if (lastAction != null)
+            {
+                lastActionResponse.MaxTime = lastAction.ClockTime;
+                lastActionResponse.Status = lastAction.Status ?? "New";
             }
-        //}
+            else
+            {
+                lastActionResponse.MaxTime = default;
+                lastActionResponse.Status = "OUT";
+            }
+
+            return lastActionResponse;
+        }
+       
 
 
         public async Task<bool> InsertEmpBasicPLUTO(EmployeeDto emp)
@@ -235,27 +161,27 @@ namespace sswDashboardAPI.Services
 
             var empBasic = new EmpBasic
             {
-                EmpId = emp.EmpID.ToString(),
+                EmpID = emp.EmpID.ToString(),
                 Name = string.IsNullOrWhiteSpace(emp.MI)
         ? $"{emp.FirstName} {emp.LastName}".Trim()
         : $"{emp.FirstName} {emp.MI} {emp.LastName}".Trim(),
-                firstname = emp.FirstName,
-                middleinitial = emp.MI,
-                lastname = emp.LastName,
-                address = emp.Street1,
-                address2 = emp.Street2,
-                city = emp.City,
-                state = emp.State,
-                zip = emp.Zip,
-                country = emp.Country,
-                phone = emp.Phone,
-                emgContact = emp.EmgContact,
-                SupervisorId = emp.Supervisor,
+                FirstName = emp.FirstName,
+                MiddleInitial = emp.MI,
+                LastName = emp.LastName,
+                Address = emp.Street1,
+                Address2 = emp.Street2,
+                City = emp.City,
+                State = emp.State,
+                ZIP = emp.Zip,
+                Country = emp.Country,
+                Phone = emp.Phone,
+                EmgContact = emp.EmgContact,
+                SupervisorID = emp.Supervisor,
                 EmpStatus = emp.EmpStatus,
-                expensecode = emp.ExpenseCode,
-                JcDept = emp.Dept,
+                ExpenseCode = emp.ExpenseCode,
+                JCDept = emp.Dept,
                 RoleId = emp.RoleId,
-                company = "SSW",
+                Company = "SSW",
                 dcduserid = $"{emp.FirstName}.{emp.LastName}",
                 cnvempid = "NULL"
             };
@@ -264,6 +190,201 @@ namespace sswDashboardAPI.Services
             await _context.EmpBasic.AddAsync(empBasic);
             return await _context.SaveChangesAsync() > 0;
         }
+
+        //public async Task<bool> InsertKineticEmpBasicAsync(EmployeeDto employee)
+        //{
+        //    try
+        //    {
+        //        var empBasic = await _context.EmpBasic
+        //            .FirstOrDefaultAsync(e => e.company == "SSW" && e.EmpId == employee.EmpID.ToString());
+
+        //        if (empBasic == null)
+        //        {
+        //            // Create new if not found
+        //            empBasic = new EmpBasic
+        //            {
+        //                company = "SSW",
+        //                EmpId = employee.EmpID.ToString()
+        //            };
+        //            _context.EmpBasic.Add(empBasic);
+        //        }
+
+        //        empBasic.shift = employee.Shift;
+        //        empBasic.firstname = employee.FirstName ?? "";
+        //        empBasic.middleinitial = employee.MI ?? "";
+        //        empBasic.lastname = employee.LastName ?? "";
+        //        empBasic.Name = !string.IsNullOrWhiteSpace(employee.MI)
+        //            ? $"{employee.FirstName} {employee.MI} {employee.LastName}".Trim()
+        //            : $"{employee.FirstName} {employee.LastName}".Trim();
+        //        empBasic.address = employee.Street1;
+        //        empBasic.address2 = employee.Street2;
+        //        empBasic.city = employee.City;
+        //        empBasic.state = employee.State;
+        //        empBasic.zip = employee.Zip;
+        //        empBasic.country = employee.Country;
+        //        empBasic.phone = employee.Phone;
+        //        empBasic.emgContact = employee.EmgContact;
+
+        //        empBasic.EmpStatus = employee.EmpStatus;
+        //        empBasic.expensecode = employee.ExpenseCode;
+        //        empBasic.JcDept = employee.Dept;
+        //        empBasic.SupervisorId = employee.Supervisor;
+
+
+        //        await _context.SaveChangesAsync();
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // You may want to log this properly in production
+        //        Console.WriteLine($"Error updating Kinetic database: {ex.Message}");
+        //        return false;
+        //    }
+        //}
+
+        //public async Task<bool> UpdateKineticEmpBasicAsync(EmployeeDto employee)
+        //{
+        //    try
+        //    {
+        //        string baseUrl = "https://gccdtpilot14.epicorsaas.com/saas1143pilot/api/v1/Erp.BO.EmpBasicSvc/EmpBasics";
+        //        string name = !string.IsNullOrWhiteSpace(employee.MI)
+        //            ? $"{employee.FirstName} {employee.MI} {employee.LastName}"
+        //            : $"{employee.FirstName} {employee.LastName}";
+
+        //        using var httpClient = new HttpClient();
+        //        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        //        httpClient.DefaultRequestHeaders.Add("License", "{\"ClaimedLicense\": \"00000003-079B-4C49-9D0A-EF8236247504\"}");
+        //        httpClient.DefaultRequestHeaders.Authorization =
+        //            new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", "U2h1a2xhV2ViQXBwOkJaRFpwRzdUQWpHMUxpJVlaTXZX");
+        //        var empBasicUpdate = new EmpBasicUpdateDTO
+        //        {
+        //            Company = "SSW",
+        //            EmpID = employee.EmpID.ToString(),
+        //            Shift = 1,
+        //            Name = name.Trim(),
+        //            FirstName = employee.FirstName,
+        //            LastName = employee.LastName,
+        //            Address = employee.Street1,
+        //            Address2 = employee.Street2,
+        //            City = employee.City,
+        //            State = employee.State,
+        //            ZIP = employee.Zip,
+        //            Country = employee.Country,
+        //            Phone = employee.Phone,
+        //            EmgContact = employee.EmgContact,
+        //            EmpStatus = employee.EmpStatus,
+        //            ExpenseCode = employee.ExpenseCode,
+        //            JCDept = employee.Dept,
+        //            SupervisorID = employee.Supervisor,
+        //            EMailAddress = employee.Email,
+
+
+        //        };
+
+
+
+        //        var jsonS = JsonConvert.SerializeObject(empBasicUpdate, new JsonSerializerSettings
+        //        {
+        //            NullValueHandling = NullValueHandling.Ignore,
+        //            DefaultValueHandling = DefaultValueHandling.Ignore
+        //        });
+
+        //        var jsonContent = new StringContent(JsonConvert.SerializeObject(jsonS), Encoding.UTF8, "application/json");
+
+
+        //        string endpoint = $"{baseUrl}";
+
+        //        var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+        //        {
+        //            Content = jsonContent
+        //        };
+
+
+
+        //        var response = await httpClient.SendAsync(request);
+        //        string responseBody = await response.Content.ReadAsStringAsync();
+        //        System.Diagnostics.Debug.WriteLine("RESPONSE:\n" + responseBody);
+
+
+        //        return response.IsSuccessStatusCode;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error when updating Kinetic database: {ex.Message}\nLine: {ex.StackTrace}");
+        //        return false;
+        //    }
+        //}
+
+
+        public async Task<bool> InsertKineticEmpBasicAsync(EmployeeDto employee)
+        {
+            try
+            {
+
+                String empID = employee.EmpID.ToString();
+                string baseUrl = "https://gccdtpilot14.epicorsaas.com/saas1143pilot/api/v1/Erp.BO.EmpBasicSvc/EmpBasics";
+
+                string name = string.IsNullOrWhiteSpace(employee.MI)
+                    ? $"{employee.FirstName} {employee.LastName}"
+                    : $"{employee.FirstName} {employee.MI} {employee.LastName}";
+
+                using var httpClient = new HttpClient();
+
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                httpClient.DefaultRequestHeaders.Add("License", "{\"ClaimedLicense\": \"00000003-079B-4C49-9D0A-EF8236247504\"}");
+                httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Basic", "U2h1a2xhV2ViQXBwOkJaRFpwRzdUQWpHMUxpJVlaTXZX");
+
+                var body = new EmpBasicUpdateDTO
+                {
+                    Company = "SSW",
+                    EmpID = empID,
+                    
+                    Name = name.Trim(),
+                    FirstName = employee.FirstName ?? "",
+                    LastName = employee.LastName ?? "",
+                    MiddleInitial = employee.MI,
+                    Address = employee.Street1,
+                    Address2 = employee.Street2,
+                    City = employee.City,
+                    State = employee.State,
+                    ZIP = employee.Zip,
+                    Shift = employee.Shift,
+                    Country = "USA",
+                    Phone = employee.Phone,
+                   JCDept = employee.Dept,
+                    EmpStatus = employee.EmpStatus,
+                    ExpenseCode = employee.ExpenseCode,
+                    EmgContact = employee.EmgContact,
+                    ShopSupervisor = false
+                
+                   
+                };
+
+                string json1 = JsonConvert.SerializeObject(body, Formatting.Indented);
+
+                System.Diagnostics.Debug.WriteLine("REQUEST JSON PAYLOAD:\n" + json1);
+                string json = JsonConvert.SerializeObject(body);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await httpClient.PostAsync(baseUrl, content);
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine("Status: " + response.StatusCode);
+                Console.WriteLine("Response Body:\n" + responseBody);
+
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error posting to Epicor: " + ex.Message);
+                Console.WriteLine("StackTrace:\n" + ex.StackTrace);
+                return false;
+            }
+        }
+
+
+
 
         public async Task<bool> InsertEmployeeToEmployeesTable(EmployeeDto emp)
         {
@@ -303,28 +424,28 @@ namespace sswDashboardAPI.Services
                 var empList = _context.EmpBasic
                  .Select(e => new
                  {
-                     e.EmpId,
-                     e.firstname,
-                     e.lastname,
+                     e.EmpID,
+                     e.FirstName,
+                     e.LastName,
                      e.EmpStatus,
-                     e.expensecode
+                     e.ExpenseCode
                  })
                  .ToList();
 
                 var timeClocks = groupedClocks
                     .Join(empList,
                         tc => tc.EmpId?.Trim().ToUpperInvariant(),
-                        eb => eb.EmpId?.Trim().ToUpperInvariant(),
+                        eb => eb.EmpID?.Trim().ToUpperInvariant(),
                         (tc, eb) => new { tc, eb })
                     .Where(joined =>
                         joined.eb.EmpStatus == "A" &&
-                        joined.eb.expensecode == "IDL" &&
-                        !excludedIds.Contains(joined.eb.EmpId))
-                    .OrderBy(joined => joined.eb.firstname)
+                        joined.eb.ExpenseCode == "IDL" &&
+                        !excludedIds.Contains(joined.eb.EmpID))
+                    .OrderBy(joined => joined.eb.FirstName)
                     .Select(joined => new EmployeesDto
                     {
                         EmpId = joined.tc.EmpId,
-                        Name = $"{joined.eb.firstname} {joined.eb.lastname}",
+                        Name = $"{joined.eb.FirstName} {joined.eb.LastName}",
                         Status = joined.tc.Status,
                         ReturningAt =  "N/A"
                     })
@@ -345,28 +466,28 @@ namespace sswDashboardAPI.Services
                 var empList = _context.EmpBasic
                 .Select(e => new
                 {
-                    e.EmpId,
-                    e.firstname,
-                    e.lastname,
+                    e.EmpID,
+                    e.FirstName,
+                    e.LastName,
                     e.EmpStatus,
-                    e.expensecode
+                    e.ExpenseCode
                 })
                 .ToList();
 
                 var timeClocks = groupedClocks
                     .Join(empList,
                         tc => tc.EmpId?.Trim().ToUpperInvariant(),
-                        eb => eb.EmpId?.Trim().ToUpperInvariant(),
+                        eb => eb.EmpID?.Trim().ToUpperInvariant(),
                         (tc, eb) => new { tc, eb })
                     .Where(joined =>
                         joined.eb.EmpStatus == "A" &&
-                        joined.eb.expensecode == "DL" &&
-                        !excludedIds.Contains(joined.eb.EmpId))
-                    .OrderBy(joined => joined.eb.firstname)
+                        joined.eb.ExpenseCode == "DL" &&
+                        !excludedIds.Contains(joined.eb.EmpID))
+                    .OrderBy(joined => joined.eb.FirstName)
                     .Select(joined => new EmployeesDto
                     {
                         EmpId = joined.tc.EmpId,
-                        Name = $"{joined.eb.firstname} {joined.eb.lastname}",
+                        Name = $"{joined.eb.FirstName} {joined.eb.LastName}",
                         Status = joined.tc.Status,
                         ReturningAt =  "N/A"
                     })
@@ -380,75 +501,23 @@ namespace sswDashboardAPI.Services
         public List<Users> GetUsers()
         {
             var users = (from e in _context.Employees
-                         join b in _context.EmpBasic on e.EmpId equals b.EmpId
-                         join s in _context.EmpBasic on b.SupervisorId equals s.EmpId into sup
+                         join b in _context.EmpBasic on e.EmpId equals b.EmpID
+                         join s in _context.EmpBasic on b.SupervisorID equals s.EmpID into sup
                          from s in sup.DefaultIfEmpty()
                          where b.EmpStatus == "A"
                          select new Users
                          {
-                             EmpId = b.EmpId,
-                             Name = b.firstname + " " + b.lastname,
+                             EmpId = b.EmpID,
+                             Name = b.FirstName + " " + b.LastName,
                              Status = b.EmpStatus,
                              Title = e.Title,
-                             Supervisor = s != null ? s.firstname + " " + s.lastname : ""
+                             Supervisor = s != null ? s.FirstName + " " + s.LastName : ""
                          }).ToList();
 
             return users;
         }
 
-       //MyEF All Last Actions() {
-
-       //     private async Task<LastActionResponse> GetLastActionByType(string empId, string clockType)
-       //     {
-       //         clockType = clockType.Trim();
-
-       //         empId = "3300";
-
-
-       //         var maxTime = await _context.TimeClock
-       //             .Where(t =>
-       //                 t.EmpId == empId &&
-       //                 t.ClockType == clockType &&
-       //                 (t.Approval == "Approved" || !t.Approval.ToUpper().Contains("PENDING")))
-       //             .MaxAsync(t => (DateTime?)t.ClockTime); // use nullable in case no data
-
-       //         // Second: Retrieve the full row matching that max ClockTime
-       //         var entry = await _context.TimeClock
-       //             .Where(t =>
-       //                 t.EmpId == empId &&
-       //                 t.ClockTime == maxTime &&
-       //                 (t.Approval == null || !t.Approval.ToUpper().Contains("PENDING")))
-       //             .Select(t => new LastActionResponse
-       //             {
-       //                 MaxTime = t.ClockTime,
-       //                 Status = t.Status
-       //             })
-       //             .FirstOrDefaultAsync();
-
-
-       //         // Return fallback if not found
-       //         return entry ?? new LastActionResponse
-       //         {
-       //             MaxTime = default,
-       //             Status = (clockType == "Normal") ? "OUT" : string.Empty
-       //         };
-       //     }
-
-       //     public Task<LastActionResponse> GetLastAction(string empId) =>
-       // GetLastActionByType(empId, "Normal");
-
-       //     public Task<LastActionResponse> GetLastActionBreak(string empId) =>
-       // GetLastActionByType(empId, "Break");
-
-       //     public Task<LastActionResponse> GetLastActionBusiness(string empId) =>
-       // GetLastActionByType(empId, "Business");
-
-       //     public Task<LastActionResponse> GetLastActionPersonal(string empId) =>
-       // GetLastActionByType(empId, "Personal");
-
-       // }
-
-
+      
         private async Task<bool> InsertClockEntry(string empId, string clockType, string status, DateTime? reportDate = null, bool remote = false)
         {
             
@@ -466,15 +535,17 @@ namespace sswDashboardAPI.Services
                 Computer = Environment.MachineName,
                 Status = status,
                 ReportDate = reportDate ?? DateTime.Today,
-
+                Approval = "",
                 Remote = remote
             };
 
             await _context.TimeClock.AddAsync(entry);
 
+
             try
             {
                 return await _context.SaveChangesAsync() > 0;
+                _context.ChangeTracker.Clear();
             }
             catch (DbUpdateException ex)
             {
@@ -484,11 +555,11 @@ namespace sswDashboardAPI.Services
         }
 
 
-        // Handles the case where user selects a date via UI
         public Task<bool> ClockInForDay(string empId, string myType)
         {
             var reportDate = myType == "tod" ? DateTime.Today : DateTime.Today.AddDays(1);
             var manualSelect = myType == "tod" || myType == "tom";
+           
             return InsertClockEntry(empId, "Normal", "IN", reportDate, remote: false);
         }
 
@@ -513,96 +584,48 @@ namespace sswDashboardAPI.Services
         public Task<bool> ClockInForPersonal(string empId) =>
             InsertClockEntry(empId, "Personal", "IN");
 
+       
         public async Task<WorkTime> GetWorkTimeForDay(string empId, DateTime reportDate)
         {
             var workTime = new WorkTime();
 
-            using (var conn = new SqlConnection(_plutoConnectionString))
+            try
             {
-                try
-                {
-                    await conn.OpenAsync();
-
-
-                    string query = @"
-                SELECT 
-                    empID,
-                    ClockType,
-                    Status,
-                    ClockTime
-                FROM TimeClock
-                WHERE empID = @empID
-                  AND ClockTime >= DATEADD(hour, -36, @reportDate)
-                ORDER BY ClockTime ASC;
-            ";
-
-                    var entries = new List<TimeClockEntry>();
-
-                    using (var cmd = new SqlCommand(query, conn))
+                // Query TimeClock entries with EF Core
+                var entries = await _context.TimeClock
+                    .Where(tc => tc.EmpId == empId
+                        && tc.ClockTime >= reportDate.AddHours(-36))
+                    .OrderBy(tc => tc.ClockTime)
+                    .Select(tc => new TimeClockEntry
                     {
-                        cmd.Parameters.AddWithValue("@empID", empId);
-                        cmd.Parameters.AddWithValue("@reportDate", reportDate);
+                        EmpId = tc.EmpId,
+                        ClockType = tc.ClockType,
+                        Status = tc.Status,
+                        ClockTime = tc.ClockTime
+                    })
+                    .ToListAsync();
 
-                        using (var reader = await cmd.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
-                            {
-                                entries.Add(new TimeClockEntry
-                                {
-                                    EmpId = reader["empID"].ToString(),
-                                    ClockType = reader["ClockType"].ToString(),
-                                    Status = reader["Status"].ToString(),
-                                    ClockTime = reader["ClockTime"] as DateTime?
-                                });
-                            }
-                        }
-                    }
+                var shiftStart = entries.FirstOrDefault(e => e.ClockType == "Normal" && e.Status == "IN");
+                var shiftEnd = entries.LastOrDefault(e => e.ClockType == "Normal" && e.Status == "OUT");
 
+                var breakStart = entries.LastOrDefault(e => e.ClockType == "Break" && e.Status == "OUT");
+                var breakEnd = entries.FirstOrDefault(e => e.ClockType == "Break" && e.Status == "IN");
 
-                    var shiftStart = entries.FirstOrDefault(e => e.ClockType == "Normal" && e.Status == "IN");
-                    var shiftEnd = entries.Where(e => e.ClockType == "Normal" && e.Status == "OUT").LastOrDefault();
-
-
-                    var breakStart = entries.Where(e => e.ClockType == "Break" && e.Status == "OUT").LastOrDefault();
-                    var breakEnd = entries.Where(e => e.ClockType == "Break" && e.Status == "IN").FirstOrDefault();
-
-
-                    workTime.EmpId = empId;
-                    workTime.ClockInTime = shiftStart?.ClockTime;
-                    workTime.ClockOutTime = shiftEnd?.ClockTime;
-                    workTime.BreakStartTime = breakStart?.ClockTime;
-                    workTime.BreakEndTime = breakEnd?.ClockTime;
-
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error: {ex.Message}");
-                }
+                workTime.EmpId = empId;
+                workTime.ClockInTime = shiftStart?.ClockTime;
+                workTime.ClockOutTime = shiftEnd?.ClockTime;
+                workTime.BreakStartTime = breakStart?.ClockTime;
+                workTime.BreakEndTime = breakEnd?.ClockTime;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                // You may want to log or rethrow or handle as per your app design
             }
 
             return workTime;
         }
 
-        //public async Task<WorkTime> GetWorkTimeForDay(string empId, DateTime reportDate)
-        //{
-        //    var lowerBound = reportDate.AddHours(-36);
-        //    var entries = await _context.TimeClock
-        //        .Where(e => e.EmpId == empId && e.ClockTime >= lowerBound)
-        //        .OrderBy(e => e.ClockTime)
-        //        .ToListAsync();
-
-        //    var workTime = new WorkTime
-        //    {
-        //        EmpId = empId,
-        //        ClockInTime = entries.FirstOrDefault(e => e.ClockType == "Normal" && e.Status == "IN")?.ClockTime,
-        //        ClockOutTime = entries.LastOrDefault(e => e.ClockType == "Normal" && e.Status == "OUT")?.ClockTime,
-        //        BreakStartTime = entries.LastOrDefault(e => e.ClockType == "Break" && e.Status == "OUT")?.ClockTime,
-        //        BreakEndTime = entries.FirstOrDefault(e => e.ClockType == "Break" && e.Status == "IN")?.ClockTime
-        //    };
-
-        //    return workTime;
-        //}
 
         List<Employee> IEmployeeService.GetEmployees(string employeeType, bool isUSA)
         {

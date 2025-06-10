@@ -245,7 +245,7 @@ const AllTasks = () => {
     ele.length > 0 ? setIsMultiDeleteButton(true) : setIsMultiDeleteButton(false);
     setSelectedCheckBoxDelete(ele);
   };
-  
+
 
   const columns = useMemo(
     () => [
@@ -400,7 +400,7 @@ const AllTasks = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="card-body pt-0">
               {isTaskSuccess && taskList.length ? (
                 <TableContainer
@@ -552,7 +552,7 @@ const AllTasks = () => {
 
                         <Label className="form-check-label d-flex align-items-center" htmlFor={item.imgId}>
                           <span className="flex-shrink-0">
-                          <img src={process.env.REACT_APP_API_URL + "/images/users/" + item.img} alt="" className="avatar-xxs rounded-circle" />                          </span>
+                            <img src={process.env.REACT_APP_API_URL + "/images/users/" + item.img} alt="" className="avatar-xxs rounded-circle" />                          </span>
                           <span className="flex-grow-1 ms-2">
                             {item.name}
                           </span>
