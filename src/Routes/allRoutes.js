@@ -26,6 +26,9 @@ import Shipping from "../pages/Shipping/index"
 import Shukla from "../pages/Shukla/index"
 import Supervisor from "../pages/Supervisor/index"
 import KPI from "../pages/KPI/index"
+import ManageDepartments from "../pages/HumanResource/ManageDepartments.js"
+
+
 
 
 
@@ -287,6 +290,7 @@ const authProtectedRoutes = [
   { path: "/apps-todo", component: <ToDoList /> },
 
 
+
   // Accounting
 
   { path: "/accounting", component: <Accounting /> },
@@ -302,6 +306,11 @@ const authProtectedRoutes = [
   { path: "/shukla", component: <Shukla /> }, { path: "/shipping", component: <Shipping /> },
   { path: "/sales", component: <Sales /> }, { path: "/supervisor", component: <Supervisor /> },
   { path: "/kpi", component: <KPI /> },
+  {
+  path: "/hr/departments",
+  component: <ManageDepartments />
+},
+
 
 
 

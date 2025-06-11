@@ -61,7 +61,7 @@ namespace sswDashboardAPI.Controllers
                 .Where(d => d.Company == "SSW")
                 .Select(d => new
                 {
-                    id = d.JCDept,         
+                    id = d.JCDept1,         
                     description = d.Description 
                 })
                 .Distinct()
