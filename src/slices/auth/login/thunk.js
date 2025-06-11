@@ -47,7 +47,7 @@ export const loginUser = (user, history) => async (dispatch) => {
       // store auth user in session
       sessionStorage.setItem("authUser", JSON.stringify(response.data));
 
-      //console.log("Whats the Data: ", response.data);
+      console.log("Whats the Data: ", response.data);
 
       // dispatch to redux
       dispatch(loginSuccess(response.data));
@@ -58,7 +58,27 @@ export const loginUser = (user, history) => async (dispatch) => {
       dispatch(apiError("Invalid credentials."));
     }
   } catch (error) {
-    const msg = error.response?.data || "Login failed!";
+    let msg = "Login failed!";
+    if (error.response?.data) {
+      const errData = error.response.data;
+
+      // Case 1: validation error (model state)
+      if (errData.errors) {
+        const messages = Object.values(errData.errors).flat();
+        msg = messages.join(" ");
+      }
+
+      // Case 2: normal string error
+      else if (typeof errData === "string") {
+        msg = errData;
+      }
+
+      // Optional fallback
+      else if (errData.title) {
+        msg = errData.title;
+      }
+    }
+
     console.log("Error is here:", msg);
     dispatch(apiError(msg));
   }

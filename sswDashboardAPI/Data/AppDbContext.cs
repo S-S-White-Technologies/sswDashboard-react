@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using sswDashboardAPI.Model;
+using sswDashboardAPI.Model.Time_and_Attendance;
 using System.Collections.Generic;
 
 namespace sswDashboardAPI.Data
@@ -22,6 +23,9 @@ namespace sswDashboardAPI.Data
         public DbSet<Employee> Employees { get; set; }
 
         public DbSet<Role> Roles { get; set; }
+
+        public DbSet<TimeClock> TimeClock { get; set; }
+        public DbSet<TimeClockFactory> TimeClockFactory { get; set; }
 
     }
 }

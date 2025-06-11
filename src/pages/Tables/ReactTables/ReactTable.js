@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import TableContainer from "../../../Components/Common/TableContainerReactTable";
+import TableContainerUser from "../../../Components/Common/TableContainerReactTableUser";
 import { Link } from 'react-router-dom';
 import { Spinner } from 'reactstrap';
 import classnames from "classnames";
@@ -277,33 +278,37 @@ const SearchTable = ({ data }) => {
 const SearchTableEdit = ({ data }) => {
   const [searchTable, setSearchTable] = useState(data);
 
+
+  const handleView = (empId) => {
+    console.log("View:", empId);
+    // Navigate or show modal
+  };
+
+  const handleEdit = (empId) => {
+    console.log("Edit:", empId);
+    // Navigate or open form to edit
+  };
+
+  const handleDelete = async (empId) => {
+    if (!window.confirm("Are you sure you want to inactivate this user?")) return;
+
+    try {
+      const response = await axios.put(`https://localhost:7168/api/employee/inactivate/${empId}`);
+      if (response.status === 200) {
+        alert("User inactivated successfully!");
+        // Refresh your list (e.g., re-fetch API data)
+      }
+    } catch (error) {
+      console.error("Error inactivating user", error);
+      alert("Failed to inactivate user.");
+    }
+  };
+
+
+
   useEffect(() => {
     setSearchTable(data);  // Update state when data prop changes
   }, [data]);
-  // const searchTable =
-  //   [
-  //     { EmpId: "3300", Name: "Abha Magal", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Adam Gosik-Wolfe", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Adrianna Plotkin", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Akash Sharma", Status: "IN", ReturningAt: "3:30 PM" },
-  //     { EmpId: "3300", Name: "Akash Shukla", Status: "IN", ReturningAt: "4:00 PM" },
-  //     { EmpId: "3300", Name: "Amjad Daluol", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Angela Vo", Status: "IN", ReturningAt: "5:00 PM" },
-  //     { EmpId: "3300", Name: "Atul Achaya", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Austin Stroh", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Brian Perkins", Status: "IN", ReturningAt: "3:45 PM" },
-  //     { EmpId: "3300", Name: "Brian Sereno", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Christine Martin", Status: "IN", ReturningAt: "4:30 PM" },
-  //     { EmpId: "3300", Name: "Cierra Carlstrom", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Eddy Casimir", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Edward Sittler", Status: "IN", ReturningAt: "4:15 PM" },
-  //     { EmpId: "3300", Name: "Eric Benson", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Govind Govind", Status: "IN", ReturningAt: "5:00 PM" },
-  //     { EmpId: "3300", Name: "Han Lin", Status: "IN", ReturningAt: "3:30 PM" },
-  //     { EmpId: "3300", Name: "Henry Pivax", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Ivette Benitez", Status: "IN", ReturningAt: "4:00 PM" },
-  //     { EmpId: "3300", Name: "Jan Korzonowicz", Status: "OUT", ReturningAt: "N/A" }
-  //   ]
 
   const columns = useMemo(
     () => [
@@ -315,6 +320,7 @@ const SearchTableEdit = ({ data }) => {
           )
         },
         disableFilters: true,
+        className: "text-center",
         filterable: false,
       },
 
@@ -325,22 +331,70 @@ const SearchTableEdit = ({ data }) => {
         filterable: false,
       },
       {
-        Header: "Status",
+        Header: "Designation",
+        accessor: "title",
+        disableFilters: true,
+        filterable: false,
+      },
+      {
+        Header: "Emp. Status",
         accessor: "status",
         disableFilters: true,
         filterable: false,
-        Cell: ({ value }) => {
-          // Apply badge with class based on status
-          const badgeClass = value === "IN" ? "bg-success" : "bg-danger";
-          return <span className={`badge ${badgeClass}`}>{value}</span>;
-        },
+
       },
       {
-        Header: "ReturningAt",
-        accessor: "returningAt",
+        Header: "Supervisor",
+        accessor: "supervisor",
         disableFilters: true,
         filterable: false,
+      },
+      {
+        Header: "Action",
+        accessor: "action",
+        className: "text-center",
+        Cell: ({ row }) => (
+          <div className="hstack gap-3 fs-15">
+            <Link
+              to="#"
+              onClick={(e) => {
+                e.preventDefault(); // prevent page jump
+                handleView(row.original.empId);
+              }}
+              className="link-info"
+              title="View"
+            >
+              <i className="ri-eye-line"></i>
+            </Link>
+
+            <Link
+              to="#"
+              onClick={(e) => {
+                e.preventDefault(); // prevent page jump
+                handleEdit(row.original.empId);
+              }}
+              className="link-primary"
+              title="Edit"
+            >
+              <i className="ri-settings-4-line"></i>
+            </Link>
+
+            <Link
+              to="#"
+              onClick={(e) => {
+                e.preventDefault(); // prevent page jump
+                handleDelete(row.original.empId);
+              }}
+              className="link-danger"
+              title="Inactive"
+            >
+              <i className="ri-delete-bin-5-line"></i>
+            </Link>
+          </div>
+        ),
       }
+
+
 
     ],
     []
@@ -351,7 +405,7 @@ const SearchTableEdit = ({ data }) => {
 
   return (
     <React.Fragment >
-      <TableContainer
+      <TableContainerUser
         columns={(columns || [])}
         data={(searchTable || [])}
         isPagination={true}
@@ -362,7 +416,7 @@ const SearchTableEdit = ({ data }) => {
         className="custom-header-css table align-middle table-nowrap"
         tableClassName="table-centered align-middle table-nowrap mb-0"
         theadClassName="text-muted table-light"
-        SearchPlaceholder='Search...'
+        SearchPlaceholder='Search User...'
 
       />
 

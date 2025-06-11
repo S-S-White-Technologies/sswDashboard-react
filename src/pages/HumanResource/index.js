@@ -37,6 +37,28 @@ const HumanResource = () => {
         }
     };
 
+    const [topBorderTab, settopBorderTab] = useState("1");
+    const topBordertoggle = (tab) => {
+        if (topBorderTab !== tab) {
+            settopBorderTab(tab);
+        }
+    };
+
+    const [topBorderjustifyTab, settopBorderjustifyTab] = useState("1");
+    const topBorderJustifytoggle = (tab) => {
+        if (topBorderjustifyTab !== tab) {
+            settopBorderjustifyTab(tab);
+        }
+    };
+
+
+    const [customActiveTab, setcustomActiveTab] = useState("1");
+    const toggleCustom = (tab) => {
+        if (customActiveTab !== tab) {
+            setcustomActiveTab(tab);
+        }
+    };
+
     const [verticalTab, setverticalTab] = useState("1");
     const toggleVertical = (tab) => {
         if (verticalTab !== tab) {
@@ -52,155 +74,150 @@ const HumanResource = () => {
                         <Col xxl={12}>
                             <h5 className="mb-3">HR Operations</h5>
                             <Card>
+                                <CardBody>
 
-                                <div className="border">
-                                    <Nav pills className="nav nav-pills custom-hover-nav-tabs">
+                                    <Nav tabs className="nav nav-tabs nav-tabs-custom nav-success nav-justified mb-3">
                                         <NavItem>
-                                            <NavLink style={{ cursor: "pointer" }} className={classnames({ active: customHoverTab === "1", })} onClick={() => { customHovertoggle("1"); }} >
-                                                <i className="ri-user-fill nav-icon nav-tab-position"></i>
-                                                <p className="nav-titl nav-tab-position m-0">Employee</p>
+                                            <NavLink
+                                                style={{ cursor: "pointer" }}
+                                                className={classnames({
+                                                    active: customActiveTab === "1",
+                                                })}
+                                                onClick={() => {
+                                                    toggleCustom("1");
+                                                }}
+                                            >
+                                                Employee Management
                                             </NavLink>
                                         </NavItem>
                                         <NavItem>
-                                            <NavLink style={{ cursor: "pointer" }} className={classnames({ active: customHoverTab === "2", })} onClick={() => { customHovertoggle("2"); }} >
-                                                <i className="ri-file-text-line nav-icon nav-tab-position"></i>
-                                                <h5 className="nav-titl nav-tab-position m-0">HR Reports</h5>
+                                            <NavLink
+                                                style={{ cursor: "pointer" }}
+                                                className={classnames({
+                                                    active: customActiveTab === "2",
+                                                })}
+                                                onClick={() => {
+                                                    toggleCustom("2");
+                                                }}
+                                            >
+                                                HR Reports
                                             </NavLink>
                                         </NavItem>
                                         <NavItem>
-                                            <NavLink style={{ cursor: "pointer" }} className={classnames({ active: customHoverTab === "3", })} onClick={() => { customHovertoggle("3"); }} >
-                                                <i className="ri-star-half-line nav-icon nav-tab-position"></i>
-                                                <h5 className="nav-titl nav-tab-position m-0">FTO Central</h5>
+                                            <NavLink
+                                                style={{ cursor: "pointer" }}
+                                                className={classnames({
+                                                    active: customActiveTab === "3",
+                                                })}
+                                                onClick={() => {
+                                                    toggleCustom("3");
+                                                }}
+                                            >
+                                                FTO Central
+                                            </NavLink>
+                                        </NavItem>
+                                        <NavItem>
+                                            <NavLink
+                                                style={{ cursor: "pointer" }}
+                                                className={classnames({
+                                                    active: customActiveTab === "4",
+                                                })}
+                                                onClick={() => {
+                                                    toggleCustom("4");
+                                                }}
+                                            >
+                                                Settings
                                             </NavLink>
                                         </NavItem>
                                     </Nav>
-                                </div>
-                                <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-                                    <CardBody style={{ flex: 1, overflow: "auto" }}>
-                                        <TabContent activeTab={customHoverTab} className="text-muted">
-                                            <TabPane tabId="1" id="custom-hover-customere">
-                                                <h6>Employee Management</h6>
-                                                <Col xxl={12} style={{ flex: 1, overflow: "auto" }}>
-                                                    <Card style={{ height: "100%", display: "flex", boxShadow: 0 }}>
-                                                        <CardBody style={{ flex: 1, overflow: "auto" }}>
-                                                            <Row style={{ height: "100%" }}>
-                                                                <Col md={3} style={{ minHeight: "100%" }}>
-                                                                    <Nav pills className="flex-column" id="v-pills-tab" style={{ height: "100%" }}>
-                                                                        <NavItem>
-                                                                            <NavLink
-                                                                                style={{ cursor: "pointer" }}
-                                                                                className={classnames({
-                                                                                    "mb-2": true,
-                                                                                    active: verticalTab === "1",
-                                                                                })}
-                                                                                onClick={() => {
-                                                                                    toggleVertical("1");
-                                                                                }}
-                                                                                id="v-pills-home-tab"
-                                                                            >
-                                                                                Add Employee
-                                                                            </NavLink>
-                                                                        </NavItem>
-                                                                        <NavItem>
-                                                                            <NavLink
-                                                                                style={{ cursor: "pointer" }}
-                                                                                className={classnames({
-                                                                                    "mb-2": true,
-                                                                                    active: verticalTab === "2",
-                                                                                })}
-                                                                                onClick={() => {
-                                                                                    toggleVertical("2");
-                                                                                }}
-                                                                                id="v-pills-profile-tab"
-                                                                            >
-                                                                                Edit Employee
-                                                                            </NavLink>
-                                                                        </NavItem>
-                                                                        <NavItem>
-                                                                            <NavLink
-                                                                                style={{ cursor: "pointer" }}
-                                                                                className={classnames({
-                                                                                    "mb-2": true,
-                                                                                    active: verticalTab === "3",
-                                                                                })}
-                                                                                onClick={() => {
-                                                                                    toggleVertical("3");
-                                                                                }}
-                                                                                id="v-pills-messages-tab"
-                                                                            >
-                                                                                Add Department
-                                                                            </NavLink>
-                                                                        </NavItem>
-                                                                        <NavItem>
-                                                                            <NavLink
-                                                                                style={{ cursor: "pointer" }}
-                                                                                className={classnames({
-                                                                                    active: verticalTab === "4",
-                                                                                })}
-                                                                                onClick={() => {
-                                                                                    toggleVertical("4");
-                                                                                }}
-                                                                                id="v-pills-settings-tab"
-                                                                            >
-                                                                                Add / Edit Roles
-                                                                            </NavLink>
-                                                                        </NavItem>
-                                                                    </Nav>
-                                                                </Col>
-                                                                <Col md={9} style={{ height: "100%" }}>
-                                                                    <TabContent
-                                                                        activeTab={verticalTab}
-                                                                        className="text-muted mt-4 mt-md-0"
-                                                                        id="v-pills-tabContent"
-                                                                        style={{ height: "100%" }}
-                                                                    >
-                                                                        <TabPane tabId="1" id="v-pills-home" style={{ height: "100%" }}>
-                                                                            <div className="d-flex mb-2">
-                                                                                <Register />
-                                                                            </div>
-                                                                        </TabPane>
-                                                                        <TabPane tabId="2" id="v-pills-profile">
-                                                                            <div className="d-flex mb-2">
-                                                                                <UserList />
-                                                                            </div>
 
-                                                                        </TabPane>
-                                                                        <TabPane tabId="3" id="v-pills-messages">
-                                                                            <div className="d-flex mb-2">
+                                    <TabContent
+                                        activeTab={customActiveTab}
+                                        className="text-muted"
+                                    >
+                                        <TabPane tabId="1" id="home1">
 
-                                                                            </div>
+                                            <Row>
+                                                <Col xxl={12}>
 
-                                                                        </TabPane>
-                                                                        <TabPane tabId="4" id="v-pills-settings">
-                                                                            <div className="d-flex mb-2">
+                                                    <Card>
+                                                        <CardBody>
 
-                                                                            </div>
 
-                                                                        </TabPane>
-                                                                    </TabContent>
-                                                                </Col>
-                                                            </Row>
+                                                            <Nav tabs className="nav nav-tabs nav-justified nav-border-top nav-border-top-success mb-3">
+                                                                <NavItem>
+                                                                    <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "1", })} onClick={() => { topBordertoggle("1"); }} >
+                                                                        <i className="ri-home-5-line align-middle me-1"></i> Add Employee
+                                                                    </NavLink>
+                                                                </NavItem>
+                                                                <NavItem>
+                                                                    <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "2", })} onClick={() => { topBordertoggle("2"); }} >
+                                                                        <i className="ri-user-line me-1 align-middle"></i> Manage Employee
+                                                                    </NavLink>
+                                                                </NavItem>
+                                                                <NavItem>
+                                                                    <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "3", })} onClick={() => { topBordertoggle("3"); }} >
+                                                                        <i className="ri-bank-line align-middle me-1"></i>Manage Departments
+                                                                    </NavLink>
+                                                                </NavItem>
+                                                                <NavItem>
+                                                                    <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "4", })} onClick={() => { topBordertoggle("4"); }} >
+                                                                        <i className="ri-fingerprint-2-fill align-middle me-1"></i>Manage Roles
+                                                                    </NavLink>
+                                                                </NavItem>
+                                                            </Nav>
+
+                                                            <TabContent activeTab={topBorderTab} className="text-muted">
+                                                                <TabPane tabId="1" id="nav-border-justified-home">
+                                                                    <Register />
+                                                                </TabPane>
+
+                                                                <TabPane tabId="2" id="nav-border-justified-profile">
+                                                                    <UserList />
+                                                                </TabPane>
+
+                                                                <TabPane tabId="3" id="nav-border-justified-messages">
+                                                                    <h6>Message</h6>
+                                                                    <p className="mb-0">
+                                                                        Consistency is the one thing that can take all of the different elements in your design, and tie them all together and make them work. In an awareness campaign, it is vital for people to begin put 2 and 2 together and begin to recognize your cause. Consistency piques people’s interest is that it has become more and more popular over the years, which is excellent news to the beginner and advanced <Link to="#" className="text-decoration-underline"><b>Contact Designer</b></Link>.
+                                                                    </p>
+                                                                </TabPane>
+                                                                <TabPane tabId="4" id="nav-border-justified-messages">
+                                                                    <h6>Message</h6>
+                                                                    <p className="mb-0">
+                                                                        Consistency is the one thing that can take all of the different elements in your design, and tie them all together and make them work. In an awareness campaign, it is vital for people to begin put 2 and 2 together and begin to recognize your cause. Consistency piques people’s interest is that it has become more and more popular over the years, which is excellent news to the beginner and advanced <Link to="#" className="text-decoration-underline"><b>Contact Designer</b></Link>.
+                                                                    </p>
+                                                                </TabPane>
+                                                            </TabContent>
                                                         </CardBody>
                                                     </Card>
                                                 </Col>
-                                            </TabPane>
+                                            </Row>
 
-                                            <TabPane tabId="2" id="custom-hover-customere">
+                                        </TabPane>
+                                        <TabPane tabId="2">
 
-                                                <div className="table-responsive">
-                                                    <ComingSoon />
-                                                </div>
-                                            </TabPane>
+                                            <div className="d-flex">
 
-                                            <TabPane tabId="3" id="custom-hover-reviews">
+                                            </div>
 
-                                                <div className="table-responsive">
-                                                    <ComingSoon />
-                                                </div>
-                                            </TabPane>
-                                        </TabContent>
-                                    </CardBody>
-                                </div>
+                                        </TabPane>
+                                        <TabPane tabId="3">
+
+                                            <div className="d-flex">
+
+                                            </div>
+
+                                        </TabPane>
+                                        <TabPane tabId="4">
+
+                                            <div className="d-flex">
+
+                                            </div>
+
+                                        </TabPane>
+                                    </TabContent>
+                                </CardBody>
                             </Card>
                         </Col>
                     </Row>

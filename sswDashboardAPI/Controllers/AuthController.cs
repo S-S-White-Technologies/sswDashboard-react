@@ -127,16 +127,19 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto loginDto)
     {
-        if (string.IsNullOrEmpty(loginDto.Email) || string.IsNullOrEmpty(loginDto.Password))
-            return BadRequest("Email and Password are required.");
+        if (string.IsNullOrEmpty(loginDto.EmailOrEmpId) || string.IsNullOrEmpty(loginDto.Password))
+            return BadRequest("Email/Emp ID and Password are required.");
 
-        var user = await _db.Employees.FirstOrDefaultAsync(x => x.EmailAddress == loginDto.Email);
+        var user = await _db.Employees
+            .FirstOrDefaultAsync(x => x.EmailAddress == loginDto.EmailOrEmpId || x.EmpId == loginDto.EmailOrEmpId);
+
         if (user == null)
-            return Unauthorized("Invalid Email.");
+            return Unauthorized("Invalid Email or Employee ID.");
 
         var empBasic = await _db.EmpBasic
             .Include(x => x.Role)
             .FirstOrDefaultAsync(x => x.EmpId == user.EmpId);
+
         if (empBasic == null)
             return Unauthorized("Employee record not found.");
 
@@ -144,7 +147,6 @@ public class AuthController : ControllerBase
         bool isBcrypt = false;
         bool needsPasswordReset = false;
 
-        // Check if password is BCrypt (starts with $2)
         if (!string.IsNullOrEmpty(user.ProjectsPassword) && user.ProjectsPassword.StartsWith("$2"))
         {
             try
@@ -154,12 +156,10 @@ public class AuthController : ControllerBase
             }
             catch
             {
-                // corrupt bcrypt hash, treat as invalid
-                return Unauthorized("Invalid Password.");
+                return Unauthorized("Invalid password.");
             }
         }
 
-        // If not bcrypt, try AES
         if (!isBcrypt)
         {
             try
@@ -177,23 +177,21 @@ public class AuthController : ControllerBase
                 if (decrypted == loginDto.Password)
                 {
                     isPasswordValid = true;
-                    needsPasswordReset = true; // matched AES, still force reset
+                    needsPasswordReset = true;
                 }
                 else
                 {
-                    // AES decryption success, but password mismatch
                     needsPasswordReset = true;
                 }
             }
             catch
             {
-                // AES decryption failed completely
                 needsPasswordReset = true;
             }
         }
 
         if (!isPasswordValid && !needsPasswordReset)
-            return Unauthorized("Invalid Password.");
+            return Unauthorized("Invalid password.");
 
         var token = GenerateJwtToken(user, empBasic);
 
@@ -211,6 +209,7 @@ public class AuthController : ControllerBase
             needsPasswordReset = needsPasswordReset
         });
     }
+
 
 
 

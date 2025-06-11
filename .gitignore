@@ -37,7 +37,56 @@ yarn.lock
 *.pdb
 *.dll
 
+.vs/
+bin/
+obj/
+*.vsidx
+*.suo
+*.dtbcache.*
+*.dll
+*.pdb
+*.exe
+
+
 # Ignore generated caches
 *.vsidx
 *.dtbcache.v2
+
+
+# Node + React
+node_modules/
+build/
+dist/
+.env
+.env.*.local
+
+# VS Code / Visual Studio
+.vscode/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sw?
+
+# Build results
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+*.vsidx
+*.dtbcache.*
+*.dbmdl
+
+# ASP.NET Core
+appsettings.*.json
+appsettings.json
+
+# Nuke all publish/dist output
+**/publish/
+**/dist/
+
 
