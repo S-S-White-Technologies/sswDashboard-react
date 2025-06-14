@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using sswDashboardAPI.Data;
 using sswDashboardAPI.Model;
 using sswDashboardAPI.Services;
 
@@ -9,10 +11,12 @@ namespace sswDashboardAPI.Controllers.TimeandAttandance
     public class WhosInBuildingController : ControllerBase
     {
         private readonly EmployeeService _employeeService;
+        private readonly AppDbContext _context;
 
-        public WhosInBuildingController(EmployeeService employeeService)
+        public WhosInBuildingController(EmployeeService employeeService, AppDbContext context)
         {
             _employeeService = employeeService;
+            _context = context;
         }
 
         [HttpGet("salaried")]
@@ -497,6 +501,19 @@ namespace sswDashboardAPI.Controllers.TimeandAttandance
 
             return Ok(lastAction);
         }
+
+
+        [HttpGet("supervisor-name/{empId}")]
+        public IActionResult GetSupervisorName(string empId)
+        {
+            var name = _context.EmpBasic
+                .Where(e => e.EmpID == empId)
+                .Select(e => e.FirstName + " " + e.LastName)
+                .FirstOrDefault();
+
+            return Ok(new { name });
+        }
+
     }
 
 

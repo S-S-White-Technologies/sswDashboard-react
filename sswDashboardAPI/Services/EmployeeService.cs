@@ -1,6 +1,8 @@
 ﻿
 
 
+using Intuit.Ipp.Data;
+using Intuit.Ipp.OAuth2PlatformClient;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -12,15 +14,28 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Net.Mail;
 using System.Net.NetworkInformation;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
 using static sswDashboardAPI.Services.EmployeeService;
 
 namespace sswDashboardAPI.Services
 {
+
+    public static class StringExtensions
+    {
+        public static string SubstringSafe(this string value, int startIndex, int length)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+            return value.Length <= length ? value : value.Substring(startIndex, length);
+        }
+    }
     public class EmployeeService : IEmployeeService
     {
         private readonly AppDbContext _context;
@@ -33,7 +48,7 @@ namespace sswDashboardAPI.Services
         }
 
 
-
+       
         public async Task<LastActionResponse> GetLastAction(string empId)
         {
             var lastActionResponse = new LastActionResponse();
@@ -150,170 +165,50 @@ namespace sswDashboardAPI.Services
 
             return lastActionResponse;
         }
-       
+
 
 
         public async Task<bool> InsertEmpBasicPLUTO(EmployeeDto emp)
         {
+
+
             string name = string.IsNullOrWhiteSpace(emp.MI)
-                ? $"{emp.FirstName} {emp.LastName}"
-                : $"{emp.FirstName} {emp.MI} {emp.LastName}";
+                    ? $"{emp.FirstName} {emp.LastName}"
+                    : $"{emp.FirstName} {emp.MI} {emp.LastName}";
 
             var empBasic = new EmpBasic
             {
                 EmpID = emp.EmpID.ToString(),
                 Name = string.IsNullOrWhiteSpace(emp.MI)
-        ? $"{emp.FirstName} {emp.LastName}".Trim()
-        : $"{emp.FirstName} {emp.MI} {emp.LastName}".Trim(),
-                FirstName = emp.FirstName,
-                MiddleInitial = emp.MI,
-                LastName = emp.LastName,
-                Address = emp.Street1,
-                Address2 = emp.Street2,
-                City = emp.City,
-                State = emp.State,
-                ZIP = emp.Zip,
-                Country = emp.Country,
-                Phone = emp.Phone,
-                EmgContact = emp.EmgContact,
+        ? $"{emp.FirstName} {emp.LastName}".Trim().SubstringSafe(0, 50)
+        : $"{emp.FirstName} {emp.MI} {emp.LastName}".Trim().SubstringSafe(0, 50),
+                FirstName = emp.FirstName?.SubstringSafe(0, 30),
+                //MiddleInitial = emp.MI?.SubstringSafe(0, 1),
+                LastName = emp.LastName?.SubstringSafe(0, 30),
+                Address = emp.Street1?.SubstringSafe(0, 50),
+                Address2 = emp.Street2?.SubstringSafe(0, 50),
+                City = emp.City?.SubstringSafe(0, 50),
+                State = emp.State?.SubstringSafe(0, 2),
+                ZIP = emp.Zip?.SubstringSafe(0, 10),
+                Country = emp.Country?.SubstringSafe(0, 30),
+                Phone = emp.Phone?.SubstringSafe(0, 20),
+                EmgContact = emp.EmgContact?.SubstringSafe(0, 50),
                 SupervisorID = emp.Supervisor,
-                EmpStatus = emp.EmpStatus,
-                ExpenseCode = emp.ExpenseCode,
-                JCDept = emp.Dept,
+                EmpStatus = emp.EmpStatus?.SubstringSafe(0, 1),
+                ExpenseCode = emp.ExpenseCode?.SubstringSafe(0, 10),
+                JCDept = emp.Dept?.SubstringSafe(0, 10),
                 RoleId = emp.RoleId,
                 Company = "SSW",
-                dcduserid = $"{emp.FirstName}.{emp.LastName}",
+                dcduserid = $"{emp.FirstName}.{emp.LastName}".SubstringSafe(0, 60),
                 cnvempid = "NULL"
             };
+
 
 
             await _context.EmpBasic.AddAsync(empBasic);
             return await _context.SaveChangesAsync() > 0;
         }
 
-        //public async Task<bool> InsertKineticEmpBasicAsync(EmployeeDto employee)
-        //{
-        //    try
-        //    {
-        //        var empBasic = await _context.EmpBasic
-        //            .FirstOrDefaultAsync(e => e.company == "SSW" && e.EmpId == employee.EmpID.ToString());
-
-        //        if (empBasic == null)
-        //        {
-        //            // Create new if not found
-        //            empBasic = new EmpBasic
-        //            {
-        //                company = "SSW",
-        //                EmpId = employee.EmpID.ToString()
-        //            };
-        //            _context.EmpBasic.Add(empBasic);
-        //        }
-
-        //        empBasic.shift = employee.Shift;
-        //        empBasic.firstname = employee.FirstName ?? "";
-        //        empBasic.middleinitial = employee.MI ?? "";
-        //        empBasic.lastname = employee.LastName ?? "";
-        //        empBasic.Name = !string.IsNullOrWhiteSpace(employee.MI)
-        //            ? $"{employee.FirstName} {employee.MI} {employee.LastName}".Trim()
-        //            : $"{employee.FirstName} {employee.LastName}".Trim();
-        //        empBasic.address = employee.Street1;
-        //        empBasic.address2 = employee.Street2;
-        //        empBasic.city = employee.City;
-        //        empBasic.state = employee.State;
-        //        empBasic.zip = employee.Zip;
-        //        empBasic.country = employee.Country;
-        //        empBasic.phone = employee.Phone;
-        //        empBasic.emgContact = employee.EmgContact;
-
-        //        empBasic.EmpStatus = employee.EmpStatus;
-        //        empBasic.expensecode = employee.ExpenseCode;
-        //        empBasic.JcDept = employee.Dept;
-        //        empBasic.SupervisorId = employee.Supervisor;
-
-
-        //        await _context.SaveChangesAsync();
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // You may want to log this properly in production
-        //        Console.WriteLine($"Error updating Kinetic database: {ex.Message}");
-        //        return false;
-        //    }
-        //}
-
-        //public async Task<bool> UpdateKineticEmpBasicAsync(EmployeeDto employee)
-        //{
-        //    try
-        //    {
-        //        string baseUrl = "https://gccdtpilot14.epicorsaas.com/saas1143pilot/api/v1/Erp.BO.EmpBasicSvc/EmpBasics";
-        //        string name = !string.IsNullOrWhiteSpace(employee.MI)
-        //            ? $"{employee.FirstName} {employee.MI} {employee.LastName}"
-        //            : $"{employee.FirstName} {employee.LastName}";
-
-        //        using var httpClient = new HttpClient();
-        //        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        //        httpClient.DefaultRequestHeaders.Add("License", "{\"ClaimedLicense\": \"00000003-079B-4C49-9D0A-EF8236247504\"}");
-        //        httpClient.DefaultRequestHeaders.Authorization =
-        //            new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", "U2h1a2xhV2ViQXBwOkJaRFpwRzdUQWpHMUxpJVlaTXZX");
-        //        var empBasicUpdate = new EmpBasicUpdateDTO
-        //        {
-        //            Company = "SSW",
-        //            EmpID = employee.EmpID.ToString(),
-        //            Shift = 1,
-        //            Name = name.Trim(),
-        //            FirstName = employee.FirstName,
-        //            LastName = employee.LastName,
-        //            Address = employee.Street1,
-        //            Address2 = employee.Street2,
-        //            City = employee.City,
-        //            State = employee.State,
-        //            ZIP = employee.Zip,
-        //            Country = employee.Country,
-        //            Phone = employee.Phone,
-        //            EmgContact = employee.EmgContact,
-        //            EmpStatus = employee.EmpStatus,
-        //            ExpenseCode = employee.ExpenseCode,
-        //            JCDept = employee.Dept,
-        //            SupervisorID = employee.Supervisor,
-        //            EMailAddress = employee.Email,
-
-
-        //        };
-
-
-
-        //        var jsonS = JsonConvert.SerializeObject(empBasicUpdate, new JsonSerializerSettings
-        //        {
-        //            NullValueHandling = NullValueHandling.Ignore,
-        //            DefaultValueHandling = DefaultValueHandling.Ignore
-        //        });
-
-        //        var jsonContent = new StringContent(JsonConvert.SerializeObject(jsonS), Encoding.UTF8, "application/json");
-
-
-        //        string endpoint = $"{baseUrl}";
-
-        //        var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
-        //        {
-        //            Content = jsonContent
-        //        };
-
-
-
-        //        var response = await httpClient.SendAsync(request);
-        //        string responseBody = await response.Content.ReadAsStringAsync();
-        //        System.Diagnostics.Debug.WriteLine("RESPONSE:\n" + responseBody);
-
-
-        //        return response.IsSuccessStatusCode;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Error when updating Kinetic database: {ex.Message}\nLine: {ex.StackTrace}");
-        //        return false;
-        //    }
-        //}
 
 
         public async Task<bool> InsertKineticEmpBasicAsync(EmployeeDto employee)
@@ -337,29 +232,39 @@ namespace sswDashboardAPI.Services
 
                 var body = new EmpBasicUpdateDTO
                 {
+
+
                     Company = "SSW",
                     EmpID = empID,
-                    
+                    Shift = employee.Shift,
                     Name = name.Trim(),
-                    FirstName = employee.FirstName ?? "",
-                    LastName = employee.LastName ?? "",
+                    FirstName = employee.FirstName,
                     MiddleInitial = employee.MI,
+                    LastName = employee.LastName,
                     Address = employee.Street1,
                     Address2 = employee.Street2,
                     City = employee.City,
                     State = employee.State,
                     ZIP = employee.Zip,
-                    Shift = employee.Shift,
-                    Country = "USA",
+                    Country = employee.Country,
                     Phone = employee.Phone,
-                   JCDept = employee.Dept,
+
+                    EmgContact = employee.EmgContact,
                     EmpStatus = employee.EmpStatus,
                     ExpenseCode = employee.ExpenseCode,
-                    EmgContact = employee.EmgContact,
-                    ShopSupervisor = false
-                
+                    JCDept = employee.Dept,
                    
+
+                    ShopSupervisor = false
+
                 };
+
+
+
+
+
+
+             
 
                 string json1 = JsonConvert.SerializeObject(body, Formatting.Indented);
 
@@ -504,7 +409,7 @@ namespace sswDashboardAPI.Services
                          join b in _context.EmpBasic on e.EmpId equals b.EmpID
                          join s in _context.EmpBasic on b.SupervisorID equals s.EmpID into sup
                          from s in sup.DefaultIfEmpty()
-                         where b.EmpStatus == "A"
+                         where b.EmpStatus == "A" && b.Company == "SSW"
                          select new Users
                          {
                              EmpId = b.EmpID,

@@ -224,8 +224,8 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid Email.");
 
         var empBasic = await _db.EmpBasic
-            .Include(x => x.Role)
-            .FirstOrDefaultAsync(x => x.EmpID == user.EmpId);
+                .Include(e => e.Role)
+                .FirstOrDefaultAsync(x => x.EmpID == user.EmpId);
         if (empBasic == null)
             return Unauthorized("Employee record not found.");
 

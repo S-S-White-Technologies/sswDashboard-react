@@ -515,16 +515,21 @@ const Register = () => {
                                     <Col md={4}>
                                         <div className="mb-3">
                                             <Label>Supervisor</Label>
+
                                             <Input type="select" name="supervisor"
                                                 value={validation.values.supervisor}
                                                 onBlur={validation.handleBlur}
                                                 onChange={validation.handleChange}
                                                 invalid={validation.touched.supervisor && validation.errors.supervisor ? true : false}>
+
                                                 <option value="">Select Supervisor</option>
+
                                                 {supervisors?.map((sup) => (
-                                                    <option key={sup.empId} value={sup.empId}>
-                                                        {sup.name}
+
+                                                    <option key={sup.empID} value={sup.empID}>
+                                                        {sup.empID} - {sup.name}
                                                     </option>
+
                                                 ))}
                                             </Input>
                                             {validation.touched.supervisor && validation.errors.supervisor ? (

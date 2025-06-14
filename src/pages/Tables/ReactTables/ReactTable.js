@@ -2,12 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import TableContainer from "../../../Components/Common/TableContainerReactTable";
 import TableContainerUser from "../../../Components/Common/TableContainerReactTableUser";
 import { Link } from 'react-router-dom';
+import api from "../../../config/api"
 import FeatherIcon from "feather-icons-react";
 import { Alert, Card, CardBody, Modal, ModalHeader, Container, ModalBody, ModalFooter, Button, Toast, ToastBody, Table, Spinner } from 'reactstrap';
 import { CardHeader, Col, Form, Input, Label, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
 import classnames from "classnames";
 import logoLight from "../../../assets/images/logofinal.png";
 import progileBg from '../../../assets/images/profile-bg.jpg';
+
 const DefaultTable = () => {
   const defaultTable =
     [
@@ -183,35 +185,21 @@ const PaginationTable = () => {
 };
 
 const SearchTable = ({ data }) => {
+  const [viewEmployee, setViewEmployee] = useState({});
+  const [activeTab, setActiveTab] = useState("1");
+
+  const tabChange = (tab) => {
+    if (activeTab !== tab) setActiveTab(tab);
+  };
+
   const [searchTable, setSearchTable] = useState(data);
+
+
+
 
   useEffect(() => {
     setSearchTable(data);  // Update state when data prop changes
   }, [data]);
-  // const searchTable =
-  //   [
-  //     { EmpId: "3300", Name: "Abha Magal", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Adam Gosik-Wolfe", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Adrianna Plotkin", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Akash Sharma", Status: "IN", ReturningAt: "3:30 PM" },
-  //     { EmpId: "3300", Name: "Akash Shukla", Status: "IN", ReturningAt: "4:00 PM" },
-  //     { EmpId: "3300", Name: "Amjad Daluol", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Angela Vo", Status: "IN", ReturningAt: "5:00 PM" },
-  //     { EmpId: "3300", Name: "Atul Achaya", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Austin Stroh", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Brian Perkins", Status: "IN", ReturningAt: "3:45 PM" },
-  //     { EmpId: "3300", Name: "Brian Sereno", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Christine Martin", Status: "IN", ReturningAt: "4:30 PM" },
-  //     { EmpId: "3300", Name: "Cierra Carlstrom", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Eddy Casimir", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Edward Sittler", Status: "IN", ReturningAt: "4:15 PM" },
-  //     { EmpId: "3300", Name: "Eric Benson", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Govind Govind", Status: "IN", ReturningAt: "5:00 PM" },
-  //     { EmpId: "3300", Name: "Han Lin", Status: "IN", ReturningAt: "3:30 PM" },
-  //     { EmpId: "3300", Name: "Henry Pivax", Status: "OUT", ReturningAt: "N/A" },
-  //     { EmpId: "3300", Name: "Ivette Benitez", Status: "IN", ReturningAt: "4:00 PM" },
-  //     { EmpId: "3300", Name: "Jan Korzonowicz", Status: "OUT", ReturningAt: "N/A" }
-  //   ]
 
   const columns = useMemo(
     () => [
@@ -256,7 +244,6 @@ const SearchTable = ({ data }) => {
 
 
 
-
   return (
     <React.Fragment >
       <TableContainer
@@ -279,41 +266,112 @@ const SearchTable = ({ data }) => {
 };
 
 const SearchTableEdit = ({ data }) => {
-
+  const [viewEmployee, setViewEmployee] = useState({});
   const [activeTab, setActiveTab] = useState("1");
 
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await api.get("registration/departments");
+        setDepartments(res.data);
+      } catch (err) {
+        console.error("Failed to fetch departments:", err);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
+
+  const [supervisorName, setSupervisorName] = useState("");
+
+  useEffect(() => {
+    const fetchSupervisor = async () => {
+      if (viewEmployee.supervisor) {
+        try {
+          const res = await api.get(`registration/supervisor-name/${viewEmployee.supervisor}`);
+          setSupervisorName(res.data.name);
+        } catch (err) {
+          console.error("Failed to fetch supervisor name:", err);
+        }
+      }
+    };
+
+    fetchSupervisor();
+  }, [viewEmployee.supervisor]);
   const tabChange = (tab) => {
     if (activeTab !== tab) setActiveTab(tab);
   };
 
   const [searchTable, setSearchTable] = useState(data);
   const [modal_togView, setmodal_togView] = useState('');
+  const [modal_togFirst, setmodal_togFirst] = useState('');
+  const [modal_togSecond, setmodal_togSecond] = useState('');
+  const [modal_togDelete, setmodal_togDelete] = useState('');
+  const [modal_togDeleteSecond, setmodal_togDeleteSecond] = useState('');
+  const [editEmployee, setEditEmployee] = useState({});
+  const [isEditMode, setIsEditMode] = useState(false);
   function tog_togView() {
     setmodal_togView(!modal_togView);
+
+    if (modal_togView) {
+      setIsEditMode(false);
+      setEditEmployee({});
+      setViewEmployee({});
+    }
+
+
   }
 
+  function tog_togFirst() {
+    setmodal_togFirst(!modal_togFirst)
+  }
 
-  const handleEdit = (empId) => {
-    console.log("Edit:", empId);
-    // Navigate or open form to edit
+  function tog_togSecond() {
+    setmodal_togSecond(!modal_togSecond)
+  }
+  function tog_togDelete() {
+    setmodal_togDelete(!modal_togDelete)
+  }
+
+  function tog_togDeleteSecond() {
+    setmodal_togDeleteSecond(!modal_togDeleteSecond)
+  }
+
+  const handleView = async (empId) => {
+    try {
+      const response = await api.get(`registration/get-employee/${empId}`);
+      if (response.status === 200) {
+        setViewEmployee(response.data);
+        tog_togView()
+      }
+    } catch (error) {
+      console.error("Error fetching employee:", error);
+    }
   };
-  const handleView = (empId) => {
-    tog_togView()
+
+
+  const handleEdit = async (empId) => {
+    try {
+      const response = await api.get(`registration/get-employee/${empId}`);
+      if (response.status === 200) {
+        setEditEmployee(response.data);
+        setIsEditMode(true);
+        tog_togView()
+      }
+    } catch (err) {
+      console.error("Failed to load employee:", err);
+    }
+  };
+
+  const getDepartmentName = (id) => {
+    const dept = departments.find((d) => d.id === viewEmployee.dept);
+    return dept ? dept.description : viewEmployee.dept;
   };
 
   const handleDelete = async (empId) => {
-    if (!window.confirm("Are you sure you want to inactivate this user?")) return;
-
-    try {
-      const response = await axios.put(`https://localhost:7168/api/employee/inactivate/${empId}`);
-      if (response.status === 200) {
-        alert("User inactivated successfully!");
-
-      }
-    } catch (error) {
-      console.error("Error inactivating user", error);
-      alert("Failed to inactivate user.");
-    }
+    tog_togDelete()
   };
 
 
@@ -388,7 +446,7 @@ const SearchTableEdit = ({ data }) => {
               className="link-primary"
               title="Edit"
             >
-              <i className="ri-settings-4-line"></i>
+              <i className="ri-pencil-fill align-bottom" />
             </Link>
 
             <Link
@@ -455,19 +513,40 @@ const SearchTableEdit = ({ data }) => {
               <Col xxl={3}>
                 <Card className="mt-n5">
                   <CardBody className="p-4">
-                    <div className="text-center">
-                      <div className="profile-user position-relative d-inline-block mx-auto  mb-4">
-                        <img src={logoLight}
-                          className="rounded-circle avatar-xl img-thumbnail user-profile-image"
-                          alt="user-profile" />
+                    <div className="card ribbon-box border shadow-none mb-lg-0">
+                      <div className="card-body text-center">
+                        <div className="ribbon-two ribbon-two-primary">
+                          {isEditMode ? (
+                            <span>
+                              {editEmployee.empID || "Emp.ID"}
+                            </span>
+                          ) : (
+                            <span>
+                              {viewEmployee.empID || "Emp.ID"}
+                            </span>
+                          )}
+                        </div>
+                        <div className="profile-user position-relative d-inline-block mx-auto  mb-4">
+                          <img src={logoLight}
+                            className="rounded-circle avatar-xl img-thumbnail user-profile-image"
+                            alt="user-profile" />
+                        </div>
+                        {isEditMode ? (
+                          <div>
+                            <h5 className="fs-16 mb-1">{editEmployee.firstName} {editEmployee.lastName}</h5>
+                            <p className="text-muted mb-0">{editEmployee.title}</p>
+                          </div>
+                        ) : (
+                          <div>
+                            <h5 className="fs-16 mb-1">{viewEmployee.firstName} {viewEmployee.lastName}</h5>
+                            <p className="text-muted mb-0">{viewEmployee.title}</p>
+                          </div>
+                        )}
+
                       </div>
-                      <h5 className="fs-16 mb-1">Anna Adame</h5>
-                      <p className="text-muted mb-0">Lead Designer / Developer</p>
                     </div>
                   </CardBody>
                 </Card>
-
-
               </Col>
 
               <Col xxl={9}>
@@ -493,96 +572,270 @@ const SearchTableEdit = ({ data }) => {
                       <TabPane tabId="1">
                         <Form>
                           <Row>
-                            <Col lg={6}>
-                              <div className="mb-3">
-                                <Label htmlFor="firstnameInput" className="form-label">First
-                                  Name</Label>
-                                <Input type="text" className="form-control" id="firstnameInput"
-                                  placeholder="Enter your firstname" defaultValue="Dave" />
-                              </div>
-                            </Col>
-                            <Col lg={6}>
-                              <div className="mb-3">
-                                <Label htmlFor="lastnameInput" className="form-label">Last
-                                  Name</Label>
-                                <Input type="text" className="form-control" id="lastnameInput"
-                                  placeholder="Enter your lastname" defaultValue="Adame" />
-                              </div>
-                            </Col>
-                            <Col lg={6}>
-                              <div className="mb-3">
-                                <Label htmlFor="phonenumberInput" className="form-label">Phone
-                                  Number</Label>
-                                <Input type="text" className="form-control"
-                                  id="phonenumberInput"
-                                  placeholder="Enter your phone number"
-                                  defaultValue="+(1) 987 6543" />
-                              </div>
-                            </Col>
-                            <Col lg={6}>
-                              <div className="mb-3">
-                                <Label htmlFor="emailInput" className="form-label">Email
-                                  Address</Label>
-                                <Input type="email" className="form-control" id="emailInput"
-                                  placeholder="Enter your email"
-                                  defaultValue="daveadame@velzon.com" />
-                              </div>
+
+                            <Col lg={4}>
+                              <Label>Firstname</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.firstName || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, firstName: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.firstName || "N/A"}
+                                  readOnly
+                                />
+                              )}
                             </Col>
 
-                            <Col lg={12}>
-                              <div className="mb-3">
-                                <Label htmlFor="skillsInput" className="form-label">Skills</Label>
-                                <select className="form-select mb-3">
-                                  <option >Select your Skill </option>
-                                  <option value="Choices1">CSS</option>
-                                  <option value="Choices2">HTML</option>
-                                  <option value="Choices3">PYTHON</option>
-                                  <option value="Choices4">JAVA</option>
-                                  <option value="Choices5">ASP.NET</option>
-                                </select>
-                              </div>
-                            </Col>
-                            <Col lg={6}>
-                              <div className="mb-3">
-                                <Label htmlFor="designationInput"
-                                  className="form-label">Designation</Label>
-                                <Input type="text" className="form-control"
-                                  id="designationInput" placeholder="Designation"
-                                  defaultValue="Lead Designer / Developer" />
-                              </div>
-                            </Col>
-                            <Col lg={6}>
-                              <div className="mb-3">
-                                <Label htmlFor="websiteInput1"
-                                  className="form-label">Website</Label>
-                                <Input type="text" className="form-control" id="websiteInput1"
-                                  placeholder="www.example.com" defaultValue="www.velzon.com" />
-                              </div>
+                            <Col lg={4}>
+                              <Label>Lastname</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.lastName || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, lastName: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.lastName || "N/A"}
+                                  readOnly
+                                />
+                              )}
                             </Col>
                             <Col lg={4}>
-                              <div className="mb-3">
-                                <Label htmlFor="cityInput" className="form-label">City</Label>
-                                <Input type="text" className="form-control" id="cityInput"
-                                  placeholder="City" defaultValue="California" />
-                              </div>
-                            </Col>
-                            <Col lg={4}>
-                              <div className="mb-3">
-                                <Label htmlFor="countryInput" className="form-label">Country</Label>
-                                <Input type="text" className="form-control" id="countryInput"
-                                  placeholder="Country" defaultValue="United States" />
-                              </div>
-                            </Col>
-                            <Col lg={4}>
-                              <div className="mb-3">
-                                <Label htmlFor="zipcodeInput" className="form-label">Zip
-                                  Code</Label>
-                                <Input type="text" className="form-control" minLength="5"
-                                  maxLength="6" id="zipcodeInput"
-                                  placeholder="Enter zipcode" defaultValue="90011" />
-                              </div>
+                              <Label>Title</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.title || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, title: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.title || "N/A"}
+                                  readOnly
+                                />
+                              )}
                             </Col>
 
+                            <Col lg={6}>
+                              <Label>Street Address 1</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.street1 || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, street1: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.street1 || "N/A"}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+
+                            <Col lg={6}>
+                              <Label>Street Address 2</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.street2 || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, street2: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.street2 || "N/A"}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+
+                            <Col lg={6}>
+                              <Label>Phone</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.phone || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, phone: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.phone || "N/A"}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+                            <Col lg={6}>
+                              <Label>Email Address</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.email || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, email: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.email || "N/A"}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+                            <Col lg={4}>
+                              <Label>City</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.city || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, city: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.city || "N/A"}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+                            <Col lg={4}>
+                              <Label>State</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.state || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, state: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.state || "N/A"}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+                            <Col lg={4}>
+                              <Label>Country</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.country || "USA"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, country: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.country || "USA"}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+                            <Col lg={4}>
+                              <Label>Employee Status</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.empStatus || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, empStatus: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.empStatus || "N/A"}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+                            <Col lg={4}>
+                              <Label>Expense Code</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={
+                                    editEmployee.expenseCode === "IDL"
+                                      ? "Salary"
+                                      : editEmployee.expenseCode
+                                        ? "Hourly"
+                                        : ""
+                                  }
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, expenseCode: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={
+                                    viewEmployee.expenseCode === "IDL"
+                                      ? "Salary"
+                                      : viewEmployee.expenseCode
+                                        ? "Hourly"
+                                        : ""
+                                  }
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+                            <Col lg={4}>
+                              <Label>Shift Code</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={editEmployee.shift ?? 1}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, shift: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={viewEmployee.shift ?? 1}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+                            <Col lg={6}>
+                              <Label>Department</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="select"
+                                  value={editEmployee.dept || "N/A"}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, dept: e.target.value })}
+                                >
+                                  <option value="">Select Department</option>
+                                  {departments.map((d) => (
+                                    <option key={d.id} value={d.id}>
+                                      {d.description}
+                                    </option>
+                                  ))}
+                                </Input>
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={getDepartmentName(viewEmployee.dept)}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
+                            <Col lg={6}>
+                              <Label>Supervisor</Label>
+                              {isEditMode ? (
+                                <Input
+                                  type="text"
+                                  value={supervisorName || editEmployee.supervisor}
+                                  onChange={(e) => setEditEmployee({ ...editEmployee, supervisor: e.target.value })}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={supervisorName || viewEmployee.supervisor}
+                                  readOnly
+                                />
+                              )}
+                            </Col>
 
                           </Row>
                         </Form>
@@ -596,9 +849,201 @@ const SearchTableEdit = ({ data }) => {
           </Container>
         </ModalBody>
         <ModalFooter>
-          <Button color="secondary" onClick={tog_togView}>Close</Button>
+          <div className="modal-footer">
+
+            {isEditMode ? (
+              <div className="modal-footer">
+                <Button color="primary" onClick={tog_togFirst}>Save changes</Button>
+                <Link to="#" className="btn btn-link link-success fw-medium" onClick={tog_togView}><i className="ri-close-line me-1 align-middle"></i> Close</Link>
+              </div>
+            ) : (
+              <div className="modal-footer">
+                <Link to="#" className="btn btn-link link-success fw-medium" onClick={tog_togView}><i className="ri-close-line me-1 align-middle"></i> Close</Link>
+              </div>
+            )}
+          </div>
+
         </ModalFooter>
       </Modal>
+
+
+      {/* Modal Save changes */}
+
+      <Modal
+        isOpen={modal_togFirst}
+        toggle={() => {
+          tog_togFirst();
+        }}
+        id="firstmodal"
+        centered
+      >
+        <ModalHeader className="modal-title" id="exampleModalToggleLabel" toggle={() => {
+          tog_togFirst();
+        }}>
+
+
+        </ModalHeader>
+        <ModalBody className="text-center p-5">
+          <lord-icon
+            src="https://cdn.lordicon.com/tdrtiskw.json"
+            trigger="loop"
+            colors="primary:#f7b84b,secondary:#405189"
+            style={{ width: "130px", height: "130px" }}>
+          </lord-icon>
+          <div className="mt-4 pt-4">
+            <h4>Are You sure you want Save Changes?</h4>
+            <p className="text-muted"> You are changing the Employee basic Details and Send to the Server! Kindly verify before sending. </p>
+            <div className="hstack gap-2 justify-content-center">
+              <Button color="success" onClick={() => { tog_togSecond(); tog_togFirst(false); }}>
+                Yes
+              </Button>
+              <Button color="danger" onClick={tog_togFirst}>
+                No
+              </Button>
+            </div>
+
+          </div>
+        </ModalBody>
+      </Modal>
+
+
+      <Modal
+        isOpen={modal_togSecond}
+        toggle={() => {
+          tog_togSecond();
+        }}
+        id="secondmodal"
+        centered
+      >
+        <ModalHeader>
+          <h5 className="modal-title" id="staticBackdropLabel">Success</h5>
+        </ModalHeader>
+        <ModalBody className="text-center p-5">
+          <lord-icon
+            src="https://cdn.lordicon.com/lupuorrc.json"
+            trigger="loop"
+            colors="primary:#121331,secondary:#08a88a"
+            style={{ width: "120px", height: "120px" }}>
+          </lord-icon>
+
+          <div className="mt-4">
+            <h4 className="mb-3">Changes has been Done!</h4>
+            <p className="text-muted mb-4">You have successfully change an employee Details. 🎉</p>
+            <div className="hstack gap-2 justify-content-center">
+
+              <Button color="light" onClick={() => tog_togSecond(false)}>Close</Button>
+            </div>
+          </div>
+        </ModalBody>
+      </Modal>
+
+
+      {/* <Modal
+        isOpen={modal_togSecond}
+        toggle={() => {
+          tog_togSecond();
+        }}
+        id="secondmodal"
+        centered
+      >
+        <ModalHeader className="modal-title" id="exampleModalToggleLabel2" toggle={() => {
+          tog_togSecond();
+        }}>
+          Modal 2
+
+        </ModalHeader>
+        <ModalBody className="text-center p-5">
+          <lord-icon
+            src="https://cdn.lordicon.com/zpxybbhl.json"
+            trigger="loop"
+            colors="primary:#405189,secondary:#0ab39c"
+            style={{ width: "150px", height: "150px" }}>
+          </lord-icon>
+          <div className="mt-4 pt-3">
+            <h4 className="mb-3">Changes </h4>
+            <p className="text-muted mb-4">Hide this modal and show the first with the button below Automatically Send your invitees a follow -Up email.</p>
+            <div className="hstack gap-2 justify-content-center">
+              <Button color="danger" onClick={() => { tog_togFirst(); tog_togSecond(false); }}>
+                Back to First
+              </Button>
+              <Button color="light" onClick={() => tog_togSecond(false)}>Close</Button>
+            </div>
+          </div>
+        </ModalBody>
+
+      </Modal> */}
+
+      {/* Modal Save Changes End */}
+
+
+      {/* Modal Inactive User First */}
+
+      <Modal
+        isOpen={modal_togDelete}
+        toggle={() => {
+          tog_togDelete();
+        }}
+        id="firstmodal"
+        centered
+      >
+        <ModalHeader className="modal-title" id="exampleModalToggleLabel" toggle={() => {
+          tog_togDelete();
+        }}>
+
+
+        </ModalHeader>
+        <ModalBody className="text-center p-5">
+          <lord-icon
+            src="https://cdn.lordicon.com/tdrtiskw.json"
+            trigger="loop"
+            colors="primary:#f7b84b,secondary:#405189"
+            style={{ width: "130px", height: "130px" }}>
+          </lord-icon>
+          <div className="mt-4 pt-4">
+            <h4>Are You sure you want Inactive this Employee?</h4>
+            <p className="text-muted"> Employee has been Inactivated. </p>
+            <div className="hstack gap-2 justify-content-center">
+              <Button color="success" onClick={() => { tog_togDeleteSecond(); tog_togDelete(false); }}>
+                Yes
+              </Button>
+              <Button color="danger" onClick={tog_togDelete}>
+                No
+              </Button>
+            </div>
+          </div>
+        </ModalBody>
+      </Modal>
+
+      {/* Modal Inactive User First End */}
+
+
+
+      {/* Inactive Employee */}
+
+      <Modal
+        isOpen={modal_togDeleteSecond}
+        toggle={() => {
+          tog_togDeleteSecond();
+        }}
+        centered
+      >
+        <ModalHeader className="modal-title" />
+
+        <ModalBody className="text-center p-5">
+          <lord-icon src="https://cdn.lordicon.com/hrqwmuhr.json"
+            trigger="loop" colors="primary:#121331,secondary:#08a88a" style={{ width: "120px", height: "120px" }}>
+          </lord-icon>
+          <div className="mt-4">
+            <h4 className="mb-3">Employee Successfully Inactivated!</h4>
+            <p className="text-muted mb-4"> </p>
+            <div className="hstack gap-2 justify-content-center">
+              <Button color="light" onClick={tog_togDeleteSecond}>Close</Button>
+            </div>
+          </div>
+        </ModalBody>
+      </Modal>
+
+      {/* Inactive Employee End */}
 
     </React.Fragment >
   );

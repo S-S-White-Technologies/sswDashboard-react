@@ -15,7 +15,10 @@ namespace sswDashboardAPI.Data
                 .HasOne(e => e.Role)
                 .WithMany()
                 .HasForeignKey(e => e.RoleId);
-
+            modelBuilder.Entity<EmpBasic>()
+        .HasOne(e => e.Employees)
+        .WithOne(e => e.EmpBasic)
+        .HasForeignKey<Employee>(e => e.EmpId);
             base.OnModelCreating(modelBuilder);
         }
 

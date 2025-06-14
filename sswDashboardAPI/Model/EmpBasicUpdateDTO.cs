@@ -22,7 +22,7 @@
         public string EmgContact { get; set; }
        
         public int Shift { get; set; }
-      
+    
 
         public bool ShopSupervisor { get; set; }
     }

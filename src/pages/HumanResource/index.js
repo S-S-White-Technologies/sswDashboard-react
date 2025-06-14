@@ -6,6 +6,11 @@ import classnames from "classnames";
 
 import Register from "../../../src/pages/Authentication/Register"
 import UserList from "../../../src/pages/HumanResource/UserList"
+
+// HR Reports
+
+import HRReportsSalary from "../../pages/HumanResource/HrReportsSalaried"
+
 // Images
 
 
@@ -197,9 +202,44 @@ const HumanResource = () => {
                                         </TabPane>
                                         <TabPane tabId="2">
 
-                                            <div className="d-flex">
+                                            <TabPane tabId="2" id="home1">
 
-                                            </div>
+                                                <Row>
+                                                    <Col xxl={12}>
+
+                                                        <Card>
+                                                            <CardBody>
+
+
+                                                                <Nav tabs className="nav nav-tabs nav-justified nav-border-top nav-border-top-success mb-3">
+                                                                    <NavItem>
+                                                                        <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "1", })} onClick={() => { topBordertoggle("1"); }} >
+                                                                            <i className="ri-user-line me-1 align-middle me-1"></i> HR Reports - Salaried
+                                                                        </NavLink>
+                                                                    </NavItem>
+                                                                    <NavItem>
+                                                                        <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "2", })} onClick={() => { topBordertoggle("2"); }} >
+                                                                            <i className="ri-user-line me-1 align-middle"></i> HR Reports - Hourly
+                                                                        </NavLink>
+                                                                    </NavItem>
+
+                                                                </Nav>
+
+                                                                <TabContent activeTab={topBorderTab} className="text-muted">
+                                                                    <TabPane tabId="1" id="nav-border-justified-home">
+                                                                        <HRReportsSalary />
+                                                                    </TabPane>
+
+                                                                    <TabPane tabId="2" id="nav-border-justified-profile">
+                                                                        <UserList />
+                                                                    </TabPane>
+                                                                </TabContent>
+                                                            </CardBody>
+                                                        </Card>
+                                                    </Col>
+                                                </Row>
+
+                                            </TabPane>
 
                                         </TabPane>
                                         <TabPane tabId="3">

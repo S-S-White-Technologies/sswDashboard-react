@@ -4,6 +4,7 @@ using sswDashboardAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Intuit.Ipp.ReportService;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication("Bearer")
@@ -54,7 +55,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseCors(policy =>
-    policy.WithOrigins("http://localhost:3001") // React app URL
+    policy.WithOrigins("http://localhost:3000") // React app URL
           .AllowAnyHeader()
           .AllowAnyMethod());
 app.UseHttpsRedirection();

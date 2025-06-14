@@ -6,6 +6,7 @@ namespace sswDashboardAPI.Model
     public class EmpBasic
     {
         [Key]
+        [Column("empid")]
         public string EmpID { get; set; }
        
    
@@ -30,16 +31,16 @@ namespace sswDashboardAPI.Model
         public string Phone { get; set; }           
         public string EmgContact { get; set; }
 
-        public string EMailAddress {  get; set; }
+        //public string EMailAddress {  get; set; }
 
         public int Shift {  get; set; }
         
 
-        public string MiddleInitial { get; set; }
+        //public string MiddleInitial { get; set; }
         [ForeignKey("RoleId")]
         public Role Role { get; set; }
 
-       
+       public virtual Employee Employees {  get; set; }
 
     }
 }
