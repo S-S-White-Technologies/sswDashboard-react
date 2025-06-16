@@ -4,6 +4,7 @@ import { Col, Container, Row, Card, CardBody, Nav, NavItem, NavLink, TabContent,
 import { Link } from 'react-router-dom';
 import classnames from "classnames";
 import ManageDepartments from "./ManageDepartments"; // Adjust the path if needed
+import ManageRoles from "./ManageRoles";
 
 
 import Register from "../../../src/pages/Authentication/Register"
@@ -183,10 +184,7 @@ const HumanResource = () => {
                                                                     </TabPane>
 
                                                                 <TabPane tabId="4" id="nav-border-justified-messages">
-                                                                    <h6>Message</h6>
-                                                                    <p className="mb-0">
-                                                                        Consistency is the one thing that can take all of the different elements in your design, and tie them all together and make them work. In an awareness campaign, it is vital for people to begin put 2 and 2 together and begin to recognize your cause. Consistency piques people’s interest is that it has become more and more popular over the years, which is excellent news to the beginner and advanced <Link to="#" className="text-decoration-underline"><b>Contact Designer</b></Link>.
-                                                                    </p>
+                                                                    <ManageRoles />
                                                                 </TabPane>
                                                             </TabContent>
                                                         </CardBody>

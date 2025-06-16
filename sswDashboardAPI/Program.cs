@@ -37,6 +37,7 @@ builder.Services.AddTransient<EmailService>();
 
 builder.Services.AddHttpClient<DepartmentService>();  // ✅ Add this
 builder.Services.AddScoped<DepartmentService>();       // ✅ And this
+builder.Services.AddScoped<RoleService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
