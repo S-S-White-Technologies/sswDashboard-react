@@ -124,9 +124,7 @@ obj/
 *.dtbcache.*
 *.dbmdl
 
-# ASP.NET Core
-appsettings.*.json
-appsettings.json
+
 
 # Nuke all publish/dist output
 **/publish/
