@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { api } from "../../config";
+import {
+    Row, Col, Card, CardBody,
+    UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Button
+} from "reactstrap";
 
 function ManageDepartments() {
     const [departments, setDepartments] = useState([]);
@@ -76,42 +80,75 @@ function ManageDepartments() {
     }, []);
 
     return (
-        <div>
-            <h3>Manage Departments</h3>
+        <div className="page-content pt-2">
+            <Row>
+                <Col lg={12}>
+                    <Card>
+                        <CardBody>
+                            <h4 className="card-title mb-4 text-primary">Manage Departments</h4>
 
-            <div style={{ marginBottom: "1rem" }}>
-                <input
-                    type="text"
-                    placeholder="Dept ID"
-                    value={newDept.jcDept1}
-                    onChange={(e) => setNewDept({ ...newDept, jcDept1: e.target.value })}
-                />
-                <input
-                    type="text"
-                    placeholder="Description"
-                    value={newDept.description}
-                    onChange={(e) => setNewDept({ ...newDept, description: e.target.value })}
-                />
-                <button onClick={handleAdd}>Add Department</button>
-            </div>
+                            {/* Add Department */}
+                            <div className="row align-items-center g-3 mb-4">
+                                <div className="col-auto">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Dept ID"
+                                        value={newDept.jcDept1}
+                                        onChange={(e) =>
+                                            setNewDept({ ...newDept, jcDept1: e.target.value })
+                                        }
+                                        style={{ width: "150px" }}
+                                    />
+                                </div>
+                                <div className="col-auto">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Description"
+                                        value={newDept.description}
+                                        onChange={(e) =>
+                                            setNewDept({ ...newDept, description: e.target.value })
+                                        }
+                                        style={{ width: "200px" }}
+                                    />
+                                </div>
+                                <div className="col-auto">
+                                    <Button color="primary" onClick={handleAdd}>
+                                        <i className="ri-add-line me-1 align-bottom"></i> Add Department
+                                    </Button>
+                                </div>
+                            </div>
 
-            <div>
-                <select
-                    value={selectedDeptId}
-                    onChange={(e) => setSelectedDeptId(e.target.value)}
-                >
-                    <option value="">Select Department to Delete</option>
-                    {departments.map(dept => (
-                        <option key={dept.jcDept1} value={dept.jcDept1}>
-                            {dept.jcDept1} - {dept.description}
-                        </option>
-                    ))}
-                </select>
-                <button onClick={handleDelete} style={{ marginLeft: "10px" }}>
-                    Delete
-                </button>
-            </div>
+                            {/* Delete Department */}
+                            <div className="row align-items-center g-3 mb-4">
+                                <div className="col-auto">
+                                    <select
+                                        className="form-select"
+                                        value={selectedDeptId}
+                                        onChange={(e) => setSelectedDeptId(e.target.value)}
+                                        style={{ width: "250px" }}
+                                    >
+                                        <option value="">Select Department to Delete</option>
+                                        {departments.map((dept) => (
+                                            <option key={dept.jcDept1} value={dept.jcDept1}>
+                                                {dept.jcDept1} - {dept.description}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="col-auto">
+                                    <Button color="danger" className="bg-gradient" onClick={handleDelete}>
+                                        <i className="ri-delete-bin-line me-1 align-bottom"></i> Delete
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardBody>
+                    </Card>
+                </Col>
+            </Row>
         </div>
+
     );
 }
 
