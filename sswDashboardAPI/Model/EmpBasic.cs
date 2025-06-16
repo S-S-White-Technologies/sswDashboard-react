@@ -6,18 +6,41 @@ namespace sswDashboardAPI.Model
     public class EmpBasic
     {
         [Key]
-        public string EmpId { get; set; }
+        [Column("empid")]
+        public string EmpID { get; set; }
+       
+   
         public string Name { get; set; }
-        public string SupervisorId { get; set; } 
+        public string SupervisorID { get; set; } 
         public string EmpStatus { get; set; }
-        public string firstname { get; set; }
-        public string lastname { get; set; }
-        public string expensecode { get; set; }
-        public string JcDept { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string ExpenseCode { get; set; }
+        public string JCDept { get; set; }
         public int RoleId { get; set; }
+        public string Company {  get; set; }
+        public string dcduserid { get; set; }
+        public string cnvempid {  get; set; }
 
+        public string Address { get; set; }         
+        public string Address2 { get; set; }        
+        public string City { get; set; }            
+        public string State { get; set; }           
+        public string ZIP { get; set; }             
+        public string Country { get; set; }         
+        public string Phone { get; set; }           
+        public string EmgContact { get; set; }
+
+        //public string EMailAddress {  get; set; }
+
+        public int Shift {  get; set; }
+        
+
+        //public string MiddleInitial { get; set; }
         [ForeignKey("RoleId")]
         public Role Role { get; set; }
+
+       public virtual Employee Employees {  get; set; }
 
     }
 }

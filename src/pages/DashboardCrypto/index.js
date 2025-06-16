@@ -11,6 +11,7 @@ import WhoisInBuilding from '../../pages/Jobs/CandidateList/GridView/index';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ComingSoon from '../Pages/ComingSoon/ComingSoon';
+import MyPortfolio from './MyPortfolio';
 
 const Timer = ({ clockInTime }) => {
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -217,6 +218,9 @@ const DashboardCrypto = () => {
             if (clockInResponse.status === 200 || clockInResponse.status === 201) {
                 setClockInSuccess(true);
                 fetchLastAction(employeeId);
+
+                console.log("Emp ID in Clock In :", employeeId);
+
                 tog_togClockIn();
             }
         } catch (error) {
@@ -608,6 +612,8 @@ const DashboardCrypto = () => {
             const response = await api.get(`WhosInBuilding/last-action/${empId}`);
             if (response.data) {
                 sessionStorage.setItem("getLastAction", JSON.stringify(response.data));
+
+                console.log("FetchLastAction :", response.data);
                 setMaxTime(response.data.maxTime.replace("T", " ")); // Set formatted maxTime
                 setStatus(response.data.status); // Set status (IN or OUT)
             }
@@ -772,6 +778,7 @@ const DashboardCrypto = () => {
         <React.Fragment>
             <div className="page-content">
                 <Container fluid>
+
                     <BreadCrumb title="Time and Attendance" pageTitle="Dashboards" />
                     <Row>
                         <div className="col-xxl-3">
@@ -1531,12 +1538,12 @@ const DashboardCrypto = () => {
                                     <tbody>
                                         <tr>
                                             <td>Clock In</td>
-                                            <td>{attendanceData.status === "IN" ? "Clocked In" : "Clocked Out"}</td>
+                                            <td>{attendanceData.status === "IN" ? "Clocked In" : "Clocked In"}</td>
                                             <td>{new Date(attendanceData.clockInTime).toLocaleString()}</td>
                                         </tr>
                                         <tr>
                                             <td>Clock Out</td>
-                                            <td>{attendanceData.status === "OUT" ? "Clocked Out" : "Clocked In"}</td>
+                                            <td>{attendanceData.status === "OUT" ? "Clocked Out" : "Clocked Out"}</td>
                                             <td>{attendanceData.clockOutTime ? new Date(attendanceData.clockOutTime).toLocaleString() : "N/A"}</td>
                                         </tr>
                                         <tr>

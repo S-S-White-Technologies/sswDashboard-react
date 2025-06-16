@@ -16,7 +16,7 @@ const taskWidgets = [
     {
         id: 1,
         label: "Total Tasks",
-        counter: "234",
+        counter: "10",
         badge: "ri-arrow-up-line",
         badgeClass: "success",
         percentage: "17.32 %",

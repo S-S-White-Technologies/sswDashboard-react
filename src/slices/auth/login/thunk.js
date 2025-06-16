@@ -43,11 +43,12 @@ export const loginUser = (user, history) => async (dispatch) => {
   try {
     const response = await api.post("Auth/login", user);
 
+
     if (response.status === 200) {
       // store auth user in session
       sessionStorage.setItem("authUser", JSON.stringify(response.data));
 
-      console.log("Whats the Data: ", response.data);
+      console.log("Whats the Data: ", response);
 
       // dispatch to redux
       dispatch(loginSuccess(response.data));

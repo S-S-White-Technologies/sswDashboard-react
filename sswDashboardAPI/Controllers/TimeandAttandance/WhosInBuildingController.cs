@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using sswDashboardAPI.Data;
 using sswDashboardAPI.Model;
 using sswDashboardAPI.Services;
 
@@ -9,10 +11,12 @@ namespace sswDashboardAPI.Controllers.TimeandAttandance
     public class WhosInBuildingController : ControllerBase
     {
         private readonly EmployeeService _employeeService;
+        private readonly AppDbContext _context;
 
-        public WhosInBuildingController(EmployeeService employeeService)
+        public WhosInBuildingController(EmployeeService employeeService, AppDbContext context)
         {
             _employeeService = employeeService;
+            _context = context;
         }
 
         [HttpGet("salaried")]
@@ -71,29 +75,69 @@ namespace sswDashboardAPI.Controllers.TimeandAttandance
             return Ok(lastAction);
         }
 
+        //[HttpPost("clock-in")]
+        //public async Task<IActionResult> ClockIn([FromBody] ClockInRequest request)
+        //{
+        //    if (string.IsNullOrEmpty(request.EmpId))
+        //    {
+        //        return BadRequest("Employee ID is required.");
+        //    }
+
+        //    try
+        //    {
+        //        // Get the last action status to check if the user is already clocked in
+        //        var lastAction = await _employeeService.GetLastAction(request.EmpId);
+
+        //        if (lastAction != null && lastAction.Status == "IN")
+        //        {
+        //            return BadRequest("You are already Clocked In.");
+        //        }
+
+        //        // Insert the Clock In record into the database
+        //        var success = await _employeeService.ClockInForDay(request.EmpId, request.MyType);
+
+        //        if (success)
+        //        {
+
+        //            var lastActionCheck = await _employeeService.GetLastAction(request.EmpId);
+        //            return Ok("Clock In successful.");
+
+
+
+        //        }
+        //        else
+        //        {
+        //            return StatusCode(500, "Error in writing Clock In time. Please try again.");
+        //        }
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Internal server error: {ex.Message}");
+        //    }
+        //}
+
         [HttpPost("clock-in")]
         public async Task<IActionResult> ClockIn([FromBody] ClockInRequest request)
         {
             if (string.IsNullOrEmpty(request.EmpId))
-            {
                 return BadRequest("Employee ID is required.");
-            }
 
             try
             {
-                // Get the last action status to check if the user is already clocked in
+                // STEP 1: Force a fresh read of the last action
                 var lastAction = await _employeeService.GetLastAction(request.EmpId);
 
                 if (lastAction != null && lastAction.Status == "IN")
-                {
                     return BadRequest("You are already Clocked In.");
-                }
 
-                // Insert the Clock In record into the database
+                // STEP 2: Now insert the new clock-in record
                 var success = await _employeeService.ClockInForDay(request.EmpId, request.MyType);
 
                 if (success)
                 {
+                    var lastActionCheck = await _employeeService.GetLastAction(request.EmpId);
                     return Ok("Clock In successful.");
                 }
                 else
@@ -106,6 +150,8 @@ namespace sswDashboardAPI.Controllers.TimeandAttandance
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+
 
         [HttpPost("clock-out")]
         public async Task<IActionResult> ClockOut([FromBody] ClockOutRequest request)
@@ -455,6 +501,19 @@ namespace sswDashboardAPI.Controllers.TimeandAttandance
 
             return Ok(lastAction);
         }
+
+
+        [HttpGet("supervisor-name/{empId}")]
+        public IActionResult GetSupervisorName(string empId)
+        {
+            var name = _context.EmpBasic
+                .Where(e => e.EmpID == empId)
+                .Select(e => e.FirstName + " " + e.LastName)
+                .FirstOrDefault();
+
+            return Ok(new { name });
+        }
+
     }
 
 

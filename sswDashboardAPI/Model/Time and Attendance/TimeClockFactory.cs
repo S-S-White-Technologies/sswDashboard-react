@@ -1,25 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace sswDashboardAPI.Model.Time_and_Attendance
+﻿public class TimeClockFactory
 {
-    public class TimeClockFactory
-    {
-        [Key]
-        public int Id { get; set; }
+    public int Id { get; set; } // Primary key
 
-        [Required]
-        public string EmpId { get; set; }
+    public DateTime ClockTime { get; set; }
+    public string ClockType { get; set; }
+    public short WeekNumber { get; set; }
+    public short Year { get; set; }
 
-       
+    public string EmpId { get; set; }
+    public string Computer { get; set; }
+    public string Status { get; set; }
+    public DateTime ReportDate { get; set; }
+    public string Approval { get; set; }
+    public bool ManualSelect { get; set; }
 
-        public string Status { get; set; }
 
-        public DateTime? BackTime { get; set; }
-
-        public string ClockType { get; set; }
-
-        public DateTime ClockTime { get; set; }
-
-        public string Approval { get; set; }
-    }
+    // Add any other necessary fields or audit columns
 }

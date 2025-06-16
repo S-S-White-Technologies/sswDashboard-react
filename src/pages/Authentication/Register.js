@@ -103,82 +103,8 @@ const Register = () => {
     }, []);
 
 
-    // useEffect(() => {
-    //     axios.get("https://localhost:7168/api/registration/departments")
-    //         .then((res) => setDepartments(res))
-    //         .catch(err) {
-    //         console.error("⚠️ Departments fetch error:", err.message || err);
-    //         setErrorModalMessage("Unable to load Departments. Please check your server or network!");
-    //         setErrorModalOpen(true);
-
-    //     }
-
-    //     //console.log("departments", departments);
-
-    //     axios
-    //         .get("https://localhost:7168/api/registration/supervisors")
-    //         .then((res) => setSupervisors(res))
-    //         .catch(err) {
-    //         console.error("⚠️ Departments fetch error:", err.message || err);
-    //         setErrorModalMessage("Unable to load Departments. Please check your server or network!");
-    //         setErrorModalOpen(true);
-    // }
 
 
-    // }, []);
-    // //End Supervisor and Department
-    // //next-employee ID
-
-
-    // useEffect(() => {
-    //     axios.get("https://localhost:7168/api/registration/next-empid")
-    //         .then((res) => {
-    //             console.log("Next EmpID response 👉", res); // Should log 3346
-    //             setNextEmpId(res); // res.data is 3346
-    //         })
-    //         .catch(err) {
-    //         console.error("⚠️ Departments fetch error:", err.message || err);
-    //         setErrorModalMessage("Unable to load Departments. Please check your server or network!");
-    //         setErrorModalOpen(true);
-    //     }
-    // }, []);
-
-    // //End next emp-Id
-
-
-    // useEffect(() => {
-    //     axios.get("https://localhost:7168/api/registration/roles").then((res) => {
-    //         setRoles(res);
-    //     });
-    // }, []);
-
-
-
-
-
-    // const validation = useFormik({
-    //     // enableReinitialize : use this flag when initial values needs to be changed
-    //     enableReinitialize: true,
-
-    //     initialValues: {
-    //         email: '',
-    //         first_name: '',
-    //         last_name: '',
-    //         title: '',
-    //         password: ''
-    //     },
-    //     validationSchema: Yup.object({
-    //         email: Yup.string().required("Please Enter Your Email"),
-    //         first_name: Yup.string().required("Please Enter Your First Name"),
-    //         last_name: Yup.string().required("Please Enter Your Last Name"),
-    //         title: Yup.string().required("Please Enter Title"),
-    //         password: Yup.string().required("Please Enter Password"),
-
-    //     }),
-    //     onSubmit: (values) => {
-    //         dispatch(registerUser(values));
-    //     }
-    // });
 
     const validation = useFormik({
         enableReinitialize: true,
@@ -302,6 +228,7 @@ const Register = () => {
                 toast.error("Registration Error! Server not reachable.");
             }
         }
+
 
     });
 
@@ -588,16 +515,21 @@ const Register = () => {
                                     <Col md={4}>
                                         <div className="mb-3">
                                             <Label>Supervisor</Label>
+
                                             <Input type="select" name="supervisor"
                                                 value={validation.values.supervisor}
                                                 onBlur={validation.handleBlur}
                                                 onChange={validation.handleChange}
                                                 invalid={validation.touched.supervisor && validation.errors.supervisor ? true : false}>
+
                                                 <option value="">Select Supervisor</option>
+
                                                 {supervisors?.map((sup) => (
-                                                    <option key={sup.empId} value={sup.empId}>
-                                                        {sup.name}
+
+                                                    <option key={sup.empID} value={sup.empID}>
+                                                        {sup.empID} - {sup.name}
                                                     </option>
+
                                                 ))}
                                             </Input>
                                             {validation.touched.supervisor && validation.errors.supervisor ? (

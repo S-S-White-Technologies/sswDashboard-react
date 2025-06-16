@@ -4,6 +4,7 @@ using sswDashboardAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Intuit.Ipp.ReportService;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication("Bearer")

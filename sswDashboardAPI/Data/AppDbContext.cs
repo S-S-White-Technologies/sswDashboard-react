@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using sswDashboardAPI.Data;
 using sswDashboardAPI.Model;
 using sswDashboardAPI.Model.Time_and_Attendance;
 using System.Collections.Generic;
@@ -14,12 +15,15 @@ namespace sswDashboardAPI.Data
                 .HasOne(e => e.Role)
                 .WithMany()
                 .HasForeignKey(e => e.RoleId);
-
+            modelBuilder.Entity<EmpBasic>()
+        .HasOne(e => e.Employees)
+        .WithOne(e => e.EmpBasic)
+        .HasForeignKey<Employee>(e => e.EmpId);
             base.OnModelCreating(modelBuilder);
         }
 
-        public DbSet<EmpBasic> EmpBasic { get; set; } 
-        
+        public DbSet<EmpBasic> EmpBasic { get; set; }
+
         public DbSet<Employee> Employees { get; set; }
 
         public DbSet<Role> Roles { get; set; }
@@ -29,3 +33,8 @@ namespace sswDashboardAPI.Data
 
     }
 }
+
+
+
+
+

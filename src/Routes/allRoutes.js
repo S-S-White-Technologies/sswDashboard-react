@@ -12,7 +12,7 @@ import DashboardNFT from "../pages/DashboardNFT";
 import DashboardJob from "../pages/DashboardJob/";
 
 
-//Accounting //Eng. //HR //IT // Planning // Production // Quality // Sales // Shipping //Shukla Medical // Supervisor // KPIs
+//Accounting //Eng. //HR //IT // Planning // Production // Quality // Sales // Shipping //Shukla Medical // Supervisor // KPIs //DI //MAFIA
 
 import Accounting from "../pages/Accounting/index"
 import Engineering from "../pages/Engineering/index"
@@ -26,10 +26,12 @@ import Shipping from "../pages/Shipping/index"
 import Shukla from "../pages/Shukla/index"
 import Supervisor from "../pages/Supervisor/index"
 import KPI from "../pages/KPI/index"
+
 import ManageDepartments from "../pages/HumanResource/ManageDepartments.js"
 import ManageRoles from "../pages/HumanResource/ManageRoles.js"
 
-
+import DI from "../pages/DI/index"
+import Mafia from "../pages/Mafia/index"
 
 
 
@@ -310,6 +312,14 @@ const authProtectedRoutes = [
   { path: "/hr/departments", component: <ManageDepartments />},
   { path: "/hr/roles", component: <ManageRoles />},
 
+
+  //DI and //Mafia Routes
+
+  { path: "/di", component: <DI /> }, { path: "/mafia", component: <Mafia /> },
+
+  //DI and //Mafia Routes
+
+  { path: "/di", component: <DI /> }, { path: "/mafia", component: <Mafia /> },
 
 
 

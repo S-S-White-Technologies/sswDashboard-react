@@ -48,24 +48,24 @@ const ComingSoon = () => {
                                     <h1 className="display-2 coming-soon-text">Under Development</h1>
                                 </div>
                                 {/* <div>
-                                        <Row className="justify-content-center mt-5">
-                                            <Col lg={8}>
-                                                <Countdown date="2025/12/31" renderer={renderer} />
-                                            </Col>
-                                        </Row>
+                                    <Row className="justify-content-center mt-5">
+                                        <Col lg={8}>
+                                            <Countdown date="2025/12/31" renderer={renderer} />
+                                        </Col>
+                                    </Row>
 
-                                        <div className="mt-5">
-                                            <h4>Get notified when we launch</h4>
-                                            <p className="text-muted">Don't worry we will not spam you 😊</p>
-                                        </div>
+                                    <div className="mt-5">
+                                        <h4>Get notified when we launch</h4>
+                                        <p className="text-muted">Don't worry we will not spam you 😊</p>
+                                    </div>
 
-                                        <InputGroup className="countdown-input-group mx-auto my-4">
-                                            <Input type="email" className="form-control border-light shadow" placeholder="Enter your email address" />
-                                            <button className="btn btn-success" type="button" >Send
-                                                <i className="ri-send-plane-2-fill align-bottom ms-2"></i>
-                                            </button>
-                                        </InputGroup>
-                                    </div> */}
+                                    <InputGroup className="countdown-input-group mx-auto my-4">
+                                        <Input type="email" className="form-control border-light shadow" placeholder="Enter your email address" />
+                                        <button className="btn btn-success" type="button" >Send
+                                            <i className="ri-send-plane-2-fill align-bottom ms-2"></i>
+                                        </button>
+                                    </InputGroup>
+                                </div> */}
                             </div>
                         </Col>
                     </Row>
