@@ -100,12 +100,6 @@
     "xlsx": "^0.18.5",
     "yup": "^0.32.11"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -125,6 +119,16 @@
   "devDependencies": {
     "@types/lodash": "^4.14.170",
     "@types/react-bootstrap-table2-paginator": "^2.1.1",
-    "@types/react-bootstrap-table2-toolkit": "^2.1.4"
+    "@types/react-bootstrap-table2-toolkit": "^2.1.4",
+    "gh-pages": "^6.3.0"
+  },
+  "homepage": "https://S-S-White-Technologies.github.io/sswDashboard-react",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   }
 }

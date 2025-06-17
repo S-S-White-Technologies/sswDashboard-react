@@ -10,6 +10,7 @@ import UserList from "../../../src/pages/HumanResource/UserList"
 // HR Reports
 
 import HRReportsSalary from "../../pages/HumanResource/HrReportsSalaried"
+import HRReportsHourly from "../../pages/HumanResource/HrReportsHourly"
 
 // Images
 
@@ -231,7 +232,7 @@ const HumanResource = () => {
                                                                     </TabPane>
 
                                                                     <TabPane tabId="2" id="nav-border-justified-profile">
-                                                                        <UserList />
+                                                                        <HRReportsHourly />
                                                                     </TabPane>
                                                                 </TabContent>
                                                             </CardBody>

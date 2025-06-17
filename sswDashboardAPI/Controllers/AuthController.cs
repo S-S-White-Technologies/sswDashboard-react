@@ -221,7 +221,7 @@ public class AuthController : ControllerBase
 
         var user = await _db.Employees.FirstOrDefaultAsync(x => x.EmailAddress == loginDto.EmailOrEmpId || x.EmpId == loginDto.EmailOrEmpId);
         if (user == null)
-            return Unauthorized("Invalid Email.");
+            return Unauthorized("Invalid Email or Emp ID.");
 
         var empBasic = await _db.EmpBasic
                 .Include(e => e.Role)
@@ -301,9 +301,6 @@ public class AuthController : ControllerBase
             needsPasswordReset = needsPasswordReset
         });
     }
-
-
-
 
 
     private string GenerateJwtToken(Employee user, EmpBasic empBasic)
