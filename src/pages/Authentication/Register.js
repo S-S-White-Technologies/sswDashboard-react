@@ -55,14 +55,19 @@ const Register = () => {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                const res = await axios.get("https://localhost:7168/api/registration/departments");
-                setDepartments(res);
+                const res = await api.get("Department");
+                const data = res.data;
+
+                console.log("Departments Raw:", data);
+                if (!data || typeof data !== "object") throw new Error("Invalid response format");
+                if (!Array.isArray(data.value)) throw new Error("Expected 'value' array");
+
+                setDepartments(data.value); // ✅ only the array is stored
             } catch (err) {
                 console.error("⚠️ Departments fetch error:", err.message || err);
                 toast.error("Unable to load Departments. Please try again later!");
             }
         };
-
         const fetchSupervisors = async () => {
             try {
                 const res = await axios.get("https://localhost:7168/api/registration/supervisors");
@@ -501,8 +506,8 @@ const Register = () => {
                                             >
                                                 <option value="">Select Department</option>
                                                 {departments?.map((dept) => (
-                                                    <option key={dept.id} value={dept.id}>
-                                                        {dept.description}
+                                                    <option key={dept.jcDept1} value={dept.jcDept1}>
+                                                        {dept.jcDept1} - {dept.description}
                                                     </option>
                                                 ))}
                                             </Input>
