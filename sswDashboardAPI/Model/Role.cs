@@ -6,7 +6,7 @@ namespace sswDashboardAPI.Model
     {
         [Key]
         public int RoleId { get; set; } 
-        public string RoleName { get; set; }
+        public required string RoleName { get; set; }
 
         //public ICollection<EmpBasic> EmpBasic { get; set; }  
     }

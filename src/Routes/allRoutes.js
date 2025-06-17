@@ -26,6 +26,10 @@ import Shipping from "../pages/Shipping/index"
 import Shukla from "../pages/Shukla/index"
 import Supervisor from "../pages/Supervisor/index"
 import KPI from "../pages/KPI/index"
+
+import ManageDepartments from "../pages/HumanResource/ManageDepartments.js"
+import ManageRoles from "../pages/HumanResource/ManageRoles.js"
+
 import DI from "../pages/DI/index"
 import Mafia from "../pages/Mafia/index"
 
@@ -289,6 +293,7 @@ const authProtectedRoutes = [
   { path: "/apps-todo", component: <ToDoList /> },
 
 
+
   // Accounting
 
   { path: "/accounting", component: <Accounting /> },
@@ -304,6 +309,13 @@ const authProtectedRoutes = [
   { path: "/shukla", component: <Shukla /> }, { path: "/shipping", component: <Shipping /> },
   { path: "/sales", component: <Sales /> }, { path: "/supervisor", component: <Supervisor /> },
   { path: "/kpi", component: <KPI /> },
+  { path: "/hr/departments", component: <ManageDepartments />},
+  { path: "/hr/roles", component: <ManageRoles />},
+
+
+  //DI and //Mafia Routes
+
+  { path: "/di", component: <DI /> }, { path: "/mafia", component: <Mafia /> },
 
   //DI and //Mafia Routes
 

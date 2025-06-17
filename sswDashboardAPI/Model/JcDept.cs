@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace sswDashboardAPI.Model
 {
     public class JcDept
     {
         [Key]
-        public string JCDept { get; set; }
+        [Column("JCDept")]
+        public string JCDept1 { get; set; }
         public string Description { get; set; }
         public string Company { get; set; }
     }

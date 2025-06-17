@@ -69,3 +69,65 @@ Velzon-React-2.0.zip
 # Configuration files
 appsettings.json
 appsettings.*.json
+
+
+# Ignore build artifacts
+/bin/
+/obj/
+/.vs/
+/*.user
+*.suo
+*.pdb
+*.dll
+
+.vs/
+bin/
+obj/
+*.vsidx
+*.suo
+*.dtbcache.*
+*.dll
+*.pdb
+*.exe
+
+
+# Ignore generated caches
+*.vsidx
+*.dtbcache.v2
+
+
+# Node + React
+node_modules/
+build/
+dist/
+.env
+.env.*.local
+
+# VS Code / Visual Studio
+.vscode/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sw?
+
+# Build results
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+*.vsidx
+*.dtbcache.*
+*.dbmdl
+
+
+
+# Nuke all publish/dist output
+**/publish/
+**/dist/
+
+
