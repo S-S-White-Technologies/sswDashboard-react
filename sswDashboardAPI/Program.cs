@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Intuit.Ipp.ReportService;
+using sswDashboardAPI.Services.HRModules;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication("Bearer")
@@ -45,6 +46,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddDbContext<EpicorERPContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("EpicorERPConnection")));
 
+builder.Services.AddScoped<PunchService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

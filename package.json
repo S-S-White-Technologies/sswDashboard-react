@@ -124,7 +124,6 @@
     "@types/react-bootstrap-table2-toolkit": "^2.1.4",
     "gh-pages": "^6.3.0"
   },
-  "homepage": "https://S-S-White-Technologies.github.io/sswDashboard-react",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

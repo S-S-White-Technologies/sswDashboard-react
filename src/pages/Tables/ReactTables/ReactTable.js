@@ -384,11 +384,7 @@ const SearchTableEdit = ({ data }) => {
     () => [
       {
         Header: "Emp ID",
-        accessor: (cellProps) => {
-          return (
-            <span className="fw-semibold">{cellProps.empId}</span>
-          )
-        },
+        accessor: "empId",
         disableFilters: true,
         className: "text-center",
         filterable: false,

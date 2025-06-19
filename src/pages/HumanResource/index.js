@@ -9,6 +9,7 @@ import ManageRoles from "./ManageRoles";
 
 import Register from "../../../src/pages/Authentication/Register"
 import UserList from "../../../src/pages/HumanResource/UserList"
+import MissingPunches from "../../../src/pages/HumanResource/MissingPunches"
 
 // HR Reports
 
@@ -135,7 +136,7 @@ const HumanResource = () => {
                                                     toggleCustom("4");
                                                 }}
                                             >
-                                                Settings
+                                                Biomatrics
                                             </NavLink>
                                         </NavItem>
                                     </Nav>
@@ -186,8 +187,8 @@ const HumanResource = () => {
                                                                 </TabPane>
 
                                                                 <TabPane tabId="3" id="nav-border-justified-manage-departments">
-                                                                  <ManageDepartments />
-                                                                    </TabPane>
+                                                                    <ManageDepartments />
+                                                                </TabPane>
 
                                                                 <TabPane tabId="4" id="nav-border-justified-messages">
                                                                     <ManageRoles />
@@ -213,12 +214,12 @@ const HumanResource = () => {
                                                                 <Nav tabs className="nav nav-tabs nav-justified nav-border-top nav-border-top-success mb-3">
                                                                     <NavItem>
                                                                         <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "1", })} onClick={() => { topBordertoggle("1"); }} >
-                                                                            <i className="ri-user-line me-1 align-middle me-1"></i> HR Reports - Salaried
+                                                                            <i className="ri-todo-fill me-1 align-middle me-1"></i> HR Reports - Salaried
                                                                         </NavLink>
                                                                     </NavItem>
                                                                     <NavItem>
                                                                         <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "2", })} onClick={() => { topBordertoggle("2"); }} >
-                                                                            <i className="ri-user-line me-1 align-middle"></i> HR Reports - Hourly
+                                                                            <i className="ri-todo-fill me-1 align-middle"></i> HR Reports - Hourly
                                                                         </NavLink>
                                                                     </NavItem>
 
@@ -243,16 +244,56 @@ const HumanResource = () => {
                                         </TabPane>
                                         <TabPane tabId="3">
 
-                                            <div className="d-flex">
 
-                                            </div>
 
                                         </TabPane>
                                         <TabPane tabId="4">
 
-                                            <div className="d-flex">
+                                            <TabPane tabId="4" id="home1">
 
-                                            </div>
+                                                <Row>
+                                                    <Col xxl={12}>
+
+                                                        <Card>
+                                                            <CardBody>
+
+
+                                                                <Nav tabs className="nav nav-tabs nav-justified nav-border-top nav-border-top-success mb-3">
+                                                                    <NavItem>
+                                                                        <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "1", })} onClick={() => { topBordertoggle("1"); }} >
+                                                                            <i className="ri-radar-fill me-1 align-middle me-1"></i> Missing Punches - Salaried
+                                                                        </NavLink>
+                                                                    </NavItem>
+                                                                    <NavItem>
+                                                                        <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "2", })} onClick={() => { topBordertoggle("2"); }} >
+                                                                            <i className="ri-radar-fill me-1 align-middle"></i> Missing Punches - Hourly
+                                                                        </NavLink>
+                                                                    </NavItem>
+                                                                    <NavItem>
+                                                                        <NavLink style={{ cursor: "pointer" }} className={classnames({ active: topBorderTab === "3", })} onClick={() => { topBordertoggle("3"); }} >
+                                                                            <i className="ri-radar-fill me-1 align-middle"></i> Punch Editor
+                                                                        </NavLink>
+                                                                    </NavItem>
+                                                                </Nav>
+
+                                                                <TabContent activeTab={topBorderTab} className="text-muted">
+                                                                    <TabPane tabId="1" id="nav-border-justified-home">
+                                                                        <MissingPunches />
+                                                                    </TabPane>
+
+                                                                    <TabPane tabId="2" id="nav-border-justified-profile">
+
+                                                                    </TabPane>
+                                                                    <TabPane tabId="3" id="nav-border-justified-profile">
+
+                                                                    </TabPane>
+                                                                </TabContent>
+                                                            </CardBody>
+                                                        </Card>
+                                                    </Col>
+                                                </Row>
+
+                                            </TabPane>
 
                                         </TabPane>
                                     </TabContent>
