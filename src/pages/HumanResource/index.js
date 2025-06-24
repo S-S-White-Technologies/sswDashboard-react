@@ -6,7 +6,7 @@ import classnames from "classnames";
 import ManageDepartments from "./ManageDepartments"; // Adjust the path if needed
 import ManageRoles from "./ManageRoles";
 
-
+import { ToastContainer } from 'react-toastify';
 import Register from "../../../src/pages/Authentication/Register"
 import UserList from "../../../src/pages/HumanResource/UserList"
 import MissingPunches from "../../../src/pages/HumanResource/MissingPunches"
@@ -76,7 +76,9 @@ const HumanResource = () => {
         }
     };
     return (
+
         <React.Fragment>
+            <ToastContainer />
             <div className="page-content">
                 <Container fluid>
                     <BreadCrumb title="Human Resource" pageTitle="Dashboards" />

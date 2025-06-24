@@ -946,7 +946,7 @@ const DashboardCrypto = () => {
                                         </Row>
                                         <Row>
                                             <div style={{ zIndex: "11" }}>
-                                                <ToastContainer />
+
                                                 {/* <Toast isOpen={toast10} id="borderedToast4" className="toast-border-danger overflow-hidden mt-3">
                                                     <ToastBody>
                                                         <div className="d-flex align-items-center">

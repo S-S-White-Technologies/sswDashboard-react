@@ -69,7 +69,6 @@ const Register = () => {
             }
         };
 
-
         const fetchSupervisors = async () => {
             try {
                 const res = await axios.get("https://localhost:7168/api/registration/supervisors");

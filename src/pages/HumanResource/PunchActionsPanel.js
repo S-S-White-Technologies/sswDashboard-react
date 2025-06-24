@@ -12,7 +12,7 @@ import {
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
 
-const PunchActionsPanel = ({ selectedEmpId, selectedEmpName }) => {
+const PunchActionsPanel = ({ selectedEmpId, selectedEmpName, selectedDate, selectedSeqCode, status }) => {
     const [inOut, setInOut] = useState("IN");
     const [punchType, setPunchType] = useState("Normal");
     const [punchTime, setPunchTime] = useState([new Date()]);
@@ -22,7 +22,7 @@ const PunchActionsPanel = ({ selectedEmpId, selectedEmpName }) => {
     const [editPunchType, setEditPunchType] = useState("Normal");
     const [editPunchTime, setEditPunchTime] = useState([new Date()]);
     const [editWorkingDate, setEditWorkingDate] = useState([new Date()]);
-    const selectedSeqCode = "404707"; // mock
+
 
     return (
         <Card className="shadow-sm mt-4">
@@ -30,11 +30,9 @@ const PunchActionsPanel = ({ selectedEmpId, selectedEmpName }) => {
                 <Row>
                     <Col md={6}>
                         <h5 className="mb-3 border-bottom pb-2">Add Punches:</h5>
-                        <FormGroup>
-                            <Label>Employee ID:</Label>
-                            <div>{selectedEmpId}</div>
-                            <Label>Name:</Label>
-                            <div>{selectedEmpName}</div>
+                        <FormGroup className="d-flex gap-4 align-items-center">
+                            <div>Emp. Id: <strong>{selectedEmpId}</strong></div>
+                            <div>Emp. Name: <strong>{selectedEmpName}</strong></div>
                         </FormGroup>
 
                         <FormGroup>
@@ -94,9 +92,8 @@ const PunchActionsPanel = ({ selectedEmpId, selectedEmpName }) => {
                     <Col md={6}>
                         <h5 className="mb-3 border-bottom pb-2">Edit Punches:</h5>
 
-                        <FormGroup>
-                            <Label>Sequence Code</Label>
-                            <div>{selectedSeqCode}</div>
+                        <FormGroup className="d-flex gap-4 align-items-center">
+                            <div>Sequence Code: <strong>{selectedSeqCode}</strong></div>
                         </FormGroup>
 
                         <FormGroup>
@@ -155,6 +152,7 @@ const PunchActionsPanel = ({ selectedEmpId, selectedEmpName }) => {
                 </Row>
             </CardBody>
         </Card>
+
     );
 };
 

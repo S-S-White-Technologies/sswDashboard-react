@@ -1,14 +1,20 @@
-import React, { useState } from "react";
-import { Row, Col, Button, Input, Form, Label, Card, CardBody, Container, Popover, PopoverBody } from "reactstrap";
+
+
+import React, { useState, useEffect } from "react";
+import { Row, Col, Button, Input, Form, Label, Card, CardBody, FormGroup, Collapse, Container, Popover, PopoverBody } from "reactstrap";
 import Flatpickr from "react-flatpickr";
 import logomain from "../../../src/assets/images/logofinal.png"
+import hrBanner from "../../../src/assets/images/auth-one-bg_old.jpg"
 import axios from "axios";
-import jsPDF from 'jspdf/dist/jspdf.umd.min.js'
+import api from "../../../src/config/api.js"
+import jsPDF from '../../../node_modules/jspdf/dist/jspdf.umd.min.js'
 import { applyPlugin } from 'jspdf-autotable'
+import Select, { components } from "react-select";
 applyPlugin(jsPDF)
 import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { toast } from "react-toastify";
 
 
 
@@ -20,21 +26,45 @@ const HRReportsHourly = () => {
 
     const [dateRange, setDateRange] = useState("");
 
-
-
     const [popoverOpenHourly, setPopoverOpenHourly] = useState(false);
     const [popoverOpenEarlyHourly, setPopoverOpenEarlyHourly] = useState(false);
+    const [departments, setDepartments] = useState([]);
+    const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
+    const [selectedEmployeeNames, setSelectedEmployeeNames] = useState([]);
 
-    const togglePopover = () => {
+    useEffect(() => {
+        const fetchDepartments = async () => {
+            try {
+                const res = await api.get("department");
+                console.log("✅ Department API Response:", res);
+
+                const dataRes = res.data?.value ?? res.value;
+
+                if (!Array.isArray(dataRes)) {
+                    throw new Error("Expected 'value' to be an array");
+                }
+
+                setDepartments(dataRes);
+            } catch (err) {
+                console.error("❌ Departments fetch error:", err.message || err);
+                alert("Error fetching departments");
+            }
+        };
+
+        fetchDepartments();
+    }, []);
+
+
+    const togglePopoverHourly = () => {
         setPopoverOpenHourly(prev => {
-            if (!prev) setPopoverOpenEarlyHourly(false); // close the other one
+            if (!prev) setPopoverOpenEarlyHourly(false);
             return !prev;
         });
     };
 
-    const togglePopoverEalry = () => {
+    const togglePopoverEalryHourly = () => {
         setPopoverOpenEarlyHourly(prev => {
-            if (!prev) setPopoverOpenHourly(false); // close the other one
+            if (!prev) setPopoverOpenHourly(false);
             return !prev;
         });
     };
@@ -42,9 +72,9 @@ const HRReportsHourly = () => {
     const handleExport = (type) => {
         setPopoverOpenHourly(false);
         if (type === "excel") {
-            handleTodayExcelExport(); // your logic
+            handleTodayExcelExport();
         } else if (type === "pdf") {
-            handleTodayDataClick(); // your logic
+            handleTodayDataClick();
         }
     };
 
@@ -64,14 +94,31 @@ const HRReportsHourly = () => {
         setLoading(true);
         const today = new Date().toISOString().split("T")[0];
 
-        const url =
-            employeeMode === "specific" && employeeId.trim()
-                ? `https://localhost:7168/api/Reports/daily-report-hourly?empId=${employeeId}&reportDate=${today}`
-                : `https://localhost:7168/api/Reports/daily-report-hourly?reportDate=${today}`;
+        const params = new URLSearchParams();
+        const extractName = (label) => {
+            const match = label.match(/^(.+?)\s*\(\d+\)$/);
+            return match ? match[1].trim() : label;
+        };
+        params.append("reportDate", today); // Already set
+        selectedEmpIds.forEach(id => params.append("empIds", id.value));
+        const employeeNames = selectedEmployeeNames.map(e => extractName(e.label)); // <- watch this
+        employeeNames.forEach(name => params.append("employeeNames", name));
+        if (selectedDepartmentId) {
+            params.append("departmentIds", selectedDepartmentId);
+        }
+        const url = `https://localhost:7168/api/Reports/daily-report-hourly?${params.toString()}`;
+
+        console.log("Final URL: ", url);
 
         try {
             const response = await axios.get(url);
             const data = response;
+
+
+            if (!Array.isArray(data) || data.length === 0) {
+                toast.error("No today data found!");
+                return;
+            }
 
             if (!data || data.length === 0) {
                 alert("No data found to export.");
@@ -121,18 +168,40 @@ const HRReportsHourly = () => {
         }
     };
 
+    //TodayData Excel End
+
+    /// TodayData PDF
     const handleTodayDataClick = async () => {
 
         setLoading(true);
         const today = new Date().toISOString().split("T")[0];
-        const url =
-            employeeMode === "specific" && employeeId.trim()
-                ? `https://localhost:7168/api/Reports/daily-report-hourly?empId=${employeeId}&reportDate=${today}`
-                : `https://localhost:7168/api/Reports/daily-report-hourly?reportDate=${today}`;
+        const params = new URLSearchParams();
+        const extractName = (label) => {
+            const match = label.match(/^(.+?)\s*\(\d+\)$/);
+            return match ? match[1].trim() : label;
+        };
+
+
+        params.append("reportDate", today);
+        selectedEmpIds.forEach(id => params.append("empIds", id.value));
+        const employeeNames = selectedEmployeeNames.map(e => extractName(e.label));
+        employeeNames.forEach(name => params.append("employeeNames", name));
+        if (selectedDepartmentId) {
+            params.append("departmentIds", selectedDepartmentId);
+        }
+        const url = `https://localhost:7168/api/Reports/daily-report-hourly?${params.toString()}`;
+
+        console.log("Final URL: ", url);
 
         try {
             const response = await axios.get(url);
             const data = response;
+
+
+            if (!Array.isArray(data) || data.length === 0) {
+                toast.error("No today data found!");
+                return;
+            }
 
             const doc = new jsPDF();
             const images = logomain;
@@ -245,7 +314,7 @@ const HRReportsHourly = () => {
         setLoading(true);
 
         if (!dateRange || dateRange.length !== 2) {
-            alert("Please select a valid start and end date.");
+            toast.error("Please select a valid date range.");
             setLoading(false);
             return;
         }
@@ -254,20 +323,46 @@ const HRReportsHourly = () => {
             d.toISOString().split("T")[0]
         );
 
-        const url =
-            employeeMode === "specific" && employeeId.trim()
-                ? `https://localhost:7168/api/Reports/early-leave-report-hourly?empId=${employeeId}&startDate=${startDate}&endDate=${endDate}`
-                : `https://localhost:7168/api/Reports/early-leave-report-hourly?startDate=${startDate}&endDate=${endDate}`;
+        const extractName = (label) => {
+            const match = label.match(/^(.+?)\s*\(\d+\)$/);
+            return match ? match[1].trim() : label;
+        };
+        const empIds = selectedEmpIds.map(e => e.value);
+        const params = new URLSearchParams();
+
+        params.append("startDate", startDate);
+        params.append("endDate", endDate);
+
+
+        empIds.forEach(id => {
+            params.append("empIds", id);
+        });
+
+
+        if (selectedDepartmentId) {
+            params.append("departmentId", selectedDepartmentId);
+        }
+
+        const employeeNames = selectedEmployeeNames.map(e => extractName(e.label));
+
+        employeeNames.forEach(name => {
+            params.append("employeeNames", name);
+        });
+
+        const url = `https://localhost:7168/api/Reports/early-leave-report-hourly?${params.toString()}`;
+
+        console.log("Early URL :", url);
+
 
         try {
             const response = await axios.get(url);
-            const data = response.records || response;
+            const records = response.records;
 
-            if (!Array.isArray(data)) {
-                console.error("Invalid API response format:", data);
-                alert("Failed to generate report. Invalid data format.");
+            if (!Array.isArray(records) || records.length === 0) {
+                toast.error("No data found, Change filter Selection!");
                 return;
             }
+
 
 
             const images = logomain;
@@ -365,7 +460,7 @@ const HRReportsHourly = () => {
         setLoading(true);
 
         if (!dateRange || dateRange.length !== 2) {
-            alert("Please select a valid start and end date.");
+            toast.error("Please select a valid date range.");
             setLoading(false);
             return;
         }
@@ -373,22 +468,46 @@ const HRReportsHourly = () => {
         const [startDate, endDate] = dateRange.map(d =>
             d.toISOString().split("T")[0]
         );
+        const extractName = (label) => {
+            const match = label.match(/^(.+?)\s*\(\d+\)$/);
+            return match ? match[1].trim() : label;
+        };
+        const empIds = selectedEmpIds.map(e => e.value);
+        const params = new URLSearchParams();
 
-        const url =
-            employeeMode === "specific" && employeeId.trim()
-                ? `https://localhost:7168/api/Reports/early-leave-report-hourly?empId=${employeeId}&startDate=${startDate}&endDate=${endDate}`
-                : `https://localhost:7168/api/Reports/early-leave-report-hourly?startDate=${startDate}&endDate=${endDate}`;
+        params.append("startDate", startDate);
+        params.append("endDate", endDate);
+
+
+        empIds.forEach(id => {
+            params.append("empIds", id);
+        });
+
+
+        if (selectedDepartmentId) {
+            params.append("departmentId", selectedDepartmentId);
+        }
+
+        const employeeNames = selectedEmployeeNames.map(e => extractName(e.label));
+
+        employeeNames.forEach(name => {
+            params.append("employeeNames", name);
+        });
+
+        const url = `https://localhost:7168/api/Reports/early-leave-report-hourly?${params.toString()}`;
+
+
 
         try {
             const response = await axios.get(url);
             const records = response.records;
 
             if (!Array.isArray(records) || records.length === 0) {
-                alert("No data found for selected range.");
+                toast.error("No data found, Change filter Selection!");
                 return;
             }
 
-            // Group by employee
+
             const groupBy = (arr, keyFn) => {
                 return arr.reduce((acc, item) => {
                     const key = keyFn(item || {});
@@ -424,14 +543,14 @@ const HRReportsHourly = () => {
                     ]);
                 });
 
-                wsData.push([], []); // Add spacing between employees
+                wsData.push([], []);
             }
 
-            // Create a single worksheet from combined data
+
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, "Early Leave Report");
 
-            // Export to file
+
             const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
             const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
             saveAs(blob, `EarlyLeaveReport_${startDate}_to_${endDate}.xlsx`);
@@ -447,22 +566,123 @@ const HRReportsHourly = () => {
     ///Early Leave Excel End
 
 
+    const [SingleOptions, setSingleOptions] = useState([]);
+    const [employeeIdOptions, setEmployeeIdOptions] = useState([]);
 
+    useEffect(() => {
+        api.get("WhosInBuilding/userList")
+            .then((res) => {
+                const data = res.data;
+
+
+                const names = data.map(user => ({
+                    value: user.empId,
+                    label: `${user.name} (${user.empId})`
+                }));
+
+
+                const ids = data.map(user => ({
+                    value: user.empId,
+                    label: user.empId
+                }));
+
+                setSingleOptions(names);
+                setEmployeeIdOptions(ids);
+            })
+            .catch((err) => {
+                console.error("Error fetching employee list:", err);
+            });
+    }, []);
+
+    const CustomMenuList = (props) => {
+        return (
+            <>
+                <div className="d-flex justify-content-between px-2 pt-2 pb-1 border-bottom">
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-success"
+                        onClick={() => props.setValue(props.options)}
+                    >
+                        Check All
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => props.setValue([])}
+                    >
+                        Clear
+                    </button>
+                </div>
+                <components.MenuList {...props}>{props.children}</components.MenuList>
+            </>
+        );
+    };
+    const customSelectStyles = {
+        control: (base) => ({
+            ...base,
+            backgroundColor: 'white',
+        }),
+        menu: (base) => ({
+            ...base,
+            backgroundColor: 'white',
+        }),
+    };
+
+
+    const [selectedEmpIds, setSelectedEmpIds] = useState([]);
 
 
     return (
-        <div style={{
-            minHeight: 'calc(100vh - 830px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative'
-        }}>
-            <Container>
-                <Card className="shadow border-0 p-4 position-relative">
-                    <CardBody>
-                        <Form>
-                            {/* <Row className="custom-accordionwithicon accordion-secondary">
+        <div style={{ minHeight: 'calc(100vh - 830px)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <Container fluid>
+                <Card className="mb-4">
+                    <CardBody className="p-0">
+                        <div className="bg-overlay"></div>
+                        <img
+                            src={hrBanner}
+                            alt="HR Banner"
+                            className="img-fluid w-100"
+                            style={{
+
+                                width: '100%',
+                                height: 'auto',
+                                maxHeight: "180px",
+                                objectFit: 'cover'
+                            }}
+
+                        />
+                    </CardBody>
+                </Card>
+
+                <Row className="mb-4">
+                    <Col md={4}>
+                        <Card className="text-center shadow-sm">
+                            <CardBody>
+                                <h6>Total Employees</h6>
+                                <h4 className="text-primary">128</h4>
+                            </CardBody>
+                        </Card>
+                    </Col>
+                    <Col md={4}>
+                        <Card className="text-center shadow-sm">
+                            <CardBody>
+                                <h6>Late In Today</h6>
+                                <h4 className="text-warning">00</h4>
+                            </CardBody>
+                        </Card>
+                    </Col>
+                    <Col md={4}>
+                        <Card className="text-center shadow-sm">
+                            <CardBody>
+                                <h6>Early Leave</h6>
+                                <h4 className="text-danger">15</h4>
+                            </CardBody>
+                        </Card>
+                    </Col>
+                </Row>
+
+                <Form>
+                    {/* <Row className="custom-accordionwithicon accordion-secondary">
                                 <Col md={12}>
                                     <blockquote className="blockquote border-start border-4 border-success ps-3 rounded mb-0">
                                         <p className="text-dark mb-2">Note *</p>
@@ -472,267 +692,260 @@ const HRReportsHourly = () => {
                                     </blockquote>
                                 </Col>
                             </Row> */}
-
-                            <Row className="mb-3">
-                                <Col md={6}>
-                                    <div className="mt-3">
-                                        <Label className="text-dark">Please Select Date Range</Label>
-                                        <Flatpickr
-                                            className="form-control"
-                                            value={dateRange}
-                                            onChange={selectedDates => setDateRange(selectedDates)}
-                                            options={{
-                                                mode: "range",
-                                                dateFormat: "Y-m-d"
-                                            }}
-                                        />
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            <Row className="mb-3">
-                                <Col md={6}>
-                                    <div className="mt-3">
-                                        <Input
-                                            type="radio"
-                                            name="employeeMode"
-                                            value="all"
-                                            checked={employeeMode === "all"}
-                                            onChange={() => setEmployeeMode("all")}
-                                        /> All Active Employees
-                                        <div className="mt-2">
-                                            <Input
-                                                type="radio"
-                                                name="employeeMode"
-                                                value="specific"
-                                                checked={employeeMode === "specific"}
-                                                onChange={() => setEmployeeMode("specific")}
-                                            /> Specific Employee
-                                            {employeeMode === "specific" && (
-                                                <Input
-                                                    type="text"
-                                                    className="mt-2"
-                                                    placeholder="Employee ID"
-                                                    value={employeeId}
-                                                    onChange={(e) => setEmployeeId(e.target.value)}
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-                                </Col>
-                            </Row>
-                            {loading && (
-                                <div
-                                    style={{
-                                        position: "fixed",
-                                        top: 0,
-                                        left: 0,
-                                        width: "100vw",
-                                        height: "100vh",
-                                        backgroundColor: "rgba(255,255,255,0.6)",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        zIndex: 9999,
-                                    }}
-                                >
-                                    <div className="spinner-border text-primary" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </div>
+                    <div className="border rounded p-3 shadow-sm ">
+                        <Row>
+                            <Col md={3}>
+                                <FormGroup>
+                                    <Label className="text-dark">Please Select Date Range</Label>
+                                    <Flatpickr
+                                        className="form-control"
+                                        value={dateRange}
+                                        onChange={selectedDates => setDateRange(selectedDates)}
+                                        options={{ mode: "range", dateFormat: "Y-m-d" }}
+                                    />
+                                </FormGroup>
+                            </Col>
+                            <Col md={3}>
+                                <FormGroup>
+                                    <Label htmlFor="choices-multiple-remove-button" className="form-label text-dark">Employee Name</Label>
+                                    <Select
+                                        value={selectedEmployeeNames}
+                                        isMulti={true}
+                                        isClearable={true}
+                                        onChange={(selected) => setSelectedEmployeeNames(selected || [])}
+                                        options={SingleOptions}
+                                        styles={customSelectStyles}
+                                    />
+                                </FormGroup>
+                            </Col>
+                            <Col md={3}>
+                                <FormGroup>
+                                    <Label>Department</Label>
+                                    <Input
+                                        type="select"
+                                        value={selectedDepartmentId}
+                                        onChange={(e) => setSelectedDepartmentId(e.target.value)}
+                                    >
+                                        <option value="">Select Department</option>
+                                        {departments?.map((dept) => (
+                                            <option key={dept.jcDept1} value={dept.jcDept1}>
+                                                {dept.jcDept1} - {dept.description}
+                                            </option>
+                                        ))}
+                                    </Input>
+                                </FormGroup>
+                            </Col>
+                            <Col md={3}>
+                                <FormGroup>
+                                    <Label htmlFor="empIdSelect" className="form-label text-dark">Employee ID</Label>
+                                    <Select
+                                        id="empIdSelect"
+                                        isMulti
+                                        isClearable
+                                        isSearchable
+                                        options={employeeIdOptions}
+                                        value={selectedEmpIds}
+                                        onChange={setSelectedEmpIds}
+                                        components={{ MenuList: (props) => <CustomMenuList {...props} setValue={setSelectedEmpIds} /> }}
+                                        setValue={setSelectedEmpIds}
+                                        styles={customSelectStyles}
+                                    />
+                                </FormGroup>
+                            </Col>
+                        </Row>
+                        <Row className="mb-2">
+                            <Col md={12} className="d-flex flex-wrap gap-5">
+                                <div className="position-relative d-inline-block">
+                                    <Button className="btn btn-soft-success"
+                                        color="success"
+                                        id="todayDataHourly"
+                                        onClick={togglePopoverHourly}
+                                    >
+                                        <span classname="text-dark">Today's Data</span>
+                                    </Button>
+                                    <Popover
+                                        placement="bottom"
+                                        isOpen={popoverOpenHourly}
+                                        target="todayDataHourly"
+                                        toggle={togglePopoverHourly}
+                                        container="body"
+                                    >
+                                        <PopoverBody className="d-flex flex-column gap-2">
+                                            <Button size="sm" color="light" onClick={() => handleExport("excel")}>
+                                                📊 Export Excel
+                                            </Button>
+                                            <Button size="sm" color="light" onClick={() => handleExport("pdf")}>
+                                                📄 Export PDF
+                                            </Button>
+                                        </PopoverBody>
+                                    </Popover>
                                 </div>
-                            )}
 
-                            <Row className="mb-2">
-                                <Col className="d-flex flex-wrap gap-2">
-                                    <div className="position-relative d-inline-block">
-                                        <Button className="btn btn-soft-success"
-                                            color="success"
-                                            id="todayDataHourly"
-                                            onClick={togglePopover}
-                                        >
-                                            <span classname="text-dark">Today's Data</span>
-                                        </Button>
-                                        <Popover
-                                            placement="bottom"
-                                            isOpen={popoverOpenHourly}
-                                            target="todayDataHourly"
-                                            toggle={togglePopover}
-                                            container="body"
-                                        >
-                                            <PopoverBody className="d-flex flex-column gap-2">
-                                                <Button size="sm" color="light" onClick={() => handleExport("excel")}>
-                                                    📊 Export Excel
-                                                </Button>
-                                                <Button size="sm" color="light" onClick={() => handleExport("pdf")}>
-                                                    📄 Export PDF
-                                                </Button>
-                                            </PopoverBody>
-                                        </Popover>
-                                    </div>
+                                <div className="position-relative d-inline-block">
+                                    <Button className="btn btn-soft-success"
+                                        color="success"
+                                        id="earlyDataHourly"
+                                        onClick={togglePopoverEalryHourly}
+                                    >
+                                        Early Leave
+                                    </Button>
+                                    <Popover
+                                        placement="bottom"
+                                        isOpen={popoverOpenEarlyHourly}
+                                        target="earlyDataHourly"
+                                        toggle={togglePopoverEalryHourly}
+                                        container="body"
+                                    >
+                                        <PopoverBody className="d-flex flex-column gap-2">
+                                            <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
+                                                📊 Export Excel
+                                            </Button>
+                                            <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
+                                                📄 Export PDF
+                                            </Button>
+                                        </PopoverBody>
+                                    </Popover>
+                                </div>
 
-
-
-                                    <div className="position-relative d-inline-block">
-                                        <Button className="btn btn-soft-success"
-                                            color="success"
-                                            id="earlyDataHourly"
-                                            onClick={togglePopoverEalry}
-                                        >
-                                            Early Leave
-                                        </Button>
-                                        <Popover
-                                            placement="bottom"
-                                            isOpen={popoverOpenEarlyHourly}
-                                            target="earlyDataHourly"
-                                            toggle={togglePopoverEalry}
-                                            container="body"
-                                        >
-                                            <PopoverBody className="d-flex flex-column gap-2">
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
-                                                    📊 Export Excel
-                                                </Button>
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
-                                                    📄 Export PDF
-                                                </Button>
-                                            </PopoverBody>
-                                        </Popover>
-                                    </div>
-
-                                    {/* <div className="position-relative d-inline-block">
-                                        <Button className="btn btn-soft-success"
-                                            color="success"
-                                            id="earlyDataHourly"
-                                            onClick={togglePopoverEalry}
-                                        >
-                                            Late In
-                                        </Button>
-                                        <Popover
-                                            placement="bottom"
-                                            isOpen={popoverOpenEarly}
-                                            target="earlyDataHourly"
-                                            toggle={togglePopoverEalry}
-                                            container="body"
-                                        >
-                                            <PopoverBody className="d-flex flex-column gap-2">
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
-                                                    📊 Export Excel
-                                                </Button>
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
-                                                    📄 Export PDF
-                                                </Button>
-                                            </PopoverBody>
-                                        </Popover>
-                                    </div>
-                                    <div className="position-relative d-inline-block">
-                                        <Button className="btn btn-soft-success"
-                                            color="success"
-                                            id="earlyDataHourly"
-                                            onClick={togglePopoverEalry}
-                                        >
-                                            Long Lunch
-                                        </Button>
-                                        <Popover
-                                            placement="bottom"
-                                            isOpen={popoverOpenEarly}
-                                            target="earlyDataHourly"
-                                            toggle={togglePopoverEalry}
-                                            container="body"
-                                        >
-                                            <PopoverBody className="d-flex flex-column gap-2">
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
-                                                    📊 Export Excel
-                                                </Button>
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
-                                                    📄 Export PDF
-                                                </Button>
-                                            </PopoverBody>
-                                        </Popover>
-                                    </div>
-
-                                    <div className="position-relative d-inline-block">
-                                        <Button className="btn btn-soft-success"
-                                            color="success"
-                                            id="earlyDataHourly"
-                                            onClick={togglePopoverEalry}
-                                        >
-                                            Full Report
-                                        </Button>
-                                        <Popover
-                                            placement="bottom"
-                                            isOpen={popoverOpenEarly}
-                                            target="earlyDataHourly"
-                                            toggle={togglePopoverEalry}
-                                            container="body"
-                                        >
-                                            <PopoverBody className="d-flex flex-column gap-2">
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
-                                                    📊 Export Excel
-                                                </Button>
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
-                                                    📄 Export PDF
-                                                </Button>
-                                            </PopoverBody>
-                                        </Popover>
-                                    </div>
-
-                                    <div className="position-relative d-inline-block">
-                                        <Button className="btn btn-soft-success"
-                                            color="success"
-                                            id="earlyDataHourly"
-                                            onClick={togglePopoverEalry}
-                                        >
-                                            Excel Summary
-                                        </Button>
-                                        <Popover
-                                            placement="bottom"
-                                            isOpen={popoverOpenEarly}
-                                            target="earlyDataHourly"
-                                            toggle={togglePopoverEalry}
-                                            container="body"
-                                        >
-                                            <PopoverBody className="d-flex flex-column gap-2">
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
-                                                    📊 Export Excel
-                                                </Button>
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
-                                                    📄 Export PDF
-                                                </Button>
-                                            </PopoverBody>
-                                        </Popover>
-                                    </div>
-                                    <div className="position-relative d-inline-block">
-                                        <Button className="btn btn-soft-danger"
-                                            color="danger"
-                                            id="earlyDataHourly"
-                                            onClick={togglePopoverEalry}
-                                        >
-                                            Absent
-                                        </Button>
-                                        <Popover
-                                            placement="bottom"
-                                            isOpen={popoverOpenEarly}
-                                            target="earlyDataHourly"
-                                            toggle={togglePopoverEalry}
-                                            container="body"
-                                        >
-                                            <PopoverBody className="d-flex flex-column gap-2">
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
-                                                    📊 Export Excel
-                                                </Button>
-                                                <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
-                                                    📄 Export PDF
-                                                </Button>
-                                            </PopoverBody>
-                                        </Popover>
-                                    </div> */}
-
-                                </Col>
+                                <div className="position-relative d-inline-block">
+                                    <Button className="btn btn-soft-success"
+                                        color="success"
+                                        id="lateInHourly"
+                                        onClick={togglePopoverEalryHourly}
+                                    >
+                                        Late In
+                                    </Button>
+                                    <Popover
+                                        placement="bottom"
+                                        isOpen={popoverOpenEarlyHourly}
+                                        target="lateInHourly"
+                                        toggle={togglePopoverEalryHourly}
+                                        container="body"
+                                    >
+                                        <PopoverBody className="d-flex flex-column gap-2">
+                                            <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
+                                                📊 Export Excel
+                                            </Button>
+                                            <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
+                                                📄 Export PDF
+                                            </Button>
+                                        </PopoverBody>
+                                    </Popover>
+                                </div>
 
 
-                            </Row>
-                        </Form>
-                    </CardBody>
-                </Card>
+                                <div className="position-relative d-inline-block">
+                                    <Button className="btn btn-soft-success"
+                                        color="success"
+                                        id="fullReportHourly"
+                                        onClick={togglePopoverEalryHourly}
+                                    >
+                                        Full Report
+                                    </Button>
+                                    <Popover
+                                        placement="bottom"
+                                        isOpen={popoverOpenEarlyHourly}
+                                        target="fullReportHourly"
+                                        toggle={togglePopoverEalryHourly}
+                                        container="body"
+                                    >
+                                        <PopoverBody className="d-flex flex-column gap-2">
+                                            <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
+                                                📊 Export Excel
+                                            </Button>
+                                            <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
+                                                📄 Export PDF
+                                            </Button>
+                                        </PopoverBody>
+                                    </Popover>
+                                </div>
+
+                                <div className="position-relative d-inline-block">
+                                    <Button className="btn btn-soft-success"
+                                        color="success"
+                                        id="excelSummaryHourly"
+                                        onClick={togglePopoverEalryHourly}
+                                    >
+                                        Excel Summary
+                                    </Button>
+                                    <Popover
+                                        placement="bottom"
+                                        isOpen={popoverOpenEarlyHourly}
+                                        target="excelSummaryHourly"
+                                        toggle={togglePopoverEalryHourly}
+                                        container="body"
+                                    >
+                                        <PopoverBody className="d-flex flex-column gap-2">
+                                            <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
+                                                📊 Export Excel
+                                            </Button>
+                                            <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
+                                                📄 Export PDF
+                                            </Button>
+                                        </PopoverBody>
+                                    </Popover>
+                                </div>
+                                <div className="position-relative d-inline-block">
+                                    <Button className="btn btn-soft-danger"
+                                        color="danger"
+                                        id="bsentHourly"
+                                        onClick={togglePopoverEalryHourly}
+                                    >
+                                        Absent
+                                    </Button>
+                                    <Popover
+                                        placement="bottom"
+                                        isOpen={popoverOpenEarlyHourly}
+                                        target="bsentHourly"
+                                        toggle={togglePopoverEalryHourly}
+                                        container="body"
+                                    >
+                                        <PopoverBody className="d-flex flex-column gap-2">
+                                            <Button size="sm" color="light" onClick={() => handleExportEarly("excel")}>
+                                                📊 Export Excel
+                                            </Button>
+                                            <Button size="sm" color="light" onClick={() => handleExportEarly("pdf")}>
+                                                📄 Export PDF
+                                            </Button>
+                                        </PopoverBody>
+                                    </Popover>
+                                </div>
+                            </Col>
+                        </Row>
+                    </div>
+
+
+                    <Row className="mb-3">
+                        <Col md={6}>
+
+                        </Col>
+                    </Row>
+
+
+                    {loading && (
+                        <div
+                            style={{
+                                position: "fixed",
+                                top: 0,
+                                left: 0,
+                                width: "100vw",
+                                height: "100vh",
+                                backgroundColor: "rgba(255,255,255,0.6)",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                zIndex: 9999,
+                            }}
+                        >
+                            <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    )}
+
+                </Form>
+                {/* </CardBody>
+                </Card> */}
             </Container>
         </div>
     );

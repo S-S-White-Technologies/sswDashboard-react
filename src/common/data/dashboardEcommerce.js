@@ -20,9 +20,20 @@ import avatar6 from "../../assets/images/users/avatar-6.jpg";
 const ecomWidgets = [
     {
         id: 1,
-        label: "Attendance", // use this to detect it's a custom card
-        cardColor: "primary",
-       },
+        cardColor: "secondary",
+        label: "Attendance",
+        badge: "ri-arrow-right-down-line",
+        badgeClass: "success",
+        percentage: "-3.57",
+        counter: "36",
+        link: "View all EPOs",
+        bgcolor: "info",
+        icon: "bx bx-shopping-bag",
+        decimals: 0,
+        prefix: "",
+        separator: ",",
+        suffix: ""
+    },
     {
         id: 2,
         cardColor: "secondary",
@@ -68,7 +79,7 @@ const ecomWidgets = [
         prefix: "",
         suffix: ""
     },
-    
+
 ];
 
 const bestSellingProducts = [

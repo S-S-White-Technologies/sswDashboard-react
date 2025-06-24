@@ -1,6 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Col, Row } from 'reactstrap';
 import Flatpickr from "react-flatpickr";
+
+// const [userDetails, setUserDetails] = useState({
+//     name: "Guest User",
+//     title: "User",
+
+// });
+
+// useEffect(() => {
+//     const authData = sessionStorage.getItem("authUser");
+//     if (authData) {
+//         const parsed = JSON.parse(authData);
+
+//         const nameFinal = parsed?.name || "Guest User";  // ✅ not parsed.data.name
+//         const title = parsed?.title || "User";
+
+//         setUserDetails({ name, title });
+//     }
+// }, []);
 
 const Section = (props) => {
     return (
@@ -9,8 +27,8 @@ const Section = (props) => {
                 <Col xs={12}>
                     <div className="d-flex align-items-lg-center flex-lg-row flex-column">
                         <div className="flex-grow-1">
-                            <h4 className="fs-16 mb-1">Good Morning, Anna!</h4>
-                            <p className="text-muted mb-0">Here's what's happening with your store today.</p>
+                            <h4 className="fs-16 mb-1">Hello, Victor!</h4>
+                            <p className="text-muted mb-0"></p>
                         </div>
                         <div className="mt-3 mt-lg-0">
                             <form action="#">

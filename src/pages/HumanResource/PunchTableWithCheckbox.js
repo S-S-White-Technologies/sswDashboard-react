@@ -12,21 +12,25 @@ const PunchTableWithCheckboxes = ({ data }) => {
     const [punchTime, setPunchTime] = useState([new Date()]);
     const [workingDate, setWorkingDate] = useState([new Date()]);
 
+    const formatDate = date =>
+        new Date(date).toISOString().split("T")[0];
+
     const handleCheckboxChange = (empId, date) => {
-        const key = `${empId}-${date}`;
+        const key = `${empId}-${formatDate(date)}`;
         setSelectedRows(prev =>
             prev.includes(key)
                 ? prev.filter(k => k !== key)
                 : [...prev, key]
         );
     };
-    const formatDate = date =>
-        new Date(date).toISOString().split("T")[0];
 
     const selected = selectedRows.length === 1
-        ? data.map(row =>
-            `${row.empId}-${formatDate(row.date)}` === selectedRows[0]
-        )
+        ? data.find(row => {
+            const rowKey = `${row.empId}-${formatDate(row.date)}`;
+            const match = rowKey === selectedRows[0];
+            if (match) console.log("🔍 Found match for:", rowKey);
+            return match;
+        })
         : null;
     console.log("✅ selected:", selected);
     return (
@@ -34,7 +38,7 @@ const PunchTableWithCheckboxes = ({ data }) => {
             <Table bordered responsive hover>
                 <thead>
                     <tr>
-                        <th><Input type="checkbox" disabled /></th>
+                        <th><Input type="checkbox" /></th>
                         <th>Emp ID</th>
                         <th>Employee Name</th>
                         <th>Missing Date</th>
@@ -52,11 +56,16 @@ const PunchTableWithCheckboxes = ({ data }) => {
                         return (
                             <tr key={key}>
                                 <td>
-                                    <Input
-                                        type="checkbox"
-                                        checked={isChecked}
-                                        onChange={() => handleCheckboxChange(row.empId, row.date)}
-                                    />
+                                    <div className="form-check">
+                                        <Input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            id={`checkbox-${key}`}
+                                            checked={isChecked}
+                                            onChange={() => handleCheckboxChange(row.empId, row.date)}
+                                        />
+                                        <label className="form-check-label" htmlFor={`checkbox-${key}`}></label>
+                                    </div>
                                 </td>
                                 <td>{row.empId}</td>
                                 <td>{row.name}</td>
@@ -75,15 +84,14 @@ const PunchTableWithCheckboxes = ({ data }) => {
                         );
                     }) : (
                         <tr>
-                            <td colSpan="6" className="text-center">No punch data available</td>
+                            <td colSpan="7" className="text-center">No punch data available</td>
                         </tr>
                     )}
                 </tbody>
             </Table>
 
 
-            {selected && (
-
+            {selected ? (
                 <PunchActionsPanel
                     selectedEmpId={selected.empId}
                     selectedEmpName={selected.name}
@@ -91,6 +99,8 @@ const PunchTableWithCheckboxes = ({ data }) => {
                     selectedSeqCode={selected.seqCode}
                     status={selected.status}
                 />
+            ) : (
+                <p>No row selected or not found.</p>
             )}
 
         </div>
