@@ -51,48 +51,124 @@ const DI = () => {
   const [inputJob, setInputJob] = useState("");
   const [inputOption, setInputOption] = useState("");
   const [PartNumber, setPartNumber] = useState("");
+  const [PartOptions, setPartOptions] = useState([]);
   const [AssemblyNumber, setAssemblyNumber] = useState("0");
+  const [AssemblyOptions, setAssemblyOptions] = useState([]); 
   const [modal_center, setmodal_center] = useState(false);
   const [jobexisterror, setjobexisterror]= useState("");
   const [countrycode, setcountrycode]= useState("");
 
   function tog_center() {
         setmodal_center(!modal_center);
-    }
+  }
 
 useEffect(() => {
-
-      console.log("Triggered")
-      if(inputJob.length == 7 && inputOption == "1")
+      // console.log({inputJob});
+      if(inputJob.length >= 7 && inputOption == "1")
         {
           console.log("Trigger 2");
-          setAssemblyNumber("3");
+          // setAssemblyNumber("1");
           console.log({AssemblyNumber});
-          // const payload = {jobNum : inputJob, countrycode : countrycode};
-          // getassemblynumber(payload);
-          // console.log(`${payload}`);
-          
+          const payload1 = {jobNum : inputJob, countrycode : countrycode};
+          getassemblynumber(payload1);
+          console.log(`${payload1}`);
+        }
+        else if( inputJob.includes("/") && inputOption=="2"){
+          const [po, line] = inputJob.split("/");
+          if(line!="")
+          {
+            console.log("Trigger for PO Line");
+            // setAssemblyNumber("1");
+            console.log({po,line});
+            // const payload2 = {poNum : po, poLine:line, countrycode : countrycode};
+            setAssemblyNumber("0");         
+          }
         }
 },[inputJob]);
 
-  
-  //   const getassemblynumber = async (payload) => {
-  //   try {
-  //       const response = await api.post("di/getassemblynumber", payload);
-  //       if (response.status === 200 || response.status === 201) {
-  //         // setPartNumber();
-  //         // setAssemblyNumber(`${response.data}`);
-  //         console.log("Trigger 3");
-  //         console.log(`${response.data}`);
-  //         setAssemblyNumber(response.data);
-  //       } else {
-  //         toast.error("Registration Error!");
-  //       }
-  //     } catch (error) {
-  //       toast.error("Registration Error! Server not reachable.");
-  //     }
-  // };
+// !!!!!!!!!!!!!!!!!!  ONCE ASSEMBLY NUMBER IS UPDATED, THE PART NUMBER IS FETCHED AUTOMATICALLY !!!!!!!!!!!!!!!!!!!!!!!
+useEffect(() => {
+    console.log("AssemblyNumber updated:", AssemblyNumber);
+    if(inputOption==1)
+    {
+      const payload = {jobNum : inputJob , countrycode : countrycode, assemblyseq : AssemblyNumber};
+      getpartnumber(payload);
+      console.log(payload);
+    }
+    else if (inputOption==2)
+    {
+      const [po, line] = inputJob.split("/");
+      const payload = {poNum : po , poLine: line,countrycode : countrycode};
+      // getpartnumber(payload);
+      // console.log(payload); 
+    }
     
+}, [AssemblyNumber]);
+
+ 
+    const getassemblynumber = async (payload) => {
+    try {
+        const response = await api.post("di/get-assembly-number", payload);
+        if (response.status === 200 || response.status === 201) {
+          const data=response.data;
+          if (Array.isArray(data)) {
+          setAssemblyOptions(data);
+          setAssemblyNumber(data[0]); // default selection
+        } else {
+          setAssemblyOptions([]);
+          setAssemblyNumber(data);    // set single number
+        }
+        } else {
+          toast.error("Registration Error here!");
+        }
+      } catch (error) {
+        // toast.error("Registration Error! Server not reachable here 123.");
+      }
+  };
+    
+  const getpartnumber = async (payload) => {
+    if(inputOption==1){
+      try {
+        const response = await api.post("di/get-part-wchildren-for-job", payload);
+        if (response.status === 200 || response.status === 201) {
+          const data=response.data;
+          if (Array.isArray(data)) {
+            setPartOptions(data);
+            setPartNumber(data[0]); // default selection
+          } else {
+            setPartOptions([]);
+            setPartNumber(data);    // set single number
+          }
+        } else {
+          toast.error("Registration Error!");
+        }
+      } catch (error) {
+        // toast.error("Registration Error! Server not reachable here 123123.");
+      }
+    }
+    else if(inputOption==2)
+    {
+      try {
+        const response = await api.post("di/get-part-wchildren-for-po-line", payload);
+        if (response.status === 200 || response.status === 201) {
+          const data=response.data;
+          if (Array.isArray(data)) {
+            setPartOptions(data);
+            setPartNumber(data[0]); // default selection
+          } else {
+            setPartOptions([]);
+            setPartNumber(data);    // set single number
+          }
+        } else {
+          toast.error("Registration Error!");
+        }
+      } catch (error) {
+        // toast.error("Registration Error! Server not reachable.");
+      }
+    }
+    
+  };
+
     useEffect(() => {
     const fetchCountryCode = async () => {
       try {
@@ -112,7 +188,12 @@ useEffect(() => {
 
   useEffect(() => {
     setPartNumber("");
-    setAssemblyNumber(""); // Clear Part Number on changes
+    if(inputJob.length<=6)
+    {
+      setAssemblyOptions([]);
+      setAssemblyNumber(""); // Clear Part Number on changes
+      setPartOptions([]);
+    }
   }, [inputJob, inputOption]);
 
   const handleSelectChange = (e) => {
@@ -148,20 +229,20 @@ useEffect(() => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (inputOption == "1") {
-      if (inputJob.trim() === "") {
-        toast.error("Enter Job Number", {
-          autoClose: 2000,
-        });
-        return;
-      }
-      // if (!inputJob.trim()) {
-      //   setShowTooltip(true);
-      //   setTimeout(() => setShowTooltip(false), 2000);
+      // if (inputJob.trim() === "") {
+      //   toast.error("Enter Job Number", {
+      //     autoClose: 2000,
+      //   });
       //   return;
       // }
-      const payload = { jobNum: inputJob, assemblySeq: 0 };
+      // // if (!inputJob.trim()) {
+      // //   setShowTooltip(true);
+      // //   setTimeout(() => setShowTooltip(false), 2000);
+      // //   return;
+      // // }
+      // const payload = { jobNum: inputJob, assemblySeq: 0 };
 
-      console.log("Submitting payload:", JSON.stringify(payload, null, 2));
+      // console.log("Submitting payload:", JSON.stringify(payload, null, 2));
 
     } else if (inputOption == "2") {
       // Handle PO/Line Number submission
@@ -181,12 +262,12 @@ useEffect(() => {
         });
         return;
       }
-      const payload = { PONum: po, POLine: line };
+      const payload = { PONum: po, POLine: line , countrycode : countrycode};
 
       console.log("Submitting payload:", JSON.stringify(payload, null, 2));
 
       try {
-        const response = await api.post("di/checkwpo", payload);
+        const response = await api.post("di/get-jobnum-from-po-line", payload);
         if (response.status === 200 || response.status === 201) {
           setjobexisterror(`A job number exists for this PO. You must enter the inspection under the job number. The job number is : ${response.data}`);
           tog_center();
@@ -259,24 +340,52 @@ useEffect(() => {
 
                     {/* Assembly Number */}
                     <div style={{ width: "40px", flex: "0 0 auto" }}>
-                      <Input
-                        type="text"
-                        className="form-control"
-                        id="AssemblyNumber"
-                        value={AssemblyNumber}
-                        disabled
-                      />
+                      {AssemblyOptions.length > 1 ? (
+                        <select
+                          className="form-control"
+                          id="AssemblyNumber"
+                          style={{ backgroundColor: "#d4edda" }} // light green
+                          value={AssemblyNumber}
+                          onChange={(e) => setAssemblyNumber(e.target.value)}
+                        >
+                          {AssemblyOptions.map((num) => (
+                            <option key={num} value={num}>{num}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="AssemblyNumber"
+                          value={AssemblyNumber}
+                          disabled
+                        />
+                      )}
                     </div>
 
                     {/* Part Number */}
                     <div style={{ width: "180px", flex: "0 0 auto" }}>
-                      <Input
-                        type="text"
-                        className="form-control"
-                        id="PartNumber"
-                        value={PartNumber}
-                        disabled
-                      />
+                      {PartOptions.length > 1 ? (
+                        <select
+                          className="form-control"
+                          id="PartNumber"
+                          style={{ backgroundColor: "#d4edda" }} // light green
+                          value={PartNumber}
+                          onChange={(e) => setPartNumber(e.target.value)}
+                        >
+                          {PartOptions.map((num) => (
+                            <option key={num} value={num}>{num}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="PartNumber"
+                          value={PartNumber}
+                          disabled
+                        />
+                      )}
                     </div>
 
                     {/* Buttons */}
@@ -475,8 +584,8 @@ useEffect(() => {
                       >
                         Inspect all pieces
                       </UncontrolledTooltip>
-{/* MODALS */}
-<Modal
+                {/* MODALS */}
+                <Modal
                 isOpen={modal_center}
                 toggle={() => {
                     tog_center();

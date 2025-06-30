@@ -8,82 +8,82 @@ import {
 import api from "../../../config/api";
 import { loginSuccess, logoutUserSuccess, apiError, reset_login_flag } from './reducer';
 
-// export const loginUser = (user, history) => async (dispatch) => {
-//   try {
-//     let response;
-
-//     // ✅ MOCK LOGIN always (bypass all backend logic)
-//     response = new Promise((resolve) => {
-//       setTimeout(() => {
-//         resolve({
-//           status: "success",
-//           data: {
-//             uid: 1,
-//             email: user.empcode,
-//             token: "mock-jwt-token",
-//             name: "Demo User"
-//           }
-//         });
-//       }, 500);
-//     });
-
-//     const data = await response;
-
-//     if (data) {
-//       sessionStorage.setItem("authUser", JSON.stringify(data));
-//       dispatch(loginSuccess(data.data));
-//       history("/dashboard");
-//     }
-//   } catch (error) {
-//     dispatch(apiError(error));
-//   }
-// };
-
 export const loginUser = (user, history) => async (dispatch) => {
   try {
-    const response = await api.post("Auth/login", user);
+    let response;
 
+    // ✅ MOCK LOGIN always (bypass all backend logic)
+    response = new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          status: "success",
+          data: {
+            uid: 1,
+            email: user.empcode,
+            token: "mock-jwt-token",
+            name: "Demo User"
+          }
+        });
+      }, 500);
+    });
 
-    if (response.status === 200) {
-      // store auth user in session
-      sessionStorage.setItem("authUser", JSON.stringify(response.data));
+    const data = await response;
 
-      console.log("Whats the Data: ", response);
-
-      // dispatch to redux
-      dispatch(loginSuccess(response.data));
-
-      // redirect to dashboard
+    if (data) {
+      sessionStorage.setItem("authUser", JSON.stringify(data));
+      dispatch(loginSuccess(data.data));
       history("/dashboard");
-    } else {
-      dispatch(apiError("Invalid credentials."));
     }
   } catch (error) {
-    let msg = "Login failed!";
-    if (error.response?.data) {
-      const errData = error.response.data;
-
-      // Case 1: validation error (model state)
-      if (errData.errors) {
-        const messages = Object.values(errData.errors).flat();
-        msg = messages.join(" ");
-      }
-
-      // Case 2: normal string error
-      else if (typeof errData === "string") {
-        msg = errData;
-      }
-
-      // Optional fallback
-      else if (errData.title) {
-        msg = errData.title;
-      }
-    }
-
-    console.log("Error is here:", msg);
-    dispatch(apiError(msg));
+    dispatch(apiError(error));
   }
 };
+
+// export const loginUser = (user, history) => async (dispatch) => {
+//   try {
+//     const response = await api.post("Auth/login", user);
+
+
+//     if (response.status === 200) {
+//       // store auth user in session
+//       sessionStorage.setItem("authUser", JSON.stringify(response.data));
+
+//       console.log("Whats the Data: ", response);
+
+//       // dispatch to redux
+//       dispatch(loginSuccess(response.data));
+
+//       // redirect to dashboard
+//       history("/dashboard");
+//     } else {
+//       dispatch(apiError("Invalid credentials."));
+//     }
+//   } catch (error) {
+//     let msg = "Login failed!";
+//     if (error.response?.data) {
+//       const errData = error.response.data;
+
+//       // Case 1: validation error (model state)
+//       if (errData.errors) {
+//         const messages = Object.values(errData.errors).flat();
+//         msg = messages.join(" ");
+//       }
+
+//       // Case 2: normal string error
+//       else if (typeof errData === "string") {
+//         msg = errData;
+//       }
+
+//       // Optional fallback
+//       else if (errData.title) {
+//         msg = errData.title;
+//       }
+//     }
+
+//     console.log("Error is here:", msg);
+//     dispatch(apiError(msg));
+//   }
+// };
 
 export const logoutUser = () => async (dispatch) => {
   try {
