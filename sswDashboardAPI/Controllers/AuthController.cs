@@ -297,6 +297,7 @@ public class AuthController : ControllerBase
             supervisorId = empBasic.SupervisorID,
             empStatus = empBasic.EmpStatus,
             expenseCode = empBasic.ExpenseCode,
+            department = empBasic.JCDept,
             token = token,
             needsPasswordReset = needsPasswordReset
         });
