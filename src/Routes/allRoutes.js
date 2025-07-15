@@ -32,6 +32,7 @@ import ManageRoles from "../pages/HumanResource/ManageRoles.js"
 
 import DI from "../pages/DI/index"
 import Mafia from "../pages/Mafia/index"
+import InspectionSection from "../pages/DI/Inspection/InspectionSection";
 
 
 
@@ -320,6 +321,8 @@ const authProtectedRoutes = [
   //DI and //Mafia Routes
 
   { path: "/di", component: <DI /> }, { path: "/mafia", component: <Mafia /> },
+
+  { path: "/mafia-inspection", component: <InspectionSection /> },
 
 
 

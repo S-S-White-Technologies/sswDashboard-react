@@ -916,12 +916,20 @@ const Navdata = () => {
 
         },
         {
+            id: "inspection",
+            label: "Inspection",
+            icon: "ri-clipboard-fill", // You can change icon to your preferred one
+            link: "/mafia-inspection",
+        },
+        {
             id: "mafia",
             label: "Mafia Aux",
             icon: "ri-key-2-fill",
             link: "/mafia",
 
         },
+       
+
 
     ];
     return <React.Fragment>{menuItems}</React.Fragment>;
