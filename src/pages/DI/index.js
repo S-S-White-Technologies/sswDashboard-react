@@ -24,6 +24,7 @@ import classnames from "classnames";
 import { CenteredModalExample } from "../BaseUi/UiModals/UiModalCode";
 
 import { ToastContainer, toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 import api from "../../config/api";
 import axios from "axios";
@@ -72,6 +73,7 @@ const DI = () => {
   function tog_center() {
     setmodal_center(!modal_center);
   }
+  const navigate = useNavigate(); 
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FOR GETTING DEPARTMENT ID !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   useEffect(() => {
     const authData = sessionStorage.getItem("authUser");
@@ -163,8 +165,13 @@ const DI = () => {
           const data = response.data;
           // console.log("Response Check ", data);
           // if (Array.isArray(data)) {
-          setPartOptions(data);
-          setPartNumber(data[0]); // default selection
+          if (Array.isArray(data)) {
+            setPartOptions(data);
+            setPartNumber(data[0]);
+          } else {
+           setPartOptions([]);
+           setPartNumber("");
+          }
 
           // } else {
           //   setPartOptions([]);
@@ -525,186 +532,206 @@ const DI = () => {
   //     }
   // };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, clickedButton, waveNum) => {
     e.preventDefault();
+    console.log({ clickedButton });
+    console.log({ waveNum });
 
-    console.log({ clickedbutton });
-    console.log({ wavenumber });
-    // console.log({ userDetails });
-    if (userDetails.department == 59 && wavenumber == "1") {
-      setmodaloneerror(
-        "As a member of the Quality Department, please use the 'Quality' inspection type instead."
-      );
-      tog_center();
-      return;
-    } else if (userDetails.department == 76 && wavenumber == "2") {
-      setmodaloneerror(
-        "As a member of the CNC Department, please use the 'In Process' inspection type instead."
-      );
-      tog_center();
-      return;
-    } else {
-      // !!!!!!!!!!!!!!!!!!!! ALL PROCESSING AFTER CLICKING ON ANY OF THE BUTTONS !!!!!!!!!!!!!!!!!!!!!!
-      if (inputOption == "2") {
-        console.log("WE ARE REACHING HERE");
-        const [po, line] = inputJob.split("\\");
-        if (!po || !line) {
-          toast.error("Both PO and Line Number must be provided.", {
-            autoClose: 2000,
-          });
-          return;
-        }
-        const payload = { PONum: po, POLine: line, countrycode: countrycode };
-        console.log("Submitting payload:", JSON.stringify(payload, null, 2));
-        try {
-          const response = await api.post(
-            "di/get-jobnum-from-po-line",
-            payload
-          );
-          if (
-            (response.status === 200 || response.status === 201) &&
-            response.data != ""
-          ) {
-            setmodaloneerror(
-              `A job number exists for this PO. You must enter the inspection under the job number. The job number is : ${response.data}`
-            );
-            tog_center();
-            return;
-          }
-        } catch (error) {
-          // toast.error("Registration Error! Server not reachable.");
-        }
-      }
-      await getquantity();
-      await getvantagerev();
+  // console.log({ userDetails });
 
-      let revmajortemp = await getvantagerev();
-      let revminortemp = await getminorrev(revmajortemp);
-
-      if ((await getoriginalquantity()) == 0) {
-        revmajortemp = await getvantagerev();
-        setRevMajor(revmajortemp);
-        revminortemp = await getminorrev(revmajortemp);
-        setRevMinor(revminortemp);
-        //  setRevMinor(Number(await getminorrev()));
-        console.log("Rev Minor :", revMinor);
-        console.log(revmajor);
-        if (inputJob == "0048451") {
-          setRevMajor(4);
-          setRevMinor(2);
-        }
-      } else {
-        revmajortemp = await getlockedmajorrev();
-        setRevMajor(revmajortemp);
-
-        revminortemp = await getlockedminorrev();
-        setRevMinor(revminortemp);
-
-        if (revmajortemp == 0 || revminortemp == 0) {
-          revmajortemp = await getvantagerev();
-          setRevMajor(revmajortemp);
-          revminortemp = await getminorrev(revmajortemp);
-          setRevMinor(revminortemp);
-        }
-      }
-      if ((revmajor == 0 || revMinor == 0) && inputJob == "0048451") {
-        setmodaloneerror(
-          "MAFIA Table for part " +
-            PartNumber +
-            " (Rev " +
-            revmajortemp.ToString +
-            ") has not been released or has been changed midway of job. Epicor says for this job number you need Rev #" +
-            revmajortemp.ToString +
-            ". Please contact the engineering department."
-        );
-        tog_center();
+  if (userDetails.department == 59 && wavenumber == "1") {
+    setmodaloneerror(
+      "As a member of the Quality Department, please use the 'Quality' inspection type instead."
+    );
+    tog_center();
+    return;
+  } else if (userDetails.department == 76 && wavenumber == "2") {
+    setmodaloneerror(
+      "As a member of the CNC Department, please use the 'In Process' inspection type instead."
+    );
+    tog_center();
+    return;
+  } else {
+    // !!!!!!!!!!!!!!!!!!!! ALL PROCESSING AFTER CLICKING ON ANY OF THE BUTTONS !!!!!!!!!!!!!!!!!!!!!!
+    if (inputOption == "2") {
+      console.log("WE ARE REACHING HERE");
+      const [po, line] = inputJob.split("\\");
+      if (!po || !line) {
+        toast.error("Both PO and Line Number must be provided.", {
+          autoClose: 2000,
+        });
         return;
-      } else {
-        try {
-          const payload = {
-            partnum: PartNumber,
-            revmajor: revmajor,
-            revminor: revMinor,
-          };
-          const response = await api.post("di/get-mafia-table", payload);
-          if (response.status == 200 || response.status == 201) {
-            console.log(response);
-          }
-        } catch (error) {
+      }
+      const payload = { PONum: po, POLine: line, countrycode: countrycode };
+      console.log("Submitting payload:", JSON.stringify(payload, null, 2));
+      try {
+        const response = await api.post("di/get-jobnum-from-po-line", payload);
+        if (
+          (response.status === 200 || response.status === 201) &&
+          response.data != ""
+        ) {
           setmodaloneerror(
-            "Could not find MAFIA Table for part " +
-              PartNumber +
-              " Rev (" +
-              revmajor.ToString +
-              "-" +
-              revMinor.ToString +
-              ") Please contact the engineering department."
+            `A job number exists for this PO. You must enter the inspection under the job number. The job number is : ${response.data}`
           );
           tog_center();
           return;
         }
-
-        if (partquantity == 0) {
-          // let quantity = origquantity;
-
-          await insertHeader();
-        }
-        // console.log("WE ARE REACHING CHEPOINT 1");
-        await getqualityclosed();
+      } catch (error) {
+        // toast.error("Registration Error! Server not reachable.");
       }
     }
-    // }
-    // if (inputOption == "1") {
-    // if (inputJob.trim() === "") {
-    //   toast.error("Enter Job Number", {
-    //     autoClose: 2000,
-    //   });
-    //   return;
-    // }
-    // // if (!inputJob.trim()) {
-    // //   setShowTooltip(true);
-    // //   setTimeout(() => setShowTooltip(false), 2000);
-    // //   return;
-    // // }
-    // const payload = { jobNum: inputJob, assemblySeq: 0 };
 
-    // console.log("Submitting payload:", JSON.stringify(payload, null, 2));
+    await getquantity();
+    await getvantagerev();
 
-    // } else
-    // if (inputOption == "2") {
-    // Handle PO/Line Number submission
-    // if (inputJob.trim() === "") {
-    //   toast.error("Enter PO and Line Number", {
-    //     autoClose: 2000,
-    //   });
-    //   return;
-    // }
-    // // Further validate that both sides are not empty
-    // const [po, line] = inputJob.split("/");
-    // if (!po || !line) {
-    //   toast.error("Both PO and Line Number must be provided.", {
-    //     autoClose: 2000,
-    //   });
-    //   return;
-    // }
-    // const payload = { PONum: po, POLine: line, countrycode: countrycode };
-    // console.log("Submitting payload:", JSON.stringify(payload, null, 2));
-    // try {
-    //   const response = await api.post("di/get-jobnum-from-po-line", payload);
-    //   if (response.status === 200 || response.status === 201) {
-    //     setmodaloneerror(
-    //       `A job number exists for this PO. You must enter the inspection under the job number. The job number is : ${response.data}`
-    //     );
-    //     tog_center();
-    //     return;
-    //   } else {
-    //     toast.error("Registration Error!");
-    //   }
-    // } catch (error) {
-    //   toast.error("Registration Error! Server not reachable.");
-    // }
-    // }
-  };
+    let revmajortemp = await getvantagerev();
+    let revminortemp = await getminorrev(revmajortemp);
+
+    if ((await getoriginalquantity()) == 0) {
+      revmajortemp = await getvantagerev();
+      setRevMajor(revmajortemp);
+      revminortemp = await getminorrev(revmajortemp);
+      setRevMinor(revminortemp);
+      //  setRevMinor(Number(await getminorrev()));
+      console.log("Rev Minor :", revMinor);
+      console.log(revmajor);
+      if (inputJob == "0048451") {
+        setRevMajor(4);
+        setRevMinor(2);
+      }
+    } else {
+      revmajortemp = await getlockedmajorrev();
+      setRevMajor(revmajortemp);
+
+      revminortemp = await getlockedminorrev();
+      setRevMinor(revminortemp);
+
+      if (revmajortemp == 0 || revminortemp == 0) {
+        revmajortemp = await getvantagerev();
+        setRevMajor(revmajortemp);
+        revminortemp = await getminorrev(revmajortemp);
+        setRevMinor(revminortemp);
+      }
+    }
+
+    if ((revmajor == 0 || revMinor == 0) && inputJob == "0048451") {
+      setmodaloneerror(
+        "MAFIA Table for part " +
+          PartNumber +
+          " (Rev " +
+          (revmajor ?? 0).toString()+
+          ") has not been released or has been changed midway of job. Epicor says for this job number you need Rev #" +
+         (revmajor ?? 0).toString() +
+          ". Please contact the engineering department."
+      );
+      tog_center();
+      return;
+    } else {
+      try {
+        const payload = {
+          partnum: PartNumber,
+          revmajor: revmajor,
+          revminor: revMinor,
+        };
+        const response = await api.post("di/get-mafia-table", payload);
+        if (response.status == 200 || response.status == 201) {
+          console.log(response);
+        }
+      } catch (error) {
+       setmodaloneerror(
+          "MAFIA Table for part " +
+            PartNumber +
+            " (Rev " +
+            (revmajor ?? 0).toString() +
+            ") has not been released or has been changed midway of job. Epicor says for this job number you need Rev #" +
+            (revmajor ?? 0).toString() +
+            ". Please contact the engineering department."
+        );
+        tog_center();
+        return;
+      }
+
+      if (partquantity == 0) {
+        // let quantity = origquantity;
+        await insertHeader();
+      }
+
+      // console.log("WE ARE REACHING CHEPOINT 1");
+      await getqualityclosed();
+    }
+  }
+
+  // ✅ Navigate to InspectionSection on Quality click
+  if (clickedbutton === "USA" || clickedbutton === "INDIA") {
+    if (wavenumber === "2") {
+      navigate("/inspection", {
+        state: {
+          jobNum: inputJob,
+          waveNumber: wavenumber,
+          revMajor: revmajortemp,
+          revMinor: revminortemp,
+          seq: AssemblyNumber,
+          lotNum: "", // if applicable
+          enteredBy: userDetails?.name || "Unknown",
+          partNum: PartNumber,
+        },
+      });
+    }
+  }
+
+  // }
+  // if (inputOption == "1") {
+  // if (inputJob.trim() === "") {
+  //   toast.error("Enter Job Number", {
+  //     autoClose: 2000,
+  //   });
+  //   return;
+  // }
+  // // if (!inputJob.trim()) {
+  // //   setShowTooltip(true);
+  // //   setTimeout(() => setShowTooltip(false), 2000);
+  // //   return;
+  // // }
+  // const payload = { jobNum: inputJob, assemblySeq: 0 };
+
+  // console.log("Submitting payload:", JSON.stringify(payload, null, 2));
+
+  // } else
+  // if (inputOption == "2") {
+  // Handle PO/Line Number submission
+  // if (inputJob.trim() === "") {
+  //   toast.error("Enter PO and Line Number", {
+  //     autoClose: 2000,
+  //   });
+  //   return;
+  // }
+  // // Further validate that both sides are not empty
+  // const [po, line] = inputJob.split("/");
+  // if (!po || !line) {
+  //   toast.error("Both PO and Line Number must be provided.", {
+  //     autoClose: 2000,
+  //   });
+  //   return;
+  // }
+  // const payload = { PONum: po, POLine: line, countrycode: countrycode };
+  // console.log("Submitting payload:", JSON.stringify(payload, null, 2));
+  // try {
+  //   const response = await api.post("di/get-jobnum-from-po-line", payload);
+  //   if (response.status === 200 || response.status === 201) {
+  //     setmodaloneerror(
+  //       `A job number exists for this PO. You must enter the inspection under the job number. The job number is : ${response.data}`
+  //     );
+  //     tog_center();
+  //     return;
+  //   } else {
+  //     toast.error("Registration Error!");
+  //   }
+  // } catch (error) {
+  //   toast.error("Registration Error! Server not reachable.");
+  // }
+  // }
+};
+
 
   return (
     <React.Fragment>
@@ -793,7 +820,7 @@ const DI = () => {
 
                     {/* Part Number */}
                     <div style={{ width: "180px", flex: "0 0 auto" }}>
-                      {PartOptions.length > 1 ? (
+                      {Array.isArray(PartOptions) && PartOptions.length > 1  ? (
                         <select
                           className="form-control"
                           id="PartNumber"
@@ -829,10 +856,7 @@ const DI = () => {
                         className="btn btn-soft-primary"
                         type="submit"
                         id="usainprog"
-                        onClick={() => {
-                          setClickedButton("USA");
-                          setWaveNumber("1");
-                        }}
+                       onClick={(e) => handleSubmit(e, "USA", "1")}
                       >
                         <img
                           src={usflag}
@@ -848,10 +872,7 @@ const DI = () => {
                         className="btn btn-soft-primary"
                         type="submit"
                         id="usaqual"
-                        onClick={() => {
-                          setClickedButton("USA");
-                          setWaveNumber("2");
-                        }}
+                        onClick={(e) => handleSubmit(e, "USA", "2")}
                       >
                         <img
                           src={usflag}
@@ -867,10 +888,8 @@ const DI = () => {
                         className="btn btn-soft-primary"
                         type="submit"
                         id="indiainprog"
-                        onClick={() => {
-                          setClickedButton("INDIA");
-                          setWaveNumber("1");
-                        }}
+                        onClick={(e) => handleSubmit(e, "INDIA", "1")}
+                      
                       >
                         <img
                           src={indiaflag}
@@ -886,10 +905,7 @@ const DI = () => {
                         className="btn btn-soft-primary"
                         type="submit"
                         id="indiaqual"
-                        onClick={() => {
-                          setClickedButton("INDIA");
-                          setWaveNumber("2");
-                        }}
+                         onClick={(e) => handleSubmit(e, "INDIA", "2")}
                       >
                         <img
                           src={indiaflag}
