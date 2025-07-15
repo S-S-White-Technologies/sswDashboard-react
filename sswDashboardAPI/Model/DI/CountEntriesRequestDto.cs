@@ -10,6 +10,8 @@
         public int Seq { get; set; }
         public string PartNum { get; set; }
         public int LotNum { get; set; }
+
+        public double JobQuan { get; set; }
     }
 
 }

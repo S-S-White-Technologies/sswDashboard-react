@@ -259,43 +259,64 @@ namespace sswDashboardAPI.Controllers.DI
         [HttpPost("original-quantity")]
         public async Task<IActionResult> GetOriginalQuantity([FromBody] OriginalQuantityRequestDto request)
         {
+            if (request == null)
+            {
+                return BadRequest(new { message = "Request payload is missing or malformed." });
+            }
+
             int originalQuantity = 0;
 
             try
             {
-                // Get the original part number from DB (or just use request.PartNum if logic is simplified)
-                string origPartNum = request.PartNum;
+                string origPartNum = request.PartNum?.Trim().ToUpper();
+                string inputPartNum = request.PartNum?.Trim().ToUpper();
 
-                using (var conn = new SqlConnection(PlutoConnectionString))
-                using (var cmd = new SqlCommand())
+                using var conn = new SqlConnection(PlutoConnectionString);
+                using var cmd = new SqlCommand();
+                cmd.Connection = conn;
+
+                // Use partnum IS NULL when it's not specified (or empty string)
+                bool isPartNumEmpty = string.IsNullOrWhiteSpace(request.PartNum);
+
+                if (isPartNumEmpty || origPartNum == inputPartNum)
                 {
-                    cmd.Connection = conn;
+                    cmd.CommandText = @"
+                        SELECT OrigQuan 
+                        FROM MafiaJobHeader 
+                        WHERE jobnum = @jobnum 
+                            AND WaveNumber = @WaveNumber 
+                            AND assemblyseq = @seq 
+                            AND partnum IS NULL 
+                            AND lot = @lot;";
+                }
+                else
+                {
+                    cmd.CommandText = @"
+                        SELECT OrigQuan 
+                        FROM MafiaJobHeader 
+                        WHERE jobnum = @jobnum 
+                            AND WaveNumber = @WaveNumber 
+                            AND assemblyseq = @seq 
+                            AND partnum = @partnum 
+                            AND lot = @lot;";
+                }
 
-                    if (origPartNum.Trim().ToUpper() == request.PartNum.Trim().ToUpper())
-                    {
-                        cmd.CommandText = @"SELECT OrigQuan FROM MafiaJobHeader 
-                                    WHERE jobnum=@jobnum AND WaveNumber=@WaveNumber 
-                                    AND assemblyseq=@seq AND partnum IS NULL AND lot=@lot;";
-                    }
-                    else
-                    {
-                        cmd.CommandText = @"SELECT OrigQuan FROM MafiaJobHeader 
-                                    WHERE jobnum=@jobnum AND WaveNumber=@WaveNumber 
-                                    AND assemblyseq=@seq AND partnum=@partnum AND lot=@lot;";
-                    }
+                cmd.Parameters.AddWithValue("@jobnum", request.JobNum ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@WaveNumber", request.WaveNumber);
+                cmd.Parameters.AddWithValue("@seq", request.Seq);
+                cmd.Parameters.AddWithValue("@lot", request.Lot);
 
-                    cmd.Parameters.AddWithValue("@jobnum", request.JobNum);
-                    cmd.Parameters.AddWithValue("@WaveNumber", request.WaveNumber);
-                    cmd.Parameters.AddWithValue("@seq", request.Seq);
+                if (!isPartNumEmpty && cmd.CommandText.Contains("@partnum"))
+                {
                     cmd.Parameters.AddWithValue("@partnum", request.PartNum);
-                    cmd.Parameters.AddWithValue("@lot", request.Lot);
+                }
 
-                    await conn.OpenAsync();
-                    var result = await cmd.ExecuteScalarAsync();
-                    if (result != null && result != DBNull.Value)
-                    {
-                        originalQuantity = Convert.ToInt32(result);
-                    }
+                await conn.OpenAsync();
+                var result = await cmd.ExecuteScalarAsync();
+
+                if (result != null && result != DBNull.Value)
+                {
+                    originalQuantity = Convert.ToInt32(result);
                 }
 
                 return Ok(originalQuantity);
@@ -649,6 +670,129 @@ namespace sswDashboardAPI.Controllers.DI
             }
         }
 
+        [HttpPost("determine-number-to-check")]
+        public async Task<IActionResult> DetermineNumberToCheck([FromBody] DetermineCheckCountRequestDto request)
+        {
+            try
+            {
+                var mafiaTableRequest = new MafiaTableQueryDto
+                {
+                    Partnumber = request.PartNum,
+                    Major = request.RevMajor,
+                    Minor = request.RevMinor
+                };
+
+                var mafiaTableResult = await GetMafiaTable(mafiaTableRequest) as OkObjectResult;
+                if (mafiaTableResult?.Value is not List<Dictionary<string, object>> mafiaRows)
+                    return StatusCode(500, "Failed to retrieve Mafia Table");
+
+                foreach (var row in mafiaRows)
+                {
+                    if (row["DNANum"].ToString() == request.DnaNum)
+                    {
+                        string tolClass = row["ToleranceClass"]?.ToString()?.Trim().ToLower();
+                        string dimType = row["DimType"]?.ToString();
+
+                        if (tolClass == "100%")
+                            return Ok((int)request.JobQuan);
+
+                        if (tolClass == "first piece only")
+                            return Ok(1);
+
+                        var multiplierRequest = new DetermineMultiplierRequestDto
+                        {
+                            DimType = dimType,
+                            ToleranceClass = row["ToleranceClass"].ToString(),
+                            JobQuan = request.JobQuan
+                        };
+
+                        var multiplierResult = await DetermineMultiplier(multiplierRequest) as OkObjectResult;
+                        double multiplier = multiplierResult != null ? Convert.ToDouble(multiplierResult.Value) : 0;
+
+                        if (multiplier == 0)
+                            return Ok(0);
+
+                        int result = (int)Math.Ceiling(request.JobQuan * multiplier);
+                        return Ok(multiplier == 1 ? result : result + 2);
+                    }
+                }
+
+                return Ok(0); // No matching DNANum found
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+
+        [HttpPost("determine-number-to-check-additional")]
+        public async Task<IActionResult> DetermineNumberToCheckAddl([FromBody] CountEntriesRequestDto request)
+        {
+            try
+            {
+                // 1. Get count of existing entries from DB
+                var countResult = await GetCountOfEntriesPerDNA(request) as OkObjectResult;
+                int existingCount = countResult != null ? Convert.ToInt32(countResult.Value) : 0;
+
+                // 2. Fetch matching mafia table rows
+                var mafiaTableRequest = new MafiaTableQueryDto
+                {
+                    Partnumber = request.PartNum,
+                    Major = request.RevMajor,
+                    Minor = request.RevMinor
+                };
+
+                var mafiaTableResult = await GetMafiaTable(mafiaTableRequest) as OkObjectResult;
+                if (mafiaTableResult?.Value is not List<Dictionary<string, object>> mafiaRows)
+                    return StatusCode(500, "Failed to retrieve Mafia Table");
+
+                int result = 0;
+                double multiplier = 0;
+
+                foreach (var row in mafiaRows)
+                {
+                    if (row["DNANum"].ToString() == request.DnaNum)
+                    {
+                        string tolClass = row["ToleranceClass"]?.ToString()?.Trim().ToLower();
+                        string dimType = row["DimType"]?.ToString();
+
+                        if (tolClass == "100%")
+                        {
+                            result = (int)request.JobQuan;
+                            multiplier = 1;
+                            break;
+                        }
+
+                        if (tolClass == "first piece only")
+                        {
+                            result = 1;
+                            multiplier = 1;
+                            break;
+                        }
+
+                        var multiplierRequest = new DetermineMultiplierRequestDto
+                        {
+                            DimType = dimType,
+                            ToleranceClass = row["ToleranceClass"].ToString(),
+                            JobQuan = request.JobQuan
+                        };
+
+                        var multiplierResult = await DetermineMultiplier(multiplierRequest) as OkObjectResult;
+                        multiplier = multiplierResult != null ? Convert.ToDouble(multiplierResult.Value) : 0;
+
+                        result = multiplier == 0 ? 0 : (int)Math.Ceiling(request.JobQuan * multiplier);
+                        break;
+                    }
+                }
+
+                return Ok(existingCount > result ? existingCount : 0);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
 
 
     }

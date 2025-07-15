@@ -532,10 +532,10 @@ const DI = () => {
   //     }
   // };
 
-  const handleSubmit = async (e, clickedButton, waveNum) => {
+  const handleSubmit = async (e, clickedButton, wavenumber) => {
     e.preventDefault();
     console.log({ clickedButton });
-    console.log({ waveNum });
+    console.log({ wavenumber });
 
   // console.log({ userDetails });
 
@@ -662,14 +662,14 @@ const DI = () => {
   }
 
   // ✅ Navigate to InspectionSection on Quality click
-  if (clickedbutton === "USA" || clickedbutton === "INDIA") {
+  if (clickedButton === "USA" || clickedButton === "INDIA") {
     if (wavenumber === "2") {
-      navigate("/inspection", {
+      navigate("/mafia-inspection", {
         state: {
           jobNum: inputJob,
           waveNumber: wavenumber,
-          revMajor: revmajortemp,
-          revMinor: revminortemp,
+          revMajor: revmajor,
+          revMinor: revMinor,
           seq: AssemblyNumber,
           lotNum: "", // if applicable
           enteredBy: userDetails?.name || "Unknown",

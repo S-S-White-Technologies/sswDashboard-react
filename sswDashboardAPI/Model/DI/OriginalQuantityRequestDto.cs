@@ -6,7 +6,7 @@
         public int WaveNumber { get; set; }
         public int Seq { get; set; }
         public string PartNum { get; set; }
-        public int Lot { get; set; }
+        public int? Lot { get; set; }
     }
 }
 

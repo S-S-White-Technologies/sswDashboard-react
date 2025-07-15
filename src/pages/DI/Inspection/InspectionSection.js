@@ -1,5 +1,4 @@
-// src/pages/Inspection/InspectionSection.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import api from "../../../config/api";
 import { toast } from "react-toastify";
@@ -8,6 +7,8 @@ import DnaNumDetails from "./DnaNumDetails";
 import DnaDetailsHeader from "./DnaDetailsHeader";
 import DynamicCommentGrid from "./DynamicCommentGrid";
 import OutOfSpecModal from "./OutOfSpecModal";
+import { useDynamicBoxes } from "./useDynamicBoxes";
+import { useResolvedEntryMap } from "./useResolvedEntryMap";
 
 const InspectionSection = () => {
   const { state: JOB_CONTEXT } = useLocation();
@@ -26,14 +27,25 @@ const InspectionSection = () => {
   const [selectedOpNum, setSelectedOpNum] = useState(null);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedDna, setSelectedDna] = useState(null);
-  const [entryBoxCount, setEntryBoxCount] = useState(0);
   const [entryValues, setEntryValues] = useState({});
-  const [jobQuantity, setJobQuantity] = useState(0);
   const [payloadComment, setPayloadComment] = useState("");
   const [unresolvedCells, setUnresolvedCells] = useState([]);
   const [showOutOfSpecModal, setShowOutOfSpecModal] = useState(false);
   const [classificationInfo, setClassificationInfo] = useState(null);
+  const [mafiaEntryTable, setMafiaEntryTable] = useState([]);
 
+  // Build mafiaTables lookup
+  const mafiaTables = useMemo(() => {
+    const map = {};
+    for (const item of fullData) {
+      if (item.DNANum) {
+        map[item.DNANum] = item;
+      }
+    }
+    return map;
+  }, [fullData]);
+
+  // Load inspection table
   useEffect(() => {
     const getInspectionData = async () => {
       try {
@@ -50,6 +62,7 @@ const InspectionSection = () => {
     getInspectionData();
   }, [partNum, revMajor, revMinor]);
 
+  // Filter based on selected op
   useEffect(() => {
     if (selectedOpNum === null) return;
     const result =
@@ -62,38 +75,52 @@ const InspectionSection = () => {
     setSelectedDna(null);
   }, [selectedOpNum, fullData]);
 
+  // Hook: dynamic boxes
+  const { entryCount, entryLabels, entryNames } = useDynamicBoxes({
+    jobNum,
+    waveNumber,
+    seq,
+    partNum,
+    lotNum,
+    revMajor,
+    revMinor,
+    selectedDna,
+    mafiaTables,
+  });
+
+  // Hook: resolve prefilled & disabled fields
+  const { values: prefillValues, disabledFields, highlightedFields } = useResolvedEntryMap({
+    mafiaEntryTable,
+    selectedDna,
+    min: selectedDna?.Min,
+    max: selectedDna?.Max,
+  });
+
+  // Pre-fill entry values when resolved
+  useEffect(() => {
+    setEntryValues(prefillValues);
+  }, [prefillValues]);
+
+  // DNA selection handler
   const handleDnaSelect = async (item) => {
     setSelectedDna(item);
-    setEntryBoxCount(0);
     setEntryValues({});
     setPayloadComment("");
 
     try {
-      const qtyRes = await api.post("/Inspection/original-quantity", {
-        jobNum,
-        waveNumber,
-        seq,
-        partNum: item.PartNum,
-        lot: lotNum,
+      const tableRes = await api.post("/Inspection/mafia-entry-table", {
+        JobNum: jobNum,
+        DnaNum: item.DNANum,
+        RevMajor: revMajor,
+        RevMinor: revMinor,
+        WaveNumber: waveNumber,
+        Seq: seq,
+        PartNum: item.PartNum,
+        LotNum: lotNum,
+        JobQuan: quantity, // <-- ADD THIS!
       });
 
-      const quantity = qtyRes.data;
-      setJobQuantity(quantity);
-
-      const multiplierRes = await api.post("/Inspection/determine-multiplier", {
-        dimType: item.DimType,
-        toleranceClass: item.ToleranceClass,
-        jobQuan: quantity,
-      });
-
-      const count = calculateNumberToCheck(
-        multiplierRes.data,
-        quantity,
-        item.ToleranceClass,
-        item.DimType
-      );
-
-      setEntryBoxCount(count);
+      setMafiaEntryTable(tableRes.data || []);
 
       const commentRes = await api.post("/Inspection/comment", {
         jobNum,
@@ -110,16 +137,6 @@ const InspectionSection = () => {
     } catch {
       toast.error("Failed to load inspection detail.");
     }
-  };
-
-  const calculateNumberToCheck = (multiplier, quantity, tolClass, dimType) => {
-    const dim = dimType.toLowerCase();
-    const tolerance = tolClass.toLowerCase();
-    if (dim.includes("pass/fail")) return 3;
-    if (tolerance.includes("first piece")) return 1;
-    if (tolerance.includes("100%")) return quantity;
-    const base = Math.ceil(quantity * multiplier);
-    return multiplier === 1 ? base : base + 2;
   };
 
   const getUnresolvedNonconformities = () => {
@@ -202,16 +219,15 @@ const InspectionSection = () => {
       <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
         <DnaDetailsHeader selectedDna={selectedDna} />
         <div style={{ flexGrow: 1, padding: "24px", overflowY: "auto" }}>
-          {selectedDna && entryBoxCount > 0 && (
+          {selectedDna && entryCount > 0 && (
             <DynamicCommentGrid
-              count={entryBoxCount}
+              count={entryCount}
               values={entryValues}
-              onChange={(name, value) => setEntryValues((prev) => ({ ...prev, [name]: value }))}
-              labels={
-                selectedDna?.DimType?.toLowerCase().includes("pass/fail")
-                  ? ["Pass", "Fail", "Total"]
-                  : undefined
-              }
+              onChange={(name, val) => setEntryValues((prev) => ({ ...prev, [name]: val }))}
+              labels={entryLabels}
+              names={entryNames}
+              disabledFields={disabledFields}
+              highlightedFields={highlightedFields}
             />
           )}
         </div>
@@ -224,7 +240,7 @@ const InspectionSection = () => {
           />
           <button
             onClick={handleSave}
-            disabled={!selectedDna || entryBoxCount === 0}
+            disabled={!selectedDna || entryCount === 0}
             style={{
               padding: "0 16px",
               backgroundColor: "#007bff",
