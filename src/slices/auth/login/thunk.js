@@ -6,7 +6,12 @@ import {
   postSocialLogin,
 } from "../../../helpers/fakebackend_helper";
 import api from "../../../config/api";
-import { loginSuccess, logoutUserSuccess, apiError, reset_login_flag } from './reducer';
+import {
+  loginSuccess,
+  logoutUserSuccess,
+  apiError,
+  reset_login_flag,
+} from "./reducer";
 
 export const loginUser = (user, history) => async (dispatch) => {
   try {
@@ -21,8 +26,9 @@ export const loginUser = (user, history) => async (dispatch) => {
             uid: 1,
             email: user.empcode,
             token: "mock-jwt-token",
-            name: "Demo User"
-          }
+            name: "Demo User",
+            department: 1,
+          },
         });
       }, 500);
     });
@@ -30,7 +36,7 @@ export const loginUser = (user, history) => async (dispatch) => {
     const data = await response;
 
     if (data) {
-      sessionStorage.setItem("authUser", JSON.stringify(data));
+      sessionStorage.setItem("authUser", JSON.stringify(data.data));
       dispatch(loginSuccess(data.data));
       history("/dashboard");
     }
@@ -42,7 +48,6 @@ export const loginUser = (user, history) => async (dispatch) => {
 // export const loginUser = (user, history) => async (dispatch) => {
 //   try {
 //     const response = await api.post("Auth/login", user);
-
 
 //     if (response.status === 200) {
 //       // store auth user in session
@@ -96,7 +101,6 @@ export const logoutUser = () => async (dispatch) => {
     } else {
       dispatch(logoutUserSuccess(true));
     }
-
   } catch (error) {
     dispatch(apiError(error));
   }
@@ -118,9 +122,8 @@ export const socialLogin = (type, history) => async (dispatch) => {
     if (socialdata) {
       sessionStorage.setItem("authUser", JSON.stringify(response));
       dispatch(loginSuccess(response));
-      history('/dashboard')
+      history("/dashboard");
     }
-
   } catch (error) {
     dispatch(apiError(error));
   }

@@ -21,11 +21,12 @@ import {
 } from "reactstrap";
 import { Link, redirect } from "react-router-dom";
 import classnames from "classnames";
-import {  CenteredModalExample } from '../BaseUi/UiModals/UiModalCode';
+import { CenteredModalExample } from "../BaseUi/UiModals/UiModalCode";
 
 import { ToastContainer, toast } from "react-toastify";
 
 import api from "../../config/api";
+import axios from "axios";
 
 // Formik Validation
 import * as Yup from "yup";
@@ -44,6 +45,7 @@ import { current } from "@reduxjs/toolkit";
 import { input } from "@testing-library/user-event/dist/cjs/event/input.js";
 import { set } from "lodash";
 import { clear } from "@testing-library/user-event/dist/cjs/utility/clear.js";
+import { click } from "@testing-library/user-event/dist/cjs/convenience/click.js";
 
 const DI = () => {
   document.title = "SSW Technologies Dashboard";
@@ -52,124 +54,416 @@ const DI = () => {
   const [inputOption, setInputOption] = useState("");
   const [PartNumber, setPartNumber] = useState("");
   const [PartOptions, setPartOptions] = useState([]);
-  const [AssemblyNumber, setAssemblyNumber] = useState("0");
-  const [AssemblyOptions, setAssemblyOptions] = useState([]); 
+  const [AssemblyNumber, setAssemblyNumber] = useState(0);
+  const [AssemblyOptions, setAssemblyOptions] = useState([]);
   const [modal_center, setmodal_center] = useState(false);
-  const [jobexisterror, setjobexisterror]= useState("");
-  const [countrycode, setcountrycode]= useState("");
+  const [modaloneerror, setmodaloneerror] = useState("");
+  const [countrycode, setcountrycode] = useState("");
+  const [userDetails, setUserDetails] = useState();
+  const [clickedbutton, setClickedButton] = useState("");
+  const [wavenumber, setWaveNumber] = useState("");
+  const [partquantity, setPartQuantity] = useState("");
+  const [vantagenumber, setVantageNumber] = useState("");
+  const [origquantity, setOriginalQuantity] = useState("");
+
+  const [revmajor, setRevMajor] = useState();
+  const [revMinor, setRevMinor] = useState();
 
   function tog_center() {
-        setmodal_center(!modal_center);
+    setmodal_center(!modal_center);
   }
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FOR GETTING DEPARTMENT ID !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  useEffect(() => {
+    const authData = sessionStorage.getItem("authUser");
+    console.log("Auth User Data : ", authData);
+    if (authData) {
+      const parsed = JSON.parse(authData);
 
-useEffect(() => {
-      // console.log({inputJob});
-      if(inputJob.length >= 7 && inputOption == "1")
-        {
-          console.log("Trigger 2");
-          // setAssemblyNumber("1");
-          console.log({AssemblyNumber});
-          const payload1 = {jobNum : inputJob, countrycode : countrycode};
-          getassemblynumber(payload1);
-          console.log(`${payload1}`);
-        }
-        else if( inputJob.includes("/") && inputOption=="2"){
-          const [po, line] = inputJob.split("/");
-          if(line!="")
-          {
-            console.log("Trigger for PO Line");
-            // setAssemblyNumber("1");
-            console.log({po,line});
-            // const payload2 = {poNum : po, poLine:line, countrycode : countrycode};
-            setAssemblyNumber("0");         
-          }
-        }
-},[inputJob]);
+      const name = parsed?.name || "Guest User"; // ✅ not parsed.data.name
+      const title = parsed?.title || "User";
+      const department = parsed?.department || 0;
+      setUserDetails({ name, title, department });
+    }
+  }, []);
 
-// !!!!!!!!!!!!!!!!!!  ONCE ASSEMBLY NUMBER IS UPDATED, THE PART NUMBER IS FETCHED AUTOMATICALLY !!!!!!!!!!!!!!!!!!!!!!!
-useEffect(() => {
+  useEffect(() => {
+    // console.log({inputJob});
+    if (inputJob.length >= 3 && inputOption == "1") {
+      // console.log("Trigger 2");
+      // setAssemblyNumber("1");
+      // console.log({ AssemblyNumber });
+      const payload1 = { jobNum: inputJob, countrycode: countrycode };
+      getassemblynumber(payload1);
+      // console.log(`${payload1}`);
+    } else if (inputJob.includes("\\") && inputOption == "2") {
+      const [po, line] = inputJob.split("\\");
+      if (line != "") {
+        console.log("Trigger for PO Line", { po, line });
+        // setAssemblyNumber("1");
+
+        // const payload2 = {poNum : po, poLine:line, countrycode : countrycode};
+        setTimeout(() => setAssemblyNumber("0"));
+        // console.log("Assembly set");
+        // console.log("Input Length :", inputJob.length);
+        // console.log("Asseambly :", AssemblyNumber);
+      }
+    }
+  }, [inputJob]);
+
+  // !!!!!!!!!!!!!!!!!!  ONCE ASSEMBLY NUMBER IS UPDATED, THE PART NUMBER IS FETCHED AUTOMATICALLY !!!!!!!!!!!!!!!!!!!!!!!
+  useEffect(() => {
     console.log("AssemblyNumber updated:", AssemblyNumber);
-    if(inputOption==1)
-    {
-      const payload = {jobNum : inputJob , countrycode : countrycode, assemblyseq : AssemblyNumber};
+    if (inputOption == "1") {
+      const payload = {
+        jobNum: inputJob,
+        countrycode: countrycode,
+        assemblyseq: AssemblyNumber,
+      };
       getpartnumber(payload);
-      console.log(payload);
+      // console.log(payload);
+    } else if (AssemblyNumber == "0" && inputOption == "2") {
+      const [po, line] = inputJob.split("\\");
+      const payload = { poNum: po, poLine: line, countrycode: countrycode };
+      // console.log(payload);
+      // console.log(AssemblyNumber);
+      getpartnumber(payload);
+      // console.log(payload);
     }
-    else if (inputOption==2)
-    {
-      const [po, line] = inputJob.split("/");
-      const payload = {poNum : po , poLine: line,countrycode : countrycode};
-      // getpartnumber(payload);
-      // console.log(payload); 
-    }
-    
-}, [AssemblyNumber]);
+  }, [AssemblyNumber]);
 
- 
-    const getassemblynumber = async (payload) => {
+  const getassemblynumber = async (payload) => {
     try {
-        const response = await api.post("di/get-assembly-number", payload);
-        if (response.status === 200 || response.status === 201) {
-          const data=response.data;
-          if (Array.isArray(data)) {
+      const response = await api.post("di/get-assembly-number", payload);
+      if (response.status === 200 || response.status === 201) {
+        const data = response.data;
+        if (Array.isArray(data)) {
           setAssemblyOptions(data);
           setAssemblyNumber(data[0]); // default selection
         } else {
           setAssemblyOptions([]);
-          setAssemblyNumber(data);    // set single number
+          setAssemblyNumber(data); // set single number
         }
-        } else {
-          toast.error("Registration Error here!");
-        }
-      } catch (error) {
-        // toast.error("Registration Error! Server not reachable here 123.");
+      } else {
+        toast.error("Registration Error here!");
       }
+    } catch (error) {
+      setAssemblyNumber(0);
+      // toast.error("Registration Error! Server not reachable here 123.");
+    }
   };
-    
+
   const getpartnumber = async (payload) => {
-    if(inputOption==1){
+    if (inputOption == 1) {
       try {
-        const response = await api.post("di/get-part-wchildren-for-job", payload);
+        const response = await api.post(
+          "di/get-part-wchildren-for-job",
+          payload
+        );
         if (response.status === 200 || response.status === 201) {
-          const data=response.data;
-          if (Array.isArray(data)) {
-            setPartOptions(data);
-            setPartNumber(data[0]); // default selection
-          } else {
-            setPartOptions([]);
-            setPartNumber(data);    // set single number
-          }
+          const data = response.data;
+          // console.log("Response Check ", data);
+          // if (Array.isArray(data)) {
+          setPartOptions(data);
+          setPartNumber(data[0]); // default selection
+
+          // } else {
+          //   setPartOptions([]);
+          //   setPartNumber(data); // set single number
+          // }
         } else {
           toast.error("Registration Error!");
         }
       } catch (error) {
+        // toast.error(error.response.data);
         // toast.error("Registration Error! Server not reachable here 123123.");
       }
-    }
-    else if(inputOption==2)
-    {
+    } else if (inputOption == 2) {
       try {
-        const response = await api.post("di/get-part-wchildren-for-po-line", payload);
+        const response = await api.post(
+          "di/get-part-wchildren-for-po-line",
+          payload
+        );
         if (response.status === 200 || response.status === 201) {
-          const data=response.data;
-          if (Array.isArray(data)) {
-            setPartOptions(data);
-            setPartNumber(data[0]); // default selection
-          } else {
-            setPartOptions([]);
-            setPartNumber(data);    // set single number
-          }
+          const data = response.data;
+          // if (Array.isArray(data)) {
+          setPartOptions(data);
+          setPartNumber(data[0]); // default selection
+          // } else {
+          //   setPartOptions([]);
+          //   setPartNumber(data); // set single number
+          // }
         } else {
-          toast.error("Registration Error!");
+          toast.error(response.data);
+          return;
         }
       } catch (error) {
+        // toast.error(error.response.data);
         // toast.error("Registration Error! Server not reachable.");
       }
     }
-    
   };
 
-    useEffect(() => {
+  const getquantity = async () => {
+    if (inputOption == "1") {
+      try {
+        const payload = {
+          jobNum: inputJob,
+          countrycode: countrycode,
+          assemblySeq: AssemblyNumber,
+        };
+        // console.log("PINGED HERE: ", payload);
+        const response = await api.post("di/get-quantity-job", payload);
+        if (response.status === 200 || response.status === 201) {
+          // console.log({
+          //   "This is what is being set for quantity number:": response,
+          // });
+          if (response.data == 0) {
+            setmodaloneerror(
+              "Epicor reports Quantity of 0, please contact Technical Support, x1776"
+            );
+            tog_center();
+            return;
+          }
+          setPartQuantity(`${response.data}`);
+          // toast.success(`Country code: ${countrycode}`);
+        }
+      } catch (error) {
+        toast.error(`Error: ${error.message || "Unknown error"}`);
+      }
+    } else if (inputOption == "2") {
+      try {
+        const [po, line] = inputJob.split("\\");
+        if (!po || !line) {
+          toast.error("Both PO and Line Number must be provided.", {
+            autoClose: 2000,
+          });
+          return;
+        }
+        const payload = { PONum: po, POLine: line, countrycode: countrycode };
+        const response = await api.post("di/get-quantity-poline", payload);
+        if (response.status === 200 || response.status === 201) {
+          // console.log({ "This is what is being set :": response });
+          if (response.data == 0) {
+            setmodaloneerror(
+              "Epicor reports Quantity of 0, please contact Technical Support, x1776"
+            );
+            tog_center();
+            return;
+          }
+          setPartQuantity(`${response.data}`);
+          // toast.success(`Country code: ${countrycode}`);
+        }
+      } catch (error) {
+        toast.error(`Error: ${error.message || "Unknown error"}`);
+      }
+    }
+  };
+
+  const getvantagerev = async () => {
+    if (PartNumber != PartOptions[0]) {
+      try {
+        const payload = {
+          partnum: PartNumber,
+        };
+        console.log("Submitting payload: ", JSON.stringify(payload, null, 2));
+        const response = await api.post("di/get-latest-vantagerev", payload);
+        console.log(response);
+        if (response.status === 200 || response.status === 201) {
+          setVantageNumber(response);
+          console.log("PINGED HERE ", response);
+        }
+      } catch (error) {
+        toast.error(`Error: ${error.message || "Unknown error"}`);
+      }
+    } else if (inputOption == "1") {
+      try {
+        const payload = {
+          jobnum: inputJob,
+          assemblySeq: AssemblyNumber,
+          countrycode: countrycode,
+        };
+        const response = await api.post("di/get-vantagerev-job", payload);
+        if (response.status === 200 || response.status === 201) {
+          if (Number.isInteger(Number(response.data))) {
+            console.log({
+              "This is what is being set for vantage number after success pf checking :":
+                Number(response.data),
+            });
+            setVantageNumber(Number(response.data));
+            return Number(response.data);
+          } else {
+            console.log(response.data);
+            setmodaloneerror(
+              "There is an error in determining the Rev # from Epicor for this job. Either the Rev # in Epicor could not be found OR the Rev # in Epicor has a letter attached to it (eg 3A - which is not compatible with MAFIA). Please contact the planning department to have them correct the Rev #. Reported Rev # from Epicor is  Rev #" +
+                response.data
+            );
+            tog_center();
+            return;
+          }
+        }
+        // toast.success(`Country code: ${countrycode}`);
+      } catch (error) {
+        toast.error(`Error: ${error.message || "Unknown error"}`);
+      }
+    } else if (inputOption == "2") {
+      try {
+        const [po, line] = inputJob.split("\\");
+        const payload = { poNum: po, poLine: line, countrycode: countrycode };
+        console.log(payload);
+        const response = await api.post("di/get-vantagerev-poline", payload);
+        if (response.status === 200 || response.status === 201) {
+          console.log({
+            "This is what is being set for po line vantage rev :": response,
+          });
+          if (Number.isInteger(Number(response.data))) {
+            // console.log("PINGED HERE ", response);
+
+            setVantageNumber(Number(response.data));
+            return Number(response.data);
+          } else {
+            console.log(response.data);
+            setmodaloneerror(
+              "There is an error in determining the Rev # from Epicor for this job. Either the Rev # in Epicor could not be found OR the Rev # in Epicor has a letter attached to it (eg 3A - which is not compatible with MAFIA). Please contact the planning department to have them correct the Rev #. Reported Rev # from Epicor is  Rev #" +
+                response.data
+            );
+            tog_center();
+            return;
+          }
+        }
+        // setPartQuantity(`${response.data}`);
+        // toast.success(`Country code: ${countrycode}`)
+      } catch (error) {
+        toast.error(`Error: ${error.message || "Unknown error"}`);
+      }
+    }
+  };
+
+  const getoriginalquantity = async () => {
+    try {
+      const payload = {
+        jobnum: inputJob,
+        wavenumber: wavenumber,
+        assemblyseq: AssemblyNumber,
+        partnum: PartNumber,
+        originalpart: PartOptions[0],
+      };
+      console.log(payload);
+      const response = await api.post("di/get-original-quantity", payload);
+      if (response.status === 200 || response.status === 201) {
+        // console.log({
+        //   "Original Quantity API brings ": response,
+        // });
+        setOriginalQuantity(response.data);
+      }
+    } catch {}
+  };
+
+  const getminorrev = async (revMajorParam) => {
+    try {
+      console.log("type of rev major ", typeof revmajor);
+      const payload = { partnum: PartNumber, revmajor: revMajorParam };
+      console.log(payload);
+      const response = await api.post("di/get-latest-minor-rev", payload);
+      if (response.status == 200 || response.status == 201) {
+        setRevMinor(Number(response.data));
+        console.log("Value of the minor rev", response);
+        return Number(response.data);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const getlockedmajorrev = async () => {
+    try {
+      const payload = {
+        jobnum: inputJob,
+        assemblyseq: AssemblyNumber,
+        partnum: PartNumber,
+        originalpart: PartOptions[0],
+      };
+      const response = await api.post("di/get-locked-major-rev", payload);
+      if (response.status == 200 || response.status == 201) {
+        setRevMajor(Number(response.data));
+        return Number(response.data);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+  const getlockedminorrev = async () => {
+    try {
+      const payload = {
+        jobnum: inputJob,
+        assemblyseq: AssemblyNumber,
+        partnum: PartNumber,
+        originalpart: PartOptions[0],
+      };
+      const response = await api.post("di/get-locked-minor-rev", payload);
+      if (response.status == 200 || response.status == 201) {
+        setRevMinor(Number(response.data));
+        return Number(response.data);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const insertHeader = async () => {
+    try {
+      const payload = {
+        jobnum: inputJob,
+        wavenumber: wavenumber,
+        quantity: origquantity,
+        revminor: revMinor,
+        revmajor: revmajor,
+        assemblyseq: AssemblyNumber,
+        partnum: PartNumber,
+        originalpart: PartOptions[0],
+      };
+      const response = await api.post("di/insert-header", payload);
+      if (response.status == 200 || response.status == 201) {
+        toast.success("Succesfully Added!");
+      } else {
+        setmodaloneerror(
+          "Error in adding job header, please contact technical support, x1776."
+        );
+        tog_center();
+        return;
+      }
+    } catch (error) {
+      toast.error(error);
+      // return false;
+    }
+  };
+
+  const getqualityclosed = async () => {
+    try {
+      const payload = {
+        jobnum: inputJob,
+        assemblyseq: AssemblyNumber,
+        partnum: PartNumber,
+        originalpart: PartOptions[0],
+      };
+      const response = await api.post("di/get-quality-closed", payload);
+      if (response.status == 200 || response.status == 201) {
+        if (response.data) {
+          setmodaloneerror(
+            "This job has been closed. If you feel you have reached this message in error, please contact your supervisor or technical support at x1776."
+          );
+          tog_center();
+          return;
+        } else {
+          console.log("FLOW COMPLETED WE ARE PINGED HERE.");
+          ///////!!!!!!!!!!!!!!!!!!!!!!!!!!! TO ADDD FROM FROMINSPECT PAGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        }
+      }
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  useEffect(() => {
     const fetchCountryCode = async () => {
       try {
         const response = await api.get("di/getcountrycode");
@@ -183,18 +477,14 @@ useEffect(() => {
       }
     };
     fetchCountryCode();
-  },[]
-);
+  }, []);
 
   useEffect(() => {
+    setAssemblyOptions([]);
+    setAssemblyNumber(""); // Clear Part Number on changes
+    setPartOptions([]);
     setPartNumber("");
-    if(inputJob.length<=6)
-    {
-      setAssemblyOptions([]);
-      setAssemblyNumber(""); // Clear Part Number on changes
-      setPartOptions([]);
-    }
-  }, [inputJob, inputOption]);
+  }, [inputOption, inputJob]);
 
   const handleSelectChange = (e) => {
     const value = e.target.value;
@@ -203,7 +493,7 @@ useEffect(() => {
       setInputJob("");
       setInputOption("1");
     } else if (value === "2") {
-      setPlaceholder("Enter PO/Line Number");
+      setPlaceholder("Enter POLine Number");
       setInputJob(""); // Reset inputJob when switching to PO/Line Number
       setInputOption("2");
     } else {
@@ -211,6 +501,15 @@ useEffect(() => {
       setInputJob("");
     }
   };
+  // useEffect(() => {
+  //   const fetchMinorRev = async () => {
+  //     if (Number.isInteger(revmajor)) {
+  //       await getminorrev();
+  //     }
+  //   };
+
+  //   fetchMinorRev();
+  // }, [revmajor]);
 
   // const checkwithjob = async (payload) => {
   //   try {
@@ -225,59 +524,186 @@ useEffect(() => {
   //       toast.error("Registration Error! Server not reachable.");
   //     }
   // };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (inputOption == "1") {
-      // if (inputJob.trim() === "") {
-      //   toast.error("Enter Job Number", {
-      //     autoClose: 2000,
-      //   });
-      //   return;
-      // }
-      // // if (!inputJob.trim()) {
-      // //   setShowTooltip(true);
-      // //   setTimeout(() => setShowTooltip(false), 2000);
-      // //   return;
-      // // }
-      // const payload = { jobNum: inputJob, assemblySeq: 0 };
 
-      // console.log("Submitting payload:", JSON.stringify(payload, null, 2));
-
-    } else if (inputOption == "2") {
-      // Handle PO/Line Number submission
-
-      if (inputJob.trim() === "") {
-        toast.error("Enter PO and Line Number", {
-          autoClose: 2000,
-        });
-        return;
-      }
-
-      // Further validate that both sides are not empty
-      const [po, line] = inputJob.split("/");
-      if (!po || !line) {
-        toast.error("Both PO and Line Number must be provided.", {
-          autoClose: 2000,
-        });
-        return;
-      }
-      const payload = { PONum: po, POLine: line , countrycode : countrycode};
-
-      console.log("Submitting payload:", JSON.stringify(payload, null, 2));
-
-      try {
-        const response = await api.post("di/get-jobnum-from-po-line", payload);
-        if (response.status === 200 || response.status === 201) {
-          setjobexisterror(`A job number exists for this PO. You must enter the inspection under the job number. The job number is : ${response.data}`);
-          tog_center();
-        } else {
-          toast.error("Registration Error!");
+    console.log({ clickedbutton });
+    console.log({ wavenumber });
+    // console.log({ userDetails });
+    if (userDetails.department == 59 && wavenumber == "1") {
+      setmodaloneerror(
+        "As a member of the Quality Department, please use the 'Quality' inspection type instead."
+      );
+      tog_center();
+      return;
+    } else if (userDetails.department == 76 && wavenumber == "2") {
+      setmodaloneerror(
+        "As a member of the CNC Department, please use the 'In Process' inspection type instead."
+      );
+      tog_center();
+      return;
+    } else {
+      // !!!!!!!!!!!!!!!!!!!! ALL PROCESSING AFTER CLICKING ON ANY OF THE BUTTONS !!!!!!!!!!!!!!!!!!!!!!
+      if (inputOption == "2") {
+        console.log("WE ARE REACHING HERE");
+        const [po, line] = inputJob.split("\\");
+        if (!po || !line) {
+          toast.error("Both PO and Line Number must be provided.", {
+            autoClose: 2000,
+          });
+          return;
         }
-      } catch (error) {
-        toast.error("Registration Error! Server not reachable.");
+        const payload = { PONum: po, POLine: line, countrycode: countrycode };
+        console.log("Submitting payload:", JSON.stringify(payload, null, 2));
+        try {
+          const response = await api.post(
+            "di/get-jobnum-from-po-line",
+            payload
+          );
+          if (
+            (response.status === 200 || response.status === 201) &&
+            response.data != ""
+          ) {
+            setmodaloneerror(
+              `A job number exists for this PO. You must enter the inspection under the job number. The job number is : ${response.data}`
+            );
+            tog_center();
+            return;
+          }
+        } catch (error) {
+          // toast.error("Registration Error! Server not reachable.");
+        }
+      }
+      await getquantity();
+      await getvantagerev();
+
+      let revmajortemp = await getvantagerev();
+      let revminortemp = await getminorrev(revmajortemp);
+
+      if ((await getoriginalquantity()) == 0) {
+        revmajortemp = await getvantagerev();
+        setRevMajor(revmajortemp);
+        revminortemp = await getminorrev(revmajortemp);
+        setRevMinor(revminortemp);
+        //  setRevMinor(Number(await getminorrev()));
+        console.log("Rev Minor :", revMinor);
+        console.log(revmajor);
+        if (inputJob == "0048451") {
+          setRevMajor(4);
+          setRevMinor(2);
+        }
+      } else {
+        revmajortemp = await getlockedmajorrev();
+        setRevMajor(revmajortemp);
+
+        revminortemp = await getlockedminorrev();
+        setRevMinor(revminortemp);
+
+        if (revmajortemp == 0 || revminortemp == 0) {
+          revmajortemp = await getvantagerev();
+          setRevMajor(revmajortemp);
+          revminortemp = await getminorrev(revmajortemp);
+          setRevMinor(revminortemp);
+        }
+      }
+      if ((revmajor == 0 || revMinor == 0) && inputJob == "0048451") {
+        setmodaloneerror(
+          "MAFIA Table for part " +
+            PartNumber +
+            " (Rev " +
+            revmajortemp.ToString +
+            ") has not been released or has been changed midway of job. Epicor says for this job number you need Rev #" +
+            revmajortemp.ToString +
+            ". Please contact the engineering department."
+        );
+        tog_center();
+        return;
+      } else {
+        try {
+          const payload = {
+            partnum: PartNumber,
+            revmajor: revmajor,
+            revminor: revMinor,
+          };
+          const response = await api.post("di/get-mafia-table", payload);
+          if (response.status == 200 || response.status == 201) {
+            console.log(response);
+          }
+        } catch (error) {
+          setmodaloneerror(
+            "Could not find MAFIA Table for part " +
+              PartNumber +
+              " Rev (" +
+              revmajor.ToString +
+              "-" +
+              revMinor.ToString +
+              ") Please contact the engineering department."
+          );
+          tog_center();
+          return;
+        }
+
+        if (partquantity == 0) {
+          // let quantity = origquantity;
+
+          await insertHeader();
+        }
+        // console.log("WE ARE REACHING CHEPOINT 1");
+        await getqualityclosed();
       }
     }
+    // }
+    // if (inputOption == "1") {
+    // if (inputJob.trim() === "") {
+    //   toast.error("Enter Job Number", {
+    //     autoClose: 2000,
+    //   });
+    //   return;
+    // }
+    // // if (!inputJob.trim()) {
+    // //   setShowTooltip(true);
+    // //   setTimeout(() => setShowTooltip(false), 2000);
+    // //   return;
+    // // }
+    // const payload = { jobNum: inputJob, assemblySeq: 0 };
+
+    // console.log("Submitting payload:", JSON.stringify(payload, null, 2));
+
+    // } else
+    // if (inputOption == "2") {
+    // Handle PO/Line Number submission
+    // if (inputJob.trim() === "") {
+    //   toast.error("Enter PO and Line Number", {
+    //     autoClose: 2000,
+    //   });
+    //   return;
+    // }
+    // // Further validate that both sides are not empty
+    // const [po, line] = inputJob.split("/");
+    // if (!po || !line) {
+    //   toast.error("Both PO and Line Number must be provided.", {
+    //     autoClose: 2000,
+    //   });
+    //   return;
+    // }
+    // const payload = { PONum: po, POLine: line, countrycode: countrycode };
+    // console.log("Submitting payload:", JSON.stringify(payload, null, 2));
+    // try {
+    //   const response = await api.post("di/get-jobnum-from-po-line", payload);
+    //   if (response.status === 200 || response.status === 201) {
+    //     setmodaloneerror(
+    //       `A job number exists for this PO. You must enter the inspection under the job number. The job number is : ${response.data}`
+    //     );
+    //     tog_center();
+    //     return;
+    //   } else {
+    //     toast.error("Registration Error!");
+    //   }
+    // } catch (error) {
+    //   toast.error("Registration Error! Server not reachable.");
+    // }
+    // }
   };
 
   return (
@@ -311,7 +737,7 @@ useEffect(() => {
                       >
                         <option>Select option</option>
                         <option value="1">Job Number</option>
-                        <option value="2">PO/Line Number</option>
+                        <option value="2">PO\Line Number</option>
                       </select>
                     </div>
 
@@ -325,7 +751,7 @@ useEffect(() => {
                         placeholder={placeholder}
                         value={inputJob}
                         onChange={(e) => {
-                          setInputJob(e.target.value)
+                          setInputJob(e.target.value);
                         }}
                       />
                       {/* <Tooltip
@@ -349,7 +775,9 @@ useEffect(() => {
                           onChange={(e) => setAssemblyNumber(e.target.value)}
                         >
                           {AssemblyOptions.map((num) => (
-                            <option key={num} value={num}>{num}</option>
+                            <option key={num} value={num}>
+                              {num}
+                            </option>
                           ))}
                         </select>
                       ) : (
@@ -374,7 +802,9 @@ useEffect(() => {
                           onChange={(e) => setPartNumber(e.target.value)}
                         >
                           {PartOptions.map((num) => (
-                            <option key={num} value={num}>{num}</option>
+                            <option key={num} value={num}>
+                              {num}
+                            </option>
                           ))}
                         </select>
                       ) : (
@@ -398,6 +828,11 @@ useEffect(() => {
                         outline
                         className="btn btn-soft-primary"
                         type="submit"
+                        id="usainprog"
+                        onClick={() => {
+                          setClickedButton("USA");
+                          setWaveNumber("1");
+                        }}
                       >
                         <img
                           src={usflag}
@@ -412,6 +847,11 @@ useEffect(() => {
                         outline
                         className="btn btn-soft-primary"
                         type="submit"
+                        id="usaqual"
+                        onClick={() => {
+                          setClickedButton("USA");
+                          setWaveNumber("2");
+                        }}
                       >
                         <img
                           src={usflag}
@@ -426,6 +866,11 @@ useEffect(() => {
                         outline
                         className="btn btn-soft-primary"
                         type="submit"
+                        id="indiainprog"
+                        onClick={() => {
+                          setClickedButton("INDIA");
+                          setWaveNumber("1");
+                        }}
                       >
                         <img
                           src={indiaflag}
@@ -440,6 +885,11 @@ useEffect(() => {
                         outline
                         className="btn btn-soft-primary"
                         type="submit"
+                        id="indiaqual"
+                        onClick={() => {
+                          setClickedButton("INDIA");
+                          setWaveNumber("2");
+                        }}
                       >
                         <img
                           src={indiaflag}
@@ -584,33 +1034,38 @@ useEffect(() => {
                       >
                         Inspect all pieces
                       </UncontrolledTooltip>
-                {/* MODALS */}
-                <Modal
-                isOpen={modal_center}
-                toggle={() => {
-                    tog_center();
-                }}
-                centered
-            >
-                <ModalHeader className="modal-title" />
+                      {/* MODALS */}
+                      <Modal
+                        isOpen={modal_center}
+                        toggle={() => {
+                          tog_center();
+                        }}
+                        centered
+                      >
+                        {/* Selection */}
+                        <ModalHeader className="modal-title" />
 
-                <ModalBody className="text-center p-5">
-                    <lord-icon
-                        src="https://cdn.lordicon.com/tdrtiskw.json"
-                        trigger="loop"
-                        colors="primary:#f7b84b,secondary:#405189"
-                        style={{ width: "130px", height: "130px" }}>
-                    </lord-icon>
-                    <div className="mt-4">
-                        <h4 className="mb-3">{jobexisterror}</h4>
-                        <p className="text-muted mb-4" ></p>
-                        <div className="hstack gap-2 justify-content-center">
-                            <Button color="danger" onClick={() => setmodal_center(false)}>Close</Button>
-                        </div>
-                    </div>
-                </ModalBody>
-            </Modal>
-
+                        <ModalBody className="text-center p-5">
+                          <lord-icon
+                            src="https://cdn.lordicon.com/tdrtiskw.json"
+                            trigger="loop"
+                            colors="primary:#f7b84b,secondary:#405189"
+                            style={{ width: "130px", height: "130px" }}
+                          ></lord-icon>
+                          <div className="mt-4">
+                            <h4 className="mb-3">{modaloneerror}</h4>
+                            <p className="text-muted mb-4"></p>
+                            <div className="hstack gap-2 justify-content-center">
+                              <Button
+                                color="danger"
+                                onClick={() => setmodal_center(false)}
+                              >
+                                Close
+                              </Button>
+                            </div>
+                          </div>
+                        </ModalBody>
+                      </Modal>
                     </div>
                   </div>
                 </CardBody>
