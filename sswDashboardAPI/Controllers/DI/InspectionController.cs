@@ -686,6 +686,9 @@ namespace sswDashboardAPI.Controllers.DI
                 if (mafiaTableResult?.Value is not List<Dictionary<string, object>> mafiaRows)
                     return StatusCode(500, "Failed to retrieve Mafia Table");
 
+                int result = 0;
+                double multiplier = 0;
+
                 foreach (var row in mafiaRows)
                 {
                     if (row["DNANum"].ToString() == request.DnaNum)
@@ -694,10 +697,18 @@ namespace sswDashboardAPI.Controllers.DI
                         string dimType = row["DimType"]?.ToString();
 
                         if (tolClass == "100%")
-                            return Ok((int)request.JobQuan);
+                        {
+                            result = (int)request.JobQuan;
+                            multiplier = 1;
+                            break;
+                        }
 
                         if (tolClass == "first piece only")
-                            return Ok(1);
+                        {
+                            result = 1;
+                            multiplier = 1;
+                            break;
+                        }
 
                         var multiplierRequest = new DetermineMultiplierRequestDto
                         {
@@ -707,23 +718,30 @@ namespace sswDashboardAPI.Controllers.DI
                         };
 
                         var multiplierResult = await DetermineMultiplier(multiplierRequest) as OkObjectResult;
-                        double multiplier = multiplierResult != null ? Convert.ToDouble(multiplierResult.Value) : 0;
+                        multiplier = multiplierResult != null ? Convert.ToDouble(multiplierResult.Value) : 0;
 
                         if (multiplier == 0)
-                            return Ok(0);
+                        {
+                            result = 0;
+                            break;
+                        }
 
-                        int result = (int)Math.Ceiling(request.JobQuan * multiplier);
-                        return Ok(multiplier == 1 ? result : result + 2);
+                        result = (int)Math.Ceiling(request.JobQuan * multiplier);
+                        break;
                     }
                 }
 
-                return Ok(0); // No matching DNANum found
+                if (multiplier == 1)
+                    return Ok(result);
+                else
+                    return Ok(result + 2);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
 
 
         [HttpPost("determine-number-to-check-additional")]

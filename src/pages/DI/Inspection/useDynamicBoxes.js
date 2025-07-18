@@ -94,6 +94,14 @@ export const useDynamicBoxes = ({
       try {
         const dimType = mafiaTables?.[selectedDna.DNANum]?.DimType?.toLowerCase()?.trim() || "";
 
+        if (dimType.includes("note") || dimType.includes("textbox")) {
+          setEntryCount(0);
+          setEntryLabels([]);
+          setEntryNames([]);
+          return;
+        }
+
+
         const qtyRes = await api.post("/Inspection/original-quantity", {
           JobNum: jobNum,
           WaveNumber: parseInt(waveNumber, 10),
@@ -148,10 +156,21 @@ export const useDynamicBoxes = ({
         let addl = 1;
         for (let i = 1; i <= total; i++) {
           names.push(`txtDynamic${i}`);
-          if (i === 1) labels.push("1");
-          else if (i === init) labels.push(quantity.toString());
-          else if (i > init) labels.push(`+${addl++}`);
-          else labels.push((interval * (i - 1)).toString());
+          if (i === 1) {
+            labels.push("1");
+          } else if (i === init) {
+            labels.push(quantity.toString());
+          } else if (i > init) {
+            labels.push(`+${addl++}`);
+          } else {
+            const calculated = interval * (i - 1);
+            if (calculated === quantity) {
+              labels.push((calculated - 1).toString());
+            } else {
+              labels.push((calculated).toString());
+            }
+          }
+
         }
 
         setEntryCount(total);

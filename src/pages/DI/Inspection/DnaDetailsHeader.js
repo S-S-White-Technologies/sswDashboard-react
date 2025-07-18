@@ -22,27 +22,27 @@ const DnaDetailsHeader = ({ selectedDna }) => {
       {selectedDna ? (
         <>
           {/* Header Labels */}
-          <div style={{ display: "flex", fontWeight: "bold", gap: "20px" }}>
-            <div>Diameter</div>
-            <div>Nominal</div>
-            <div>Min</div>
-            <div>Max</div>
-            <div>Gage To Use</div>
-            <div>Tolerance Class</div>
-            <div>Method of Recording</div>
-            <div>WI/ATP Number</div>
-          </div>
-          {/* Data Values */}
-          <div style={{ display: "flex", gap: "20px", marginTop: "6px" }}>
-            <div>{formatValue(selectedDna.DimType)}</div>
-            <div>{formatValue(selectedDna.Nominal)}</div>
-            <div>{formatValue(selectedDna.Min)}</div>
-            <div>{formatValue(selectedDna.Max)}</div>
-            <div>{formatValue(selectedDna.SpecialGages)}</div>
-            <div>{formatValue(selectedDna.ToleranceClass)}</div>
-            <div>{formatValue(selectedDna.MethodOfRecording)}</div>
-            <div>{formatValue(selectedDna.WIATPNum)}</div>
-          </div>
+            <div style={{ display: "flex", fontWeight: "bold", gap: "20px" }}>
+              <div>{formatValue(selectedDna.DimType)}</div>
+              <div>Nominal</div>
+              <div>Min</div>
+              <div>Max</div>
+              <div>Gage To Use</div>
+              <div>Tolerance Class</div>
+              <div>Method of Recording</div>
+              <div>WI/ATP Number</div>
+            </div>
+            {/* Data Values */}
+            <div style={{ display: "flex", gap: "20px", marginTop: "6px" }}>
+              <div>{formatValue(selectedDna.AddlInfo)}</div>
+              <div>{formatValue(selectedDna.Nominal)}</div>
+              <div>{formatValue(selectedDna.Min)}</div>
+              <div>{formatValue(selectedDna.Max)}</div>
+              <div>{formatValue(selectedDna.SpecialGages)}</div>
+              <div>{formatValue(selectedDna.ToleranceClass)}</div>
+              <div>{formatValue(selectedDna.MethodOfRecording)}</div>
+              <div>{formatValue(selectedDna.WIATPNum)}</div>
+            </div>
         </>
       ) : (
         <div style={{ fontStyle: "italic", color: "#888" }}>
