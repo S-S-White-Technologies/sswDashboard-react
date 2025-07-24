@@ -16,7 +16,7 @@ namespace sswDashboardAPI.Controllers
             _departmentService = departmentService;
         }
 
-        // ✅ GET: Returns department list from Epicor
+        
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -34,7 +34,7 @@ namespace sswDashboardAPI.Controllers
                 return BadRequest("Invalid input model");
             }
 
-            // Log the incoming request for debugging
+           
             Console.WriteLine($"Received department: {JsonConvert.SerializeObject(jc)}");
 
             var epicorPayload = new
@@ -48,16 +48,16 @@ namespace sswDashboardAPI.Controllers
                 RowMod = "A"
             };
 
-            // Call the service to add the department to Epicor
+           
             var response = await _departmentService.AddDepartmentAsync(epicorPayload);
 
-            // If the department was successfully added, re-fetch and return the departments list
+          
             if (response.IsSuccessStatusCode)
             {
                 var result = await _departmentService.GetDepartmentsAsync();
                 var stringContent = await result.Content.ReadAsStringAsync();
                 var json = JsonConvert.DeserializeObject<object>(stringContent);
-                return Ok(json);  // Send back the updated list to the frontend
+                return Ok(json);  
             }
             else
             {

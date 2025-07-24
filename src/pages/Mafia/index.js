@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Col, Container, Row } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import BreadCrumb from '../../Components/Common/BreadCrumb';
-import api from '../../config/api';
+import api from '../../api';
 import { Alert, Card, CardBody, Modal, ModalHeader, ModalBody, ModalFooter, Button, Toast, ToastBody, Table, Spinner } from 'reactstrap';
 import FeatherIcon from "feather-icons-react";
 import DigitalClock from '../../Components/DigitalClock';

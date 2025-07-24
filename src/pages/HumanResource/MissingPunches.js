@@ -6,7 +6,8 @@ import {
 } from "reactstrap";
 import axios from "axios";
 import { Link } from 'react-router-dom';
-import PunchTableWithCheckboxes from "./PunchTableWithCheckbox"
+import PunchTableWithCheckboxes from "./PunchTableWithCheckbox";
+import api from "../../api"
 
 
 const MissingPunches = () => {
@@ -29,11 +30,11 @@ const MissingPunches = () => {
         const end = endDate.toISOString().split("T")[0];
 
         try {
-            const res = await axios.get(
-                `https://localhost:7168/api/Punch/missing?startDate=${start}&endDate=${end}`
+            const res = await api.get(
+                `Punch/missing?startDate=${start}&endDate=${end}`
             );
 
-            const punches = res?.missingPunches || [];
+            const punches = res.data?.missingPunches || [];
 
             const isToday = (date) => {
                 const today = new Date();

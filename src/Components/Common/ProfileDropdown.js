@@ -29,25 +29,32 @@ const ProfileDropdown = () => {
     }, []);
 
     const [userName, setUserName] = useState("Admin");
-
+    const [userImage, setUserImage] = useState("/uploads/user-dummy-img.jpg");
     useEffect(() => {
         const authUser = sessionStorage.getItem("authUser");
+
         if (authUser) {
             const obj = JSON.parse(authUser);
             let name = "Admin";
+            let imagePath = "/uploads/user-dummy-img.jpg"; // fallback
 
             if (process.env.REACT_APP_DEFAULTAUTH === "fake") {
-                name = obj?.username || user?.first_name || obj?.data?.first_name || "Admin";
+                name = obj?.username || obj?.first_name || obj?.data?.first_name || "Admin";
+                imagePath = obj?.imagePath || obj?.data?.imagePath || imagePath;
             } else if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
                 name = obj?.email || "Admin";
+                // firebase usually doesn't handle images this way
             } else {
-                // For your actual login API
-                name = obj?.data?.name || obj?.name || user?.name || "Admin";
+                name = obj?.data?.name || obj?.name || "Admin";
+                imagePath = obj?.data?.imagePath || obj?.imagePath || imagePath;
             }
 
             setUserName(name);
+            //setUserImage(`http://172.16.50.19:7168${imagePath}`);
+            setUserImage(`https://localhost:7168${imagePath}`);
         }
-    }, [user]);
+    }, []);
+
 
 
     //Dropdown Toggle
@@ -60,7 +67,7 @@ const ProfileDropdown = () => {
             <Dropdown isOpen={isProfileDropdown} toggle={toggleProfileDropdown} className="ms-sm-3 header-item topbar-user">
                 <DropdownToggle tag="button" type="button" className="btn shadow-none">
                     <span className="d-flex align-items-center">
-                        <img className="rounded-circle header-profile-user" src={avatar1}
+                        <img className="rounded-circle header-profile-user" src={userImage}
                             alt="Header Avatar" />
                         <span className="text-start ms-xl-2">
                             <span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text">{userDetails.name}</span>

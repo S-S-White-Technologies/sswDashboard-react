@@ -6,7 +6,7 @@ import Flatpickr from "react-flatpickr";
 import logomain from "../../../src/assets/images/logofinal.png"
 import hrBanner from "../../../src/assets/images/auth-one-bg_old.jpg"
 import axios from "axios";
-import api from "../../../src/config/api.js"
+import api from "../../api"
 import jsPDF from '../../../node_modules/jspdf/dist/jspdf.umd.min.js'
 import { applyPlugin } from 'jspdf-autotable'
 import Select, { components } from "react-select";
@@ -106,12 +106,12 @@ const HRReportsHourly = () => {
         if (selectedDepartmentId) {
             params.append("departmentIds", selectedDepartmentId);
         }
-        const url = `https://localhost:7168/api/Reports/daily-report-hourly?${params.toString()}`;
+        const url = `Reports/daily-report-hourly?${params.toString()}`;
 
         console.log("Final URL: ", url);
 
         try {
-            const response = await axios.get(url);
+            const response = await api.get(url);
             const data = response;
 
 
@@ -189,12 +189,12 @@ const HRReportsHourly = () => {
         if (selectedDepartmentId) {
             params.append("departmentIds", selectedDepartmentId);
         }
-        const url = `https://localhost:7168/api/Reports/daily-report-hourly?${params.toString()}`;
+        const url = `Reports/daily-report-hourly?${params.toString()}`;
 
         console.log("Final URL: ", url);
 
         try {
-            const response = await axios.get(url);
+            const response = await api.get(url);
             const data = response;
 
 
@@ -349,16 +349,16 @@ const HRReportsHourly = () => {
             params.append("employeeNames", name);
         });
 
-        const url = `https://localhost:7168/api/Reports/early-leave-report-hourly?${params.toString()}`;
+        const url = `Reports/early-leave-report-hourly?${params.toString()}`;
 
         console.log("Early URL :", url);
 
 
         try {
-            const response = await axios.get(url);
-            const records = response.records;
+            const response = await api.get(url);
+            const data = response.records;
 
-            if (!Array.isArray(records) || records.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 toast.error("No data found, Change filter Selection!");
                 return;
             }
@@ -494,12 +494,12 @@ const HRReportsHourly = () => {
             params.append("employeeNames", name);
         });
 
-        const url = `https://localhost:7168/api/Reports/early-leave-report-hourly?${params.toString()}`;
+        const url = `Reports/early-leave-report-hourly?${params.toString()}`;
 
 
 
         try {
-            const response = await axios.get(url);
+            const response = await api.get(url);
             const records = response.records;
 
             if (!Array.isArray(records) || records.length === 0) {

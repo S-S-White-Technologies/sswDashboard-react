@@ -4,7 +4,7 @@ import Flatpickr from "react-flatpickr";
 import logomain from "../../../src/assets/images/logofinal.png"
 import hrBanner from "../../../src/assets/images/auth-one-bg_old.jpg"
 import axios from "axios";
-import api from "../../../src/config/api.js"
+import api from "../../api"
 import jsPDF from '../../../node_modules/jspdf/dist/jspdf.umd.min.js'
 import { applyPlugin } from 'jspdf-autotable'
 import Select, { components } from "react-select";
@@ -104,7 +104,7 @@ const HRReportsSalaried = () => {
         // if (selectedDepartmentId) {
         //     params.append("departmentIds", selectedDepartmentId);
         // }
-        // const url = `https://localhost:7168/api/Reports/daily-report?${params.toString()}`;
+        // const url = `http://localhost:7168/api/Reports/daily-report?${params.toString()}`;
         const params = new URLSearchParams();
         const extractName = (label) => {
             const match = label.match(/^(.+?)\s*\(\d+\)$/);
@@ -345,7 +345,6 @@ const HRReportsSalaried = () => {
         const [startDate, endDate] = dateRange.map(d =>
             d.toISOString().split("T")[0]
         );
-
         const extractName = (label) => {
             const match = label.match(/^(.+?)\s*\(\d+\)$/);
             return match ? match[1].trim() : label;
@@ -374,14 +373,13 @@ const HRReportsSalaried = () => {
 
         const url = `https://localhost:7168/api/Reports/early-leave-report?${params.toString()}`;
 
-        console.log("Early URL :", url);
 
 
         try {
             const response = await axios.get(url);
-            const records = response.records;
+            const data = response.records;
 
-            if (!Array.isArray(records) || records.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 toast.error("No data found, Change filter Selection!");
                 return;
             }

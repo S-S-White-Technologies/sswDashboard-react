@@ -33,7 +33,7 @@ const UserProfile = () => {
   const [idx, setidx] = useState("1");
 
   const [userName, setUserName] = useState("Admin");
-
+  const [userImage, setUserImage] = useState("/uploads/user-dummy-img.jpg");
   const { user, success, error } = useSelector(state => ({
     user: state.Profile.user,
     success: state.Profile.success,
@@ -48,12 +48,14 @@ const UserProfile = () => {
   useEffect(() => {
     const authData = sessionStorage.getItem("authUser");
     if (authData) {
-      const parsed = JSON.parse(authData);
 
+      const parsed = JSON.parse(authData);
+      const imagePath = parsed?.imagePath;
       const name = parsed?.name || "Guest User";  // ✅ not parsed.data.name
       const email = parsed?.email || "emailnotfound@gmail.com";
       const uid = parsed?.uid || "1";
-
+      //setUserImage(`http://172.16.50.19:7168${imagePath}`);
+      setUserImage(`https://localhost:7168${imagePath}`);
       setUserDetails({ name, email, uid });
       setUserName(name);
       setemail(email);
@@ -113,7 +115,7 @@ const UserProfile = () => {
                   <div className="d-flex">
                     <div className="mx-3">
                       <img
-                        src={avatar}
+                        src={userImage}
                         alt=""
                         className="avatar-md rounded-circle img-thumbnail"
                       />

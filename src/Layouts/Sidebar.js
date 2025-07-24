@@ -80,12 +80,20 @@ const Sidebar = ({ layoutType }) => {
         ) : (
           <React.Fragment>
             <SimpleBar id="scrollbar" className="h-100">
-              <Container fluid>
+              <div
+                className="sidebar-content"
+                style={{
+                  paddingBottom: "50px",
+                  paddingTop: "5px",
+                  paddingLeft: "2px",
+                  paddingRight: "2px",
+                }}
+              >
                 <div id="two-column-menu"></div>
                 <ul className="navbar-nav" id="navbar-nav">
                   <VerticalLayout layoutType={layoutType} />
                 </ul>
-              </Container>
+              </div>
             </SimpleBar>
             <div className="sidebar-background"></div>
           </React.Fragment>

@@ -1,54 +1,42 @@
 ﻿using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
-using System.Threading.Tasks;
+using sswDashboardAPI.Models;
+using sswDashboardAPI.Services.Interfaces;
 
 namespace sswDashboardAPI.Services
 {
-    public class EmailService
+    public class EmailService : IEmailService
     {
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _config;
 
-        public EmailService(IConfiguration configuration)
+        public EmailService(IConfiguration config)
         {
-            _configuration = configuration;
+            _config = config;
         }
 
-        public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
+        public async Task SendEmailAsync(EmailMessages message)
         {
-            var smtpServer = _configuration["EmailSettings:SmtpServer"];
-            var port = int.Parse(_configuration["EmailSettings:Port"]);
-            var senderEmail = _configuration["EmailSettings:SenderEmail"];
-            var username = _configuration["EmailSettings:Username"]; 
-            var password = _configuration["EmailSettings:Password"];
-
-            using (var client = new SmtpClient(smtpServer, port))
+            var client = new SmtpClient(_config["EmailSettings:SmtpServer"])
             {
-                client.Credentials = new NetworkCredential(username, password);
-                client.EnableSsl = true;
-                client.UseDefaultCredentials = false;  
+                Port = int.Parse(_config["EmailSettings:Port"]),
+                Credentials = new NetworkCredential(
+                    _config["EmailSettings:Username"],
+                    _config["EmailSettings:Password"]),
+                EnableSsl = true
+            };
 
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(senderEmail, "SS White Technologies"),
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = true
-                };
+            var mail = new MailMessage
+            {
+                From = new MailAddress(_config["EmailSettings:SenderEmail"]),
+                Subject = message.Subject,
+                Body = message.Body,
+                IsBodyHtml = true
+            };
 
-                mailMessage.To.Add(toEmail);
-
-                try
-                {
-                    await client.SendMailAsync(mailMessage);
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    
-                    return false;
-                }
-            }
+            mail.To.Add(message.To);
+            await client.SendMailAsync(mail);
         }
     }
+
 }

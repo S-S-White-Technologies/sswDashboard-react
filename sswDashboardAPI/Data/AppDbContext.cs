@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using sswDashboardAPI.Data;
+
 using sswDashboardAPI.Model;
-using sswDashboardAPI.Model.Time_and_Attendance;
-using System.Collections.Generic;
 
 namespace sswDashboardAPI.Data
 {
@@ -20,6 +18,7 @@ namespace sswDashboardAPI.Data
         .WithOne(e => e.EmpBasic)
         .HasForeignKey<Employee>(e => e.EmpId);
             base.OnModelCreating(modelBuilder);
+
         }
 
         public DbSet<EmpBasic> EmpBasic { get; set; }
@@ -30,6 +29,11 @@ namespace sswDashboardAPI.Data
 
         public DbSet<TimeClock> TimeClock { get; set; }
         public DbSet<TimeClockFactory> TimeClockFactory { get; set; }
+
+        public DbSet<ExemptedReview> ExemptedReviews { get; set; }
+
+        public DbSet<Notification> Notifications { get; set; }
+
 
     }
 }

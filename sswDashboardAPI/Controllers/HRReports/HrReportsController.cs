@@ -1,29 +1,19 @@
-﻿// EF Core model
+﻿
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using sswDashboardAPI.Data;
 using sswDashboardAPI.Model.HrReports;
 
-
-
-
-
-
-
-// API Controller
 [Route("api/[controller]")]
 [ApiController]
 public class ReportsController : ControllerBase
 {
     private readonly AppDbContext _context;
    
-
     public ReportsController(AppDbContext context)
     {
         _context = context;
     }
-
-
 
 
     [HttpGet("daily-report")]
@@ -37,7 +27,6 @@ public class ReportsController : ControllerBase
         var startOfDay = targetDate.Date;
         var endOfDay = targetDate.Date.AddDays(1).AddTicks(-1);
 
-        // Fetch all active employees
         var allEmpBasics = await _context.EmpBasic
             .Where(e => e.EmpStatus == "A")
             .Select(e => new
@@ -47,7 +36,7 @@ public class ReportsController : ControllerBase
                 DeptId = e.JCDept.ToString()
             }).ToListAsync();
 
-        // Step 1: Filter employee IDs by name and/or department if given
+        
         var filteredEmpIds = allEmpBasics
             .Where(e =>
                 (employeeNames == null || employeeNames.Contains(e.FullName)) &&
@@ -55,12 +44,11 @@ public class ReportsController : ControllerBase
             .Select(e => e.EmpID)
             .ToList();
 
-        // Step 2: Merge empIds from query param + resolved name/department filters
         var finalEmpIds = empIds ?? new List<string>();
         finalEmpIds.AddRange(filteredEmpIds);
         finalEmpIds = finalEmpIds.Distinct().ToList();
 
-        // Step 3: Query TimeClock data with filters
+        
         var query = _context.TimeClock
             .Where(t =>
                 t.ReportDate >= startOfDay &&
@@ -130,7 +118,7 @@ public class ReportsController : ControllerBase
                 };
             }).ToList();
 
-        // Step 4: Handle Absent employees (if no filter was passed)
+        
         var merged = new List<dynamic>();
         if (!empIds?.Any() == true && !employeeNames?.Any() == true && !departmentIds?.Any() == true)
         {
@@ -167,7 +155,7 @@ public class ReportsController : ControllerBase
         var startOfDay = targetDate.Date;
         var endOfDay = targetDate.Date.AddDays(1).AddTicks(-1);
 
-        // Fetch all active employees
+        
         var allEmpBasics = await _context.EmpBasic
             .Where(e => e.EmpStatus == "A")
             .Select(e => new
@@ -177,7 +165,7 @@ public class ReportsController : ControllerBase
                 DeptId = e.JCDept.ToString()
             }).ToListAsync();
 
-        // Step 1: Filter employee IDs by name and/or department if given
+       
         var filteredEmpIds = allEmpBasics
             .Where(e =>
                 (employeeNames == null || employeeNames.Contains(e.FullName)) &&
@@ -185,12 +173,12 @@ public class ReportsController : ControllerBase
             .Select(e => e.EmpID)
             .ToList();
 
-        // Step 2: Merge empIds from query param + resolved name/department filters
+        
         var finalEmpIds = empIds ?? new List<string>();
         finalEmpIds.AddRange(filteredEmpIds);
         finalEmpIds = finalEmpIds.Distinct().ToList();
 
-        // Step 3: Query TimeClock data with filters
+       
         var query = _context.TimeClockFactory
             .Where(t =>
                 t.ReportDate >= startOfDay &&
@@ -260,7 +248,7 @@ public class ReportsController : ControllerBase
                 };
             }).ToList();
 
-        // Step 4: Handle Absent employees (if no filter was passed)
+        
         var merged = new List<dynamic>();
         if (!empIds?.Any() == true && !employeeNames?.Any() == true && !departmentIds?.Any() == true)
         {
@@ -303,7 +291,7 @@ public class ReportsController : ControllerBase
                 (t.Approval == null || !t.Approval.Contains("PENDING")))
             .ToListAsync();
 
-        // Filter for early out time
+       
         var filtered = rawData
             .Where(t => t.ClockTime.TimeOfDay < new TimeSpan(16, 30, 0))
             .ToList();
@@ -391,7 +379,7 @@ public class ReportsController : ControllerBase
                 (t.Approval == null || !t.Approval.Contains("PENDING")))
             .ToListAsync();
 
-        // Filter for early out time
+       
         var filtered = rawData
             .Where(t => t.ClockTime.TimeOfDay < new TimeSpan(16, 30, 0))
             .ToList();

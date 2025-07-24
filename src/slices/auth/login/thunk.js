@@ -5,7 +5,7 @@ import {
   postJwtLogin,
   postSocialLogin,
 } from "../../../helpers/fakebackend_helper";
-import api from "../../../config/api";
+import api from "../../../api";
 import { loginSuccess, logoutUserSuccess, apiError, reset_login_flag } from './reducer';
 
 // export const loginUser = (user, history) => async (dispatch) => {
@@ -42,18 +42,22 @@ import { loginSuccess, logoutUserSuccess, apiError, reset_login_flag } from './r
 export const loginUser = (user, history) => async (dispatch) => {
   try {
     const response = await api.post("Auth/login", user);
-
+    console.log("Whats the Data: ", response.data.needsPasswordReset);
 
     if (response.status === 200) {
       // store auth user in session
       sessionStorage.setItem("authUser", JSON.stringify(response.data));
 
-      console.log("Whats the Data: ", response);
+      console.log("Whats the Data: ", response.data.needsPasswordReset);
 
       // dispatch to redux
       dispatch(loginSuccess(response.data));
-
-      // redirect to dashboard
+      // if (response.data.needsPasswordReset === true) {
+      //   history("/forgot-password");
+      // } else {
+      //   // redirect to dashboard
+      //   history("/dashboard");
+      // }
       history("/dashboard");
     } else {
       dispatch(apiError("Invalid credentials."));

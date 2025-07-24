@@ -3,6 +3,7 @@
 
 using Intuit.Ipp.Data;
 using Intuit.Ipp.OAuth2PlatformClient;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -53,12 +54,12 @@ namespace sswDashboardAPI.Services
         {
             var lastActionResponse = new LastActionResponse();
 
-            if (!short.TryParse(empId, out short empIdShort))
-                throw new ArgumentException("Invalid EmpId");
+            //if (!short.TryParse(empId, out short empIdShort))
+            //    throw new ArgumentException("Invalid EmpId");
 
             var lastAction = await _context.TimeClock
                 .AsNoTracking()
-                .Where(t => t.EmpId == empIdShort.ToString() &&
+                .Where(t => t.EmpId == empId.ToString() &&
                             (t.Approval == null || !t.Approval.Contains("PENDING")) &&
                             t.ClockType == "Normal")
                 .OrderByDescending(t => t.ClockTime)
@@ -205,8 +206,33 @@ namespace sswDashboardAPI.Services
 
 
 
-            await _context.EmpBasic.AddAsync(empBasic);
-            return await _context.SaveChangesAsync() > 0;
+            try
+            {
+                await _context.EmpBasic.AddAsync(empBasic);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // Log entire exception and any inner exceptions
+                Console.WriteLine("❌ DbUpdateException caught:");
+                Console.WriteLine(dbEx.Message);
+
+                if (dbEx.InnerException != null)
+                {
+                    Console.WriteLine("Inner Exception:");
+                    Console.WriteLine(dbEx.InnerException.Message);
+
+                    if (dbEx.InnerException.InnerException != null)
+                    {
+                        Console.WriteLine("Deepest Inner Exception:");
+                        Console.WriteLine(dbEx.InnerException.InnerException.Message);
+                    }
+                }
+
+                // Optional: log stack trace or serialize full exception
+                Console.WriteLine(dbEx.StackTrace);
+                return false;
+            }
         }
 
 
@@ -239,7 +265,7 @@ namespace sswDashboardAPI.Services
                     Shift = employee.Shift,
                     Name = name.Trim(),
                     FirstName = employee.FirstName,
-                    MiddleInitial = employee.MI,
+                    MiddleInitial = !string.IsNullOrWhiteSpace(employee.MI) ? employee.MI : "",
                     LastName = employee.LastName,
                     Address = employee.Street1,
                     Address2 = employee.Street2,
@@ -259,12 +285,6 @@ namespace sswDashboardAPI.Services
 
                 };
 
-
-
-
-
-
-             
 
                 string json1 = JsonConvert.SerializeObject(body, Formatting.Indented);
 
@@ -288,26 +308,32 @@ namespace sswDashboardAPI.Services
             }
         }
 
-
-
-
         public async Task<bool> InsertEmployeeToEmployeesTable(EmployeeDto emp)
         {
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(emp.Password);
+          
 
             var employees = new Employee
             {
 
 
-                EmpId = emp.EmpID.ToString(),
-                EmailAddress = emp.Email ?? string.Empty,
+                EmpId = emp.EmpID.ToString() ?? "0000",
+                EmailAddress = emp.Email ?? "chintan@sswhite.net",
                 Title = emp.Title ?? string.Empty,
-                HireDate = emp.HireDate,
-                ProjectsPassword = passwordHash
+                HireDate = NormalizeDate(emp.HireDate) ?? DateTime.Now,
+                dob = NormalizeDate(emp.dob) ?? DateTime.Now,
+                ImagePath = emp.ImagePath ?? "/uploads/logofinal.png"
             };
 
-            await _context.Employees.AddAsync(employees);
-            return await _context.SaveChangesAsync() > 0;
+            try
+            {
+                await _context.Employees.AddAsync(employees);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR INSERTING EMPLOYEE: {ex.Message}"); // Or use logger
+                return false;
+            }
         }
 
         public List<EmployeesDto> GetEmployees(string employeeType, bool isUSA)
@@ -537,6 +563,97 @@ namespace sswDashboardAPI.Services
             throw new NotImplementedException();
         }
 
+
+        /// <summary>
+        /// /Update Employee Service
+
+      
+       
+        public async Task<bool> UpdateEmployeeDetailsAsync(EmployeeDto emp)
+        {
+            try
+            {
+                // Update Employees table
+                var employee = await _context.Employees.FirstOrDefaultAsync(e => e.EmpId == emp.EmpID.ToString());
+                if (employee != null)
+                {
+                    employee.EmpId = emp.EmpID.ToString();
+                    employee.EmailAddress = emp.Email ?? "chintan@sswhite.net";
+                    employee.Title = emp.Title ?? string.Empty;
+                    employee.dob = NormalizeDate(emp.dob) ?? DateTime.Today;
+                    employee.HireDate = NormalizeDate(emp.HireDate) ?? DateTime.Today;
+                    employee.ProjectsPassword = BCrypt.Net.BCrypt.HashPassword(emp.Password);
+                    
+                }
+                
+                // Update EmpBasic table
+                var empBasic = await _context.EmpBasic.FirstOrDefaultAsync(e => e.EmpID == emp.EmpID.ToString());
+                if (empBasic != null)
+                {
+                    empBasic.EmpID = emp.EmpID.ToString();
+                    empBasic.Name = string.IsNullOrWhiteSpace(emp.MI)
+                        ? $"{emp.FirstName} {emp.LastName}".Trim().SubstringSafe(0, 50)
+                        : $"{emp.FirstName} {emp.MI} {emp.LastName}".Trim().SubstringSafe(0, 50);
+                    empBasic.FirstName = emp.FirstName?.SubstringSafe(0, 30);
+                    empBasic.LastName = emp.LastName?.SubstringSafe(0, 30);
+                    empBasic.Address = emp.Street1?.SubstringSafe(0, 50);
+                    empBasic.Address2 = emp.Street2?.SubstringSafe(0, 50);
+                    empBasic.City = emp.City?.SubstringSafe(0, 50);
+                    empBasic.State = emp.State?.SubstringSafe(0, 2);
+                    empBasic.ZIP = emp.Zip?.SubstringSafe(0, 10);
+                    empBasic.Country = emp.Country?.SubstringSafe(0, 30);
+                    empBasic.Phone = emp.Phone?.SubstringSafe(0, 20);
+                    empBasic.EmgContact = emp.EmgContact?.SubstringSafe(0, 50);
+                    empBasic.SupervisorID = emp.Supervisor;
+                    empBasic.EmpStatus = emp.EmpStatus?.SubstringSafe(0, 1);
+                    empBasic.ExpenseCode = emp.ExpenseCode?.SubstringSafe(0, 10);
+                    empBasic.JCDept = emp.Dept?.SubstringSafe(0, 10);
+                    empBasic.RoleId = emp.RoleId;
+                    empBasic.Shift = emp.Shift;
+                    empBasic.Company = "SSW";
+                    empBasic.dcduserid = $"{emp.FirstName}.{emp.LastName}".SubstringSafe(0, 60);
+                    empBasic.cnvempid = "NULL";
+                }
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
+
+        /// </summary>
+
+        /// Inactive User
+
+
+        public async Task<bool> InactiveEmployeeDetailsAsync(EmpIdDto dto)
+        {
+            try
+            {
+                var empBasic = await _context.EmpBasic
+                    .FirstOrDefaultAsync(e => e.EmpID == dto.EmpID.ToString());
+
+                if (empBasic != null)
+                {
+                    empBasic.EmpStatus = "T";
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        /// Inactive User End
+
         public interface IEmployeeService
         {
             List<Employee> GetEmployees(string employeeType, bool isUSA);
@@ -573,6 +690,10 @@ namespace sswDashboardAPI.Services
             public string Status { get; set; }
             public string Title { get; set; }
             public string Supervisor { get; set; }
+        }
+        private DateTime? NormalizeDate(DateTime date)
+        {
+            return (date < new DateTime(1753, 1, 1)) ? null : date;
         }
     }
 

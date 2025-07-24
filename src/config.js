@@ -8,8 +8,8 @@ module.exports = {
     APP_ID: "",
   },
   api: {
-    API_URL: "https://localhost:7168/api/",
+    API_URL: "http://172.16.50.19:7168/api/",
 
-    // http://localhost:4398/API/
+    // http://localhost:7168/api/
   }
 };

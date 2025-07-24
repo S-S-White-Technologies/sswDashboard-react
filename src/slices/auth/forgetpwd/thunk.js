@@ -1,5 +1,5 @@
 import { userForgetPasswordSuccess, userForgetPasswordError } from "./reducer"
-import api from "../../../config/api";
+import api from "../../../api";
 //Include Both Helper File with needed methods
 import { getFirebaseBackend } from "../../../helpers/firebase_helper";
 

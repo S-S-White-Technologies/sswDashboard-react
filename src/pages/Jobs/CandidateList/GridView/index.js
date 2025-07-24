@@ -8,6 +8,7 @@ import axios from "axios";
 import { DefaultTable, PaginationTable, SearchTable, SortingTable, LoadingStateTable, HiddenColumns } from '../../../../pages/Tables/ReactTables/ReactTable'
 import { Link } from 'react-router-dom';
 import classnames from "classnames";
+import api from "../../../../api"
 
 const CandidateGrid = () => {
   const [pillsTab, setpillsTab] = useState("1");  // Active tab for salaried or hourly
@@ -23,7 +24,7 @@ const CandidateGrid = () => {
 
   useEffect(() => {
     if (pillsTab === "1") {
-      axios.get("https://localhost:7168/api/WhosInBuilding/salaried")
+      axios.get("http://172.16.50.19:7168/api/WhosInBuilding/salaried")
         .then((response) => {
           setSalariedData(response);
           console.log("Salaried", response);
@@ -33,7 +34,7 @@ const CandidateGrid = () => {
 
   useEffect(() => {
     if (pillsTab === "2") {
-      axios.get("https://localhost:7168/api/WhosInBuilding/hourly")
+      axios.get("http://172.16.50.19:7168/api/WhosInBuilding/hourly")
         .then((response) => {
           setHourlyData(response);
           console.log("Hourly", response);

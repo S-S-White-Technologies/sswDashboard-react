@@ -12,7 +12,7 @@ import DashboardNFT from "../pages/DashboardNFT";
 import DashboardJob from "../pages/DashboardJob/";
 
 
-//Accounting //Eng. //HR //IT // Planning // Production // Quality // Sales // Shipping //Shukla Medical // Supervisor // KPIs //DI //MAFIA
+//Accounting //Eng. //HR //IT // Planning // Production // Quality // Sales // Shipping //Shukla Medical // Supervisor // KPIs //DI //MAFIA //DisplayBoards
 
 import Accounting from "../pages/Accounting/index"
 import Engineering from "../pages/Engineering/index"
@@ -26,12 +26,15 @@ import Shipping from "../pages/Shipping/index"
 import Shukla from "../pages/Shukla/index"
 import Supervisor from "../pages/Supervisor/index"
 import KPI from "../pages/KPI/index"
+import UnifiedReviewPage from "../pages/HumanResource/UnifiedReviewPage.js"
+
 
 import ManageDepartments from "../pages/HumanResource/ManageDepartments.js"
 import ManageRoles from "../pages/HumanResource/ManageRoles.js"
 
 import DI from "../pages/DI/index"
 import Mafia from "../pages/Mafia/index"
+import DisplayBoards from "../pages/DisplayBoards/index"
 
 
 
@@ -266,6 +269,7 @@ import UserProfile from "../pages/Authentication/user-profile";
 import FileManager from "../pages/FileManager";
 import ToDoList from "../pages/ToDo";
 import IT from "../pages/IT";
+import { components } from "react-select";
 
 const authProtectedRoutes = [
   { path: "/dashboard-analytics", component: <DashboardAnalytics /> },
@@ -309,20 +313,14 @@ const authProtectedRoutes = [
   { path: "/shukla", component: <Shukla /> }, { path: "/shipping", component: <Shipping /> },
   { path: "/sales", component: <Sales /> }, { path: "/supervisor", component: <Supervisor /> },
   { path: "/kpi", component: <KPI /> },
-  { path: "/hr/departments", component: <ManageDepartments />},
-  { path: "/hr/roles", component: <ManageRoles />},
+  { path: "/hr/departments", component: <ManageDepartments /> },
+  { path: "/hr/roles", component: <ManageRoles /> },
 
-
-  //DI and //Mafia Routes
-
-  { path: "/di", component: <DI /> }, { path: "/mafia", component: <Mafia /> },
-
-  //DI and //Mafia Routes
+  //Display board
 
   { path: "/di", component: <DI /> }, { path: "/mafia", component: <Mafia /> },
-
-
-
+  { path: "/display-boards", component: <DisplayBoards /> },
+  { path: "/review/exempted/:reviewId", component: < UnifiedReviewPage /> },
 
   //Chat
   { path: "/apps-chat", component: <Chat /> },

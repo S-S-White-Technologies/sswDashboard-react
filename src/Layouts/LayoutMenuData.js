@@ -922,6 +922,13 @@ const Navdata = () => {
             link: "/mafia",
 
         },
+        {
+            id: "displayboards",
+            label: "Display Board",
+            icon: "ri-clipboard-fill",
+            link: "/display-boards",
+
+        },
 
     ];
     return <React.Fragment>{menuItems}</React.Fragment>;

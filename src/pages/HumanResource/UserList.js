@@ -8,12 +8,13 @@ import axios from "axios";
 import { SearchTableEdit } from '../../pages/Tables/ReactTables/ReactTable'
 import { Link } from 'react-router-dom';
 import classnames from "classnames";
+import api from "../../api"
 
 const UserList = () => {
 
     const [salariedData, setSalariedData] = useState([]);  // Salaried employees data
     useEffect(() => {
-        axios.get("https://localhost:7168/api/WhosInBuilding/userList")
+        axios.get("http://172.16.50.19:7168/api/WhosInBuilding/userList")
             .then((response) => {
                 setSalariedData(response); // ✅ access response.data
                 console.log("Salaried", response);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Col, Container, Row } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import BreadCrumb from '../../Components/Common/BreadCrumb';
-import api from '../../config/api';
+import api from '../../api';
 import { Alert, Card, CardBody, Modal, ModalHeader, ModalBody, ModalFooter, Button, Toast, ToastBody, Table, Spinner } from 'reactstrap';
 import FeatherIcon from "feather-icons-react";
 import DigitalClock from '../../Components/DigitalClock';
@@ -12,6 +12,16 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ComingSoon from '../Pages/ComingSoon/ComingSoon';
 import MyPortfolio from './MyPortfolio';
+import {
+    FiLogIn,
+    FiLogOut,
+    FiCoffee,
+    FiUserCheck,
+    FiBriefcase,
+    FiActivity,
+    FiUserX,
+    FiClock,
+} from "react-icons/fi";
 
 const Timer = ({ clockInTime }) => {
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -44,32 +54,6 @@ const Timer = ({ clockInTime }) => {
         </div>
     );
 };
-
-// const Timer1 = ({ clockInTime, clockOutTime }) => {
-//     const [totalTime, setTotalTime] = useState(0); 
-
-//     useEffect(() => {
-//         if (clockInTime && clockOutTime) {
-//             const clockInDate = new Date(clockInTime);
-//             const clockOutDate = new Date(clockOutTime);
-//             const timeDifference = (clockOutDate - clockInDate) / 1000; 
-//             setTotalTime(timeDifference);
-//         }
-//     }, [clockInTime, clockOutTime]);
-
-//     const hours = Math.floor(totalTime / 3600);
-//     const minutes = Math.floor((totalTime % 3600) / 60);
-//     const seconds = totalTime % 60;
-
-//     return (
-//         <div className="text-center">
-//             <h5>Total Working Hours</h5>
-//             <p>{String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:
-//                 {String(seconds)}</p>
-//         </div>
-//     );
-// };
-
 const DashboardCrypto = () => {
     document.title = "SSW Technologies Dashboard";
     const [modal_togFirst, setmodal_togFirst] = useState('');
@@ -776,6 +760,7 @@ const DashboardCrypto = () => {
 
     return (
         <React.Fragment>
+            <ToastContainer />
             <div className="page-content">
                 <Container fluid>
 
@@ -969,44 +954,37 @@ const DashboardCrypto = () => {
                             </div>
                         </div>
                         <Col className="order-xxl-0">
-                            <Row>
-                                <Col xl={4}>
-                                    <Card>
-                                        <CardBody className="p-0">
-                                            <Alert color='secondary' className="border-0 bg-soft-secondary rounded-top rounded-0 m-0 d-flex align-items-center">
-                                                <FeatherIcon
-                                                    icon="clock"
-                                                    className="text-secondary me-2 icon-sm"
-                                                />
-                                                <div className="flex-grow-1 text-truncate">
-                                                    In / Out
-                                                </div>
-                                            </Alert>
-
-                                            <Row className="align-items-end">
-                                                <Col sm={6}>
-                                                    <div className="p-3">
-                                                        <div className="mt-3">
-                                                            <Button onClick={handleClockIn} className="btn btn-soft-secondary">
-                                                                In for the Day
-                                                            </Button>
-
-                                                        </div>
-                                                    </div>
-                                                </Col>
-                                                <Col sm={6}>
-                                                    <div className="p-3">
-                                                        <div className="mt-3" >
-                                                            <Button onClick={handleClockOut} className="btn btn-soft-secondary">Out for the Day</Button>
-                                                        </div>
-                                                    </div>
-                                                </Col>
-                                            </Row>
+                            <Row className="gy-4">
+                                <Col md={3}>
+                                    <Card className="tile-card border-0 shadow-sm">
+                                        <CardBody className="text-center">
+                                            <FiLogIn size={28} className="text-primary mb-2" />
+                                            <h6 className="mb-1">In / Out</h6>
+                                            <Button onClick={handleClockIn} className='btn btn-soft-primary' block size="sm">
+                                                In for the Day
+                                            </Button>
+                                            <Button onClick={handleClockOut} className='btn btn-soft-danger mt-2' block size="sm" >
+                                                Out for the Day
+                                            </Button>
+                                        </CardBody>
+                                    </Card>
+                                </Col>
+                                <Col md={3}>
+                                    <Card className="tile-card border-0 shadow-sm bg-light-purple">
+                                        <CardBody className="text-center">
+                                            <FiCoffee size={28} className="text-info mb-2" />
+                                            <h6 className="mb-1">Lunch</h6>
+                                            <Button onClick={handleClockOutLunch} className='btn btn-soft-info' block size="sm">
+                                                Out for Lunch
+                                            </Button>
+                                            <Button onClick={handleClockInLunch} block size="sm" className="btn btn-soft-success mt-2">
+                                                Back from Lunch
+                                            </Button>
                                         </CardBody>
                                     </Card>
                                 </Col>
 
-
+                                {/* 
                                 <Col xl={4}>
                                     <Card>
                                         <CardBody className="p-0">
@@ -1039,76 +1017,37 @@ const DashboardCrypto = () => {
                                             </Row>
                                         </CardBody>
                                     </Card>
-                                </Col>
-
-                                <Col xl={4}>
-                                    <Card>
-                                        <CardBody className="p-0">
-                                            <Alert color='warning' className="border-0 bg-soft-warning rounded-top rounded-0 m-0 d-flex align-items-center">
-                                                <FeatherIcon
-                                                    icon="briefcase"
-                                                    className="text-soft-warning me-2 icon-sm"
-                                                />
-                                                <div className="flex-grow-1 text-truncate">
-                                                    Business
-                                                </div>
-                                            </Alert>
-
-                                            <Row className="align-items-end">
-                                                <Col sm={6}>
-                                                    <div className="p-3">
-                                                        <div className="mt-3">
-                                                            <Button onClick={handleClockOutBusiness} className="btn btn-soft-warning">Out for Business</Button>
-                                                        </div>
-                                                    </div>
-                                                </Col>
-                                                <Col sm={6}>
-                                                    <div className="p-3">
-                                                        <div className="mt-3" >
-                                                            <Button onClick={handleClockInBusiness} className="btn btn-soft-warning">Back from Business</Button>
-
-                                                        </div>
-                                                    </div>
-                                                </Col>
-                                            </Row>
+                                </Col> */}
+                                <Col md={3}>
+                                    <Card className="tile-card border-0 shadow-sm bg-light-warning">
+                                        <CardBody className="text-center">
+                                            <FiBriefcase size={28} className="text-warning mb-2" />
+                                            <h6 className="mb-1">Business</h6>
+                                            <Button onClick={handleClockOutBusiness} className='btn btn-soft-warning' block size="sm">
+                                                Out for Business
+                                            </Button>
+                                            <Button onClick={handleClockInBusiness} block size="sm" className="btn btn-soft-success mt-2">
+                                                Back from Business
+                                            </Button>
                                         </CardBody>
                                     </Card>
                                 </Col>
 
-                                <Col xl={4}>
-                                    <Card>
-                                        <CardBody className="p-0">
-                                            <Alert color='success' className="border-0 bg-soft-success rounded-top rounded-0 m-0 d-flex align-items-center">
-                                                <FeatherIcon
-                                                    icon="briefcase"
-                                                    className="text-soft-success me-2 icon-sm"
-                                                />
-
-                                                <div className="flex-grow-1 text-truncate">
-                                                    Personal Business
-                                                </div>
-                                            </Alert>
-
-                                            <Row className="align-items-end">
-                                                <Col sm={6}>
-                                                    <div className="p-3">
-                                                        <div className="mt-3">
-                                                            <Button onClick={handleClockOutPersonal} className="btn btn-soft-success">Out for Personal Business</Button>
-                                                        </div>
-                                                    </div>
-                                                </Col>
-                                                <Col sm={6}>
-                                                    <div className="p-3">
-                                                        <div className="mt-3" >
-                                                            <Button onClick={handleClockInPersonal} className="btn btn-soft-success">Back from Personal Business</Button>
-                                                        </div>
-                                                    </div>
-                                                </Col>
-                                            </Row>
+                                <Col md={3}>
+                                    <Card className="tile-card border-0 shadow-sm bg-light-success">
+                                        <CardBody className="text-center">
+                                            <FiUserCheck size={28} className="text-success mb-2" />
+                                            <h6 className="mb-1">Personal Business</h6>
+                                            <Button onClick={handleClockOutPersonal} className="btn btn-soft-success" block size="sm">
+                                                Out for Personal
+                                            </Button>
+                                            <Button onClick={handleClockInPersonal} block size="sm" className="btn btn-soft-primary mt-2">
+                                                Back from Personal
+                                            </Button>
                                         </CardBody>
                                     </Card>
                                 </Col>
-                                <Col xl={8}>
+                                {/* <Col xl={8}>
                                     <Card>
                                         <CardBody className="p-0">
                                             <Alert color='danger' className="border-0 bg-soft-danger rounded-top rounded-0 m-0 d-flex align-items-center">
@@ -1147,7 +1086,24 @@ const DashboardCrypto = () => {
                                             </Row>
                                         </CardBody>
                                     </Card>
+                                </Col> */}
+
+                                <Col md={12}>
+                                    <Card className="tile-card border-0 shadow-sm bg-light-danger">
+                                        <CardBody className="d-flex flex-wrap justify-content-between gap-2">
+                                            <Button onClick={handleMissingPunch} className="btn btn-soft-danger" outline>
+                                                <FiUserX className="me-1" /> My Missing Punches
+                                            </Button>
+                                            <Button onClick={handlePunchRecords} className="btn btn-soft-danger" outline>
+                                                <FiClock className="me-1" /> My Time Punch Records
+                                            </Button>
+                                            <Button onClick={tog_xlarge} className="btn btn-soft-danger" outline>
+                                                <FiActivity className="me-1" /> Who's In The Building?
+                                            </Button>
+                                        </CardBody>
+                                    </Card>
                                 </Col>
+
                             </Row>
                             <Row>
 

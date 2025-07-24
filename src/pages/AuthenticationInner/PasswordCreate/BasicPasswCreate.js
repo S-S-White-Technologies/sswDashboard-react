@@ -4,7 +4,7 @@ import { Button, Card, CardBody, Col, Container, Row, Form, Input, Label, FormFe
 import ParticlesAuth from '../ParticlesAuth';
 import logoLight from "../../../assets/images/logofinal.png";
 import { useLocation } from "react-router-dom";
-import api from "../../../config/api";
+import api from "../../../api";
 
 //formik
 import { useFormik } from 'formik';

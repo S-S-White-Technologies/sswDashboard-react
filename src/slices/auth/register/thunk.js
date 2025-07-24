@@ -19,7 +19,7 @@ const fireBaseBackend = getFirebaseBackend();
 // Is user register successfull then direct plot user in redux.
 export const registerUser = (user) => async (dispatch) => {
   try {
-    const response = await axios.post("https://localhost:7168/api/registration/add-employee", user);
+    const response = await api.post("registration/add-employee", user);
 
     if (response.status === 200 || response.status === 201) {
       console.log("Register Response:", response.status);

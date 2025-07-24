@@ -2,14 +2,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import TableContainer from "../../../Components/Common/TableContainerReactTable";
 import TableContainerUser from "../../../Components/Common/TableContainerReactTableUser";
 import { Link } from 'react-router-dom';
-import api from "../../../config/api"
+import api from "../../../api"
 import FeatherIcon from "feather-icons-react";
 import { Alert, Card, CardBody, Modal, ModalHeader, Container, ModalBody, ModalFooter, Button, Toast, ToastBody, Table, Spinner } from 'reactstrap';
 import { CardHeader, Col, Form, Input, Label, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
 import classnames from "classnames";
 import logoLight from "../../../assets/images/logofinal.png";
 import progileBg from '../../../assets/images/profile-bg.jpg';
-
+import { toast } from "react-hot-toast";
+import Flatpickr from "react-flatpickr";
 const DefaultTable = () => {
   const defaultTable =
     [
@@ -274,7 +275,7 @@ const SearchTableEdit = ({ data }) => {
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const res = await api.get("registration/departments");
+        const res = await axios.get("http://172.16.50.19:7168/api/registration/departments");
         setDepartments(res.data);
       } catch (err) {
         console.error("Failed to fetch departments:", err);
@@ -290,7 +291,7 @@ const SearchTableEdit = ({ data }) => {
     const fetchSupervisor = async () => {
       if (viewEmployee.supervisor) {
         try {
-          const res = await api.get(`registration/supervisor-name/${viewEmployee.supervisor}`);
+          const res = await axios.get(`http://172.16.50.19:7168/api/registration/supervisor-name/${viewEmployee.supervisor}`);
           setSupervisorName(res.data.name);
         } catch (err) {
           console.error("Failed to fetch supervisor name:", err);
@@ -306,6 +307,7 @@ const SearchTableEdit = ({ data }) => {
 
   const [searchTable, setSearchTable] = useState(data);
   const [modal_togView, setmodal_togView] = useState('');
+  const [empID, setEmpID] = useState(null);
   const [modal_togFirst, setmodal_togFirst] = useState('');
   const [modal_togSecond, setmodal_togSecond] = useState('');
   const [modal_togDelete, setmodal_togDelete] = useState('');
@@ -339,9 +341,20 @@ const SearchTableEdit = ({ data }) => {
     setmodal_togDeleteSecond(!modal_togDeleteSecond)
   }
 
+  const getImagePath = () => {
+    const imagePath = (editEmployee?.imagePath || viewEmployee?.imagePath || "").trim();
+
+    if (imagePath) {
+      return `http://172.16.50.19:7168${imagePath}`;
+    }
+
+    return "http://172.16.50.19:7168/uploads/user-dummy-img.jpg";
+  };
+
   const handleView = async (empId) => {
     try {
       const response = await api.get(`registration/get-employee/${empId}`);
+
       if (response.status === 200) {
         setViewEmployee(response.data);
         tog_togView()
@@ -357,8 +370,10 @@ const SearchTableEdit = ({ data }) => {
       const response = await api.get(`registration/get-employee/${empId}`);
       if (response.status === 200) {
         setEditEmployee(response.data);
+        setFormData({ ...response.data });
+        setEmpID(empId);
         setIsEditMode(true);
-        tog_togView()
+        tog_togView();
       }
     } catch (err) {
       console.error("Failed to load employee:", err);
@@ -375,7 +390,99 @@ const SearchTableEdit = ({ data }) => {
   };
 
 
+  //Update Employee
 
+  const [formData, setFormData] = useState({
+    EmpID: 0,
+
+    FirstName: "",
+    MI: "",
+    LastName: "",
+    Street1: "",
+    Street2: "",
+    City: "",
+    State: "",
+    Zip: "",
+    Country: "",
+    Phone: "",
+    dob: "",
+    EmgContact: "",
+    EpoLimit: 0,
+    HireDate: "",
+    Grade: 0,
+    Type: "",
+    Rate: 0.0,
+    EmpStatus: "",
+    ExpenseCode: "",
+    Shift: 1,
+    Supervisor: "",
+    Dept: "",
+    Extension: "",
+    Email: "",
+    WindowsID: "",
+    Title: "",
+    CompanyCell: "",
+    Gender: "",
+    password: "",
+    FtoOffset: 0,
+    RoleId: 0,
+  });
+
+
+
+  const handleUpdateEmployee = async () => {
+    try {
+      const payload = {
+        ...formData,
+
+      };
+      console.log("Submitting payload: ", JSON.stringify(payload, null, 2));
+      const response = await api.put(
+        `registration/update-employee`,
+        payload
+      );
+
+      if (response.status === 200) {
+        toast.success("Employee details updated successfully!");
+        tog_togSecond();
+        tog_togFirst(false);
+      } else {
+        toast.error("Failed to update employee.");
+      }
+    } catch (error) {
+      console.error("Update error:", error);
+      toast.error("An error occurred while updating.");
+    }
+  };
+  //Update Employee
+
+
+  //Inactive Employee
+  const [selectedEmpId, setSelectedEmpId] = useState(null);
+  const handleInactiveEmployee = async () => {
+    try {
+
+
+      const response = await api.put(
+        `registration/set-inactive`, {
+        EmpID: selectedEmpId
+      }
+
+      );
+
+      if (response.status === 200) {
+        toast.success("Employee inactivated successfully!");
+        tog_togDeleteSecond();
+        tog_togDelete(false);
+      } else {
+        toast.error("Failed to inactive employee.");
+      }
+    } catch (error) {
+      console.error("Inactive error:", error);
+      toast.error("An error occurred while Inactivating.");
+    }
+  };
+  //Inactive Employee end
   useEffect(() => {
     setSearchTable(data);  // Update state when data prop changes
   }, [data]);
@@ -448,8 +555,9 @@ const SearchTableEdit = ({ data }) => {
             <Link
               to="#"
               onClick={(e) => {
-                e.preventDefault(); // prevent page jump
-                handleDelete(row.original.empId);
+                e.preventDefault();
+                setSelectedEmpId(row.original.empId);
+                tog_togDelete();
               }}
               className="link-danger"
               title="Inactive"
@@ -465,10 +573,6 @@ const SearchTableEdit = ({ data }) => {
     ],
     []
   );
-
-
-
-
   return (
     <React.Fragment >
       <TableContainerUser
@@ -487,379 +591,513 @@ const SearchTableEdit = ({ data }) => {
       />
 
       <Modal size="xl" isOpen={modal_togView} toggle={tog_togView}>
-        <ModalHeader toggle={tog_togView}>
-
-        </ModalHeader>
-        <ModalBody>
-          <Container fluid>
-            <div className="position-relative mx-n4 mt-n4">
-              <div className="profile-wid-bg profile-setting-img">
-                <img src={progileBg} className="profile-wid-img" alt="" />
-                <div className="overlay-content">
-                  <div className="text-end p-3">
-                    <div className="p-0 ms-auto rounded-circle profile-photo-edit">
-                      <Input id="profile-foreground-img-file-input" type="file"
-                        className="profile-foreground-img-file-input" />
+        <div className="modal-content border-0 overflow-hidden">
+          <ModalBody className='login-modal p-5'>
+            <h5 className="text-white fs-20"></h5>
+            <p className="text-white-50 mb-4"><Link to="/#" className="text-white"></Link></p>
+            <div className="vstack gap-2 justify-content-center">
+              {/* <button className="btn btn-light"><i className="ri-google-fill align-bottom text-danger"></i> Google</button>
+              <button className="btn btn-info"><i className="ri-facebook-fill align-bottom"></i> Facebook</button> */}
+            </div>
+          </ModalBody>
+          <ModalBody>
+            <Container fluid>
+              {/* <div className="position-relative mx-n4 mt-n4">
+                <div className="profile-wid-bg profile-setting-img">
+                  <img src={progileBg} className="profile-wid-img" alt="" />
+                  <div className="overlay-content">
+                    <div className="text-end p-3">
+                      <div className="p-0 ms-auto rounded-circle profile-photo-edit">
+                        <Input id="profile-foreground-img-file-input" type="file"
+                          className="profile-foreground-img-file-input" />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <Row>
-              <Col xxl={3}>
-                <Card className="mt-n5">
-                  <CardBody className="p-4">
-                    <div className="card ribbon-box border shadow-none mb-lg-0">
-                      <div className="card-body text-center">
-                        <div className="ribbon-two ribbon-two-primary">
+              </div> */}
+              <Row>
+                <Col xxl={3}>
+                  <Card className="mt-n5">
+                    <CardBody className="p-4">
+                      <div className="card ribbon-box border shadow-none mb-lg-0">
+                        <div className="card-body text-center">
+                          <div className="ribbon-two ribbon-two-primary">
+                            {isEditMode ? (
+                              <span>
+                                {editEmployee.empID || "Emp.ID"}
+                              </span>
+                            ) : (
+                              <span>
+                                {viewEmployee.empID || "Emp.ID"}
+                              </span>
+                            )}
+                          </div>
+                          <div className="profile-user position-relative d-inline-block mx-auto  mb-4">
+                            <img src={getImagePath()}
+                              className="rounded-circle avatar-xl img-thumbnail user-profile-image"
+                              alt="user-profile" />
+                          </div>
                           {isEditMode ? (
-                            <span>
-                              {editEmployee.empID || "Emp.ID"}
-                            </span>
+                            <div>
+                              <h5 className="fs-16 mb-1">{editEmployee.firstName} {editEmployee.lastName}</h5>
+                              <p className="text-muted mb-0">{editEmployee.title}</p>
+                            </div>
                           ) : (
-                            <span>
-                              {viewEmployee.empID || "Emp.ID"}
-                            </span>
+                            <div>
+                              <h5 className="fs-16 mb-1">{viewEmployee.firstName} {viewEmployee.lastName}</h5>
+                              <p className="text-muted mb-0">{viewEmployee.title}</p>
+                            </div>
                           )}
-                        </div>
-                        <div className="profile-user position-relative d-inline-block mx-auto  mb-4">
-                          <img src={logoLight}
-                            className="rounded-circle avatar-xl img-thumbnail user-profile-image"
-                            alt="user-profile" />
-                        </div>
-                        {isEditMode ? (
-                          <div>
-                            <h5 className="fs-16 mb-1">{editEmployee.firstName} {editEmployee.lastName}</h5>
-                            <p className="text-muted mb-0">{editEmployee.title}</p>
-                          </div>
-                        ) : (
-                          <div>
-                            <h5 className="fs-16 mb-1">{viewEmployee.firstName} {viewEmployee.lastName}</h5>
-                            <p className="text-muted mb-0">{viewEmployee.title}</p>
-                          </div>
-                        )}
 
+                        </div>
                       </div>
-                    </div>
-                  </CardBody>
-                </Card>
-              </Col>
+                    </CardBody>
+                  </Card>
+                </Col>
 
-              <Col xxl={9}>
-                <Card className="mt-xxl-n5">
-                  <CardHeader>
-                    <Nav className="nav-tabs-custom rounded card-header-tabs border-bottom-0"
-                      role="tablist">
-                      <NavItem>
-                        <NavLink
-                          className={classnames({ active: activeTab === "1" })}
-                          onClick={() => {
-                            tabChange("1");
-                          }}>
-                          <i className="fas fa-home"></i>
-                          Personal Details
-                        </NavLink>
-                      </NavItem>
+                <Col xxl={9}>
+                  <Card className="mt-xxl-n5">
+                    <CardHeader>
+                      <Nav className="nav-tabs-custom rounded card-header-tabs border-bottom-0"
+                        role="tablist">
+                        <NavItem>
+                          <NavLink
+                            className={classnames({ active: activeTab === "1" })}
+                            onClick={() => {
+                              tabChange("1");
+                            }}>
+                            <i className="fas fa-home"></i>
+                            Personal Details
+                          </NavLink>
+                        </NavItem>
 
-                    </Nav>
-                  </CardHeader>
-                  <CardBody className="p-4">
-                    <TabContent activeTab={activeTab}>
-                      <TabPane tabId="1">
-                        <Form>
-                          <Row>
+                      </Nav>
+                    </CardHeader>
+                    <CardBody className="p-4">
+                      <TabContent activeTab={activeTab}>
+                        <TabPane tabId="1">
+                          <Form>
+                            <Row>
 
-                            <Col lg={4}>
-                              <Label>Firstname</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.firstName || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, firstName: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.firstName || "N/A"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
+                              <Col lg={4}>
+                                <Label>Firstname</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.firstName || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, firstName: value });
+                                      setFormData({ ...formData, firstName: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.firstName || "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
 
-                            <Col lg={4}>
-                              <Label>Lastname</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.lastName || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, lastName: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.lastName || "N/A"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
-                            <Col lg={4}>
-                              <Label>Title</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.title || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, title: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.title || "N/A"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
+                              <Col lg={4}>
+                                <Label>Lastname</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.lastName || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, lastName: value });
+                                      setFormData({ ...formData, lastName: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.lastName || "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={4}>
+                                <Label>Title</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.title || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, title: value });
+                                      setFormData({ ...formData, title: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.title || "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
 
-                            <Col lg={6}>
-                              <Label>Street Address 1</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.street1 || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, street1: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.street1 || "N/A"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
+                              <Col lg={6}>
+                                <Label>Street Address 1</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.street1 || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, street1: value });
+                                      setFormData({ ...formData, street1: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.street1 || "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
 
-                            <Col lg={6}>
-                              <Label>Street Address 2</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.street2 || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, street2: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.street2 || "N/A"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
+                              <Col lg={6}>
+                                <Label>Street Address 2</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.street2 || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, street2: value });
+                                      setFormData({ ...formData, street2: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.street2 || "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
 
-                            <Col lg={6}>
-                              <Label>Phone</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.phone || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, phone: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.phone || "N/A"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
-                            <Col lg={6}>
-                              <Label>Email Address</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.email || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, email: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.email || "N/A"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
-                            <Col lg={4}>
-                              <Label>City</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.city || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, city: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.city || "N/A"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
-                            <Col lg={4}>
-                              <Label>State</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.state || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, state: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.state || "N/A"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
-                            <Col lg={4}>
-                              <Label>Country</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.country || "USA"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, country: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.country || "USA"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
-                            <Col lg={4}>
-                              <Label>Employee Status</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.empStatus || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, empStatus: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.empStatus || "N/A"}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
-                            <Col lg={4}>
-                              <Label>Expense Code</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={
-                                    editEmployee.expenseCode === "IDL"
-                                      ? "Salary"
-                                      : editEmployee.expenseCode
-                                        ? "Hourly"
-                                        : ""
-                                  }
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, expenseCode: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={
-                                    viewEmployee.expenseCode === "IDL"
-                                      ? "Salary"
-                                      : viewEmployee.expenseCode
-                                        ? "Hourly"
-                                        : ""
-                                  }
-                                  readOnly
-                                />
-                              )}
-                            </Col>
-                            <Col lg={4}>
-                              <Label>Shift Code</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={editEmployee.shift ?? 1}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, shift: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={viewEmployee.shift ?? 1}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
-                            <Col lg={6}>
-                              <Label>Department</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="select"
-                                  value={editEmployee.dept || "N/A"}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, dept: e.target.value })}
-                                >
-                                  <option value="">Select Department</option>
-                                  {departments.map((d) => (
-                                    <option key={d.id} value={d.id}>
-                                      {d.description}
-                                    </option>
-                                  ))}
-                                </Input>
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={getDepartmentName(viewEmployee.dept)}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
-                            <Col lg={6}>
-                              <Label>Supervisor</Label>
-                              {isEditMode ? (
-                                <Input
-                                  type="text"
-                                  value={supervisorName || editEmployee.supervisor}
-                                  onChange={(e) => setEditEmployee({ ...editEmployee, supervisor: e.target.value })}
-                                />
-                              ) : (
-                                <Input
-                                  type="text"
-                                  value={supervisorName || viewEmployee.supervisor}
-                                  readOnly
-                                />
-                              )}
-                            </Col>
+                              <Col lg={6}>
+                                <Label>Phone</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.phone || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, phone: value });
+                                      setFormData({ ...formData, phone: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.phone || "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={3}>
+                                <Label>ZIP</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.zip || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, zip: value });
+                                      setFormData({ ...formData, zip: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.zip || "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={3}>
+                                <Label>D.O.B</Label>
+                                {isEditMode ? (
+                                  <Flatpickr
+                                    className="form-control"
+                                    value={editEmployee.dateofbirth ? new Date(editEmployee.dateofbirth) : ""}
+                                    onChange={(selectedDates) => {
+                                      const date = selectedDates[0] || "";
+                                      setEditEmployee({ ...editEmployee, dateofbirth: date });
+                                      setFormData({ ...formData, dateofbirth: date });
+                                    }}
+                                    options={{
+                                      dateFormat: "Y-m-d",
+                                      maxDate: "today"
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={
+                                      viewEmployee.dateofbirth
+                                        ? new Date(viewEmployee.dateofbirth).toLocaleDateString()
+                                        : "N/A"
+                                    }
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={4}>
+                                <Label>City</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.city || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, city: value });
+                                      setFormData({ ...formData, city: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.city || "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={4}>
+                                <Label>State</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.state || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, state: value });
+                                      setFormData({ ...formData, state: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.state || "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={4}>
+                                <Label>Country</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.country || "USA"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, country: value });
+                                      setFormData({ ...formData, country: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.country || "USA"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={4}>
+                                <Label>Employee Status</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.empStatus || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, empStatus: value });
+                                      setFormData({ ...formData, empStatus: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.empStatus || "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={4}>
+                                <Label>Rate Type</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={
+                                      editEmployee.expenseCode === "IDL"
+                                        ? "Salary"
+                                        : editEmployee.expenseCode
+                                          ? "Hourly"
+                                          : ""
+                                    }
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, expenseCode: value });
+                                      setFormData({ ...formData, expenseCode: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={
+                                      viewEmployee.expenseCode === "IDL"
+                                        ? "Salary"
+                                        : viewEmployee.expenseCode
+                                          ? "Hourly"
+                                          : ""
+                                    }
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={4}>
+                                <Label>Shift Code</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.shift ?? 1}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, shift: value });
+                                      setFormData({ ...formData, shift: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.shift ?? 1}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={6}>
+                                <Label>Department</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="select"
+                                    value={editEmployee.dept || "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, dept: value });
+                                      setFormData({ ...formData, dept: value });
+                                    }}
+                                  >
+                                    <option value="">Select Department</option>
+                                    {departments.map((d) => (
+                                      <option key={d.id} value={d.id}>
+                                        {d.description}
+                                      </option>
+                                    ))}
+                                  </Input>
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={getDepartmentName(viewEmployee.dept)}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={6}>
+                                <Label>Supervisor</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={supervisorName || editEmployee.supervisor}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, supervisor: value });
+                                      setFormData({ ...formData, supervisor: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={supervisorName || viewEmployee.supervisor}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={6}>
+                                <Label>Email Address</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="text"
+                                    value={editEmployee.email ?? "N/A"}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, email: value });
+                                      setFormData({ ...formData, email: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="text"
+                                    value={viewEmployee.email ?? "N/A"}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                              <Col lg={6}>
+                                <Label>Password</Label>
+                                {isEditMode ? (
+                                  <Input
+                                    type="password"
+                                    value={editEmployee.password}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setEditEmployee({ ...editEmployee, password: value });
+                                      setFormData({ ...formData, password: value });
+                                    }}
+                                  />
+                                ) : (
+                                  <Input
+                                    type="password"
+                                    value={viewEmployee.password}
+                                    readOnly
+                                  />
+                                )}
+                              </Col>
+                            </Row>
+                          </Form>
+                        </TabPane>
 
-                          </Row>
-                        </Form>
-                      </TabPane>
+                      </TabContent>
+                    </CardBody>
+                  </Card>
+                </Col>
+              </Row>
+            </Container>
+          </ModalBody>
+          <ModalFooter>
+            <div className="modal-footer">
 
-                    </TabContent>
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
-          </Container>
-        </ModalBody>
-        <ModalFooter>
-          <div className="modal-footer">
+              {isEditMode ? (
+                <div className="modal-footer">
+                  <Button color="primary" onClick={tog_togFirst}>Save changes</Button>
+                  <Link to="#" className="btn btn-link link-success fw-medium" onClick={tog_togView}><i className="ri-close-line me-1 align-middle"></i> Close</Link>
+                </div>
+              ) : (
+                <div className="modal-footer">
+                  <Link to="#" className="btn btn-link link-success fw-medium" onClick={tog_togView}><i className="ri-close-line me-1 align-middle"></i> Close</Link>
+                </div>
+              )}
+            </div>
 
-            {isEditMode ? (
-              <div className="modal-footer">
-                <Button color="primary" onClick={tog_togFirst}>Save changes</Button>
-                <Link to="#" className="btn btn-link link-success fw-medium" onClick={tog_togView}><i className="ri-close-line me-1 align-middle"></i> Close</Link>
-              </div>
-            ) : (
-              <div className="modal-footer">
-                <Link to="#" className="btn btn-link link-success fw-medium" onClick={tog_togView}><i className="ri-close-line me-1 align-middle"></i> Close</Link>
-              </div>
-            )}
-          </div>
-
-        </ModalFooter>
+          </ModalFooter>
+        </div>
       </Modal>
 
 
@@ -873,33 +1111,36 @@ const SearchTableEdit = ({ data }) => {
         id="firstmodal"
         centered
       >
-        <ModalHeader className="modal-title" id="exampleModalToggleLabel" toggle={() => {
-          tog_togFirst();
-        }}>
-
-
-        </ModalHeader>
-        <ModalBody className="text-center p-5">
-          <lord-icon
-            src="https://cdn.lordicon.com/tdrtiskw.json"
-            trigger="loop"
-            colors="primary:#f7b84b,secondary:#405189"
-            style={{ width: "130px", height: "130px" }}>
-          </lord-icon>
-          <div className="mt-4 pt-4">
-            <h4>Are You sure you want Save Changes?</h4>
-            <p className="text-muted"> You are changing the Employee basic Details and Send to the Server! Kindly verify before sending. </p>
-            <div className="hstack gap-2 justify-content-center">
-              <Button color="success" onClick={() => { tog_togSecond(); tog_togFirst(false); }}>
-                Yes
-              </Button>
-              <Button color="danger" onClick={tog_togFirst}>
-                No
-              </Button>
+        <div className="modal-content border-0 overflow-hidden">
+          <ModalBody className='login-modal p-2'>
+            <h5 className="text-white fs-20"></h5>
+            <p className="text-white-50 mb-4"><Link to="/#" className="text-white"></Link></p>
+            <div className="vstack gap-2 justify-content-center">
+              {/* <button className="btn btn-light"><i className="ri-google-fill align-bottom text-danger"></i> Google</button>
+              <button className="btn btn-info"><i className="ri-facebook-fill align-bottom"></i> Facebook</button> */}
             </div>
+          </ModalBody>
+          <ModalBody className="text-center p-5">
+            <lord-icon
+              src="https://cdn.lordicon.com/tdrtiskw.json"
+              trigger="loop"
+              colors="primary:#f7b84b,secondary:#405189"
+              style={{ width: "70px", height: "70px" }}>
+            </lord-icon>
+            <div className="mt-4 pt-4">
+              <h4>Are You sure you want Save Changes?</h4>
+              <p className="text-muted"> You are changing the Employee basic Details and Send to the Server! Kindly verify before sending. </p>
+              <div className="hstack gap-2 justify-content-center">
 
-          </div>
-        </ModalBody>
+                <button type="submit" onClick={handleUpdateEmployee} className="btn btn-primary w-50">Yes</button>
+
+                <button type="submit" onClick={tog_togFirst} className="btn btn-danger w-50">No</button>
+
+              </div>
+
+            </div>
+          </ModalBody>
+        </div>
       </Modal>
 
 
@@ -982,32 +1223,39 @@ const SearchTableEdit = ({ data }) => {
         id="firstmodal"
         centered
       >
-        <ModalHeader className="modal-title" id="exampleModalToggleLabel" toggle={() => {
-          tog_togDelete();
-        }}>
-
-
-        </ModalHeader>
-        <ModalBody className="text-center p-5">
-          <lord-icon
-            src="https://cdn.lordicon.com/tdrtiskw.json"
-            trigger="loop"
-            colors="primary:#f7b84b,secondary:#405189"
-            style={{ width: "130px", height: "130px" }}>
-          </lord-icon>
-          <div className="mt-4 pt-4">
-            <h4>Are You sure you want Inactive this Employee?</h4>
-            <p className="text-muted"> Employee has been Inactivated. </p>
-            <div className="hstack gap-2 justify-content-center">
-              <Button color="success" onClick={() => { tog_togDeleteSecond(); tog_togDelete(false); }}>
-                Yes
-              </Button>
-              <Button color="danger" onClick={tog_togDelete}>
-                No
-              </Button>
+        <div className="modal-content border-0 overflow-hidden">
+          <ModalBody className='login-modal p-2'>
+            <h5 className="text-white fs-20"></h5>
+            <p className="text-white-50 mb-4"><Link to="/#" className="text-white"></Link></p>
+            <div className="vstack gap-2 justify-content-center">
+              {/* <button className="btn btn-light"><i className="ri-google-fill align-bottom text-danger"></i> Google</button>
+              <button className="btn btn-info"><i className="ri-facebook-fill align-bottom"></i> Facebook</button> */}
             </div>
-          </div>
-        </ModalBody>
+          </ModalBody>
+          <ModalBody className="text-center p-5">
+            <lord-icon
+              src="https://cdn.lordicon.com/tdrtiskw.json"
+              trigger="loop"
+              colors="primary:#f7b84b,secondary:#405189"
+              style={{ width: "100px", height: "100px" }}>
+            </lord-icon>
+            <div className="mt-4 pt-4">
+              <h4>Are You sure you want Inactive this Employee?</h4>
+              <p className="text-muted"> Employee has been Inactivated. </p>
+              <div className="hstack gap-2 justify-content-center">
+
+
+                <button type="submit" onClick={handleInactiveEmployee} className="btn btn-primary w-50">Yes</button>
+
+                <button type="submit" onClick={tog_togDelete} className="btn btn-danger w-50">No</button>
+
+
+
+
+              </div>
+            </div>
+          </ModalBody>
+        </div>
       </Modal>
 
       {/* Modal Inactive User First End */}
